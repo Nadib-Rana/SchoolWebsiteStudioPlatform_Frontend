@@ -106,3 +106,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+# SchoolWebsiteStudioPlatform_Frontend
