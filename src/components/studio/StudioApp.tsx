@@ -11,9 +11,28 @@ import { Overview } from '@/components/studio/overview/Overview'
 import { Templates } from '@/components/studio/templates/Templates'
 import { ThemeCustomization } from '@/components/studio/theme/ThemeCustomization'
 import { useStudio } from '@/context/StudioContext'
+import { api } from '@/lib/api-client'
+import { useEffect, useState } from 'react'
 
 export function StudioApp() {
-  const { view } = useStudio()
+  const { view, setView } = useStudio()
+  const [authChecked, setAuthChecked] = useState(false)
+
+  useEffect(() => {
+    const token = api.getAuthToken()
+    if (!token && view !== 'public' && view !== 'onboarding' && view !== 'login') {
+      setView('login')
+    }
+    const timer = setTimeout(() => {
+      setAuthChecked(true)
+    }, 0)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (!authChecked) {
+    return null
+  }
 
   if (view === 'public') {
     return <PublicSite />

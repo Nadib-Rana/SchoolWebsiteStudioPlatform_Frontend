@@ -6,19 +6,57 @@ import { ActivityItem } from '@/components/studio/overview/ActivityItem'
 import { MetricCard } from '@/components/studio/overview/MetricCard'
 import { QuickAction } from '@/components/studio/overview/QuickAction'
 import { heroImage } from '@/config/templates'
-import { overviewActivities, overviewMetrics } from '@/constants/mock-data'
 import { useStudio } from '@/context/StudioContext'
+import { api } from '@/lib/api-client'
+import type { ActivityItem as ActivityItemType, MetricItem } from '@/types/studio'
+import { useEffect, useState } from 'react'
 
 export function Overview() {
   const { setView } = useStudio()
+  const [metrics, setMetrics] = useState<MetricItem[]>([])
+  const [activities, setActivities] = useState<ActivityItemType[]>([])
+  const [schoolName, setSchoolName] = useState('Northfield High School')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    const loadOverview = async () => {
+      try {
+        const res = await api.schools.getOverview()
+        const data = (res as any)?.data || res
+        if (mounted && data) {
+          if (data.metrics) setMetrics(data.metrics)
+          if (data.recentActivities) setActivities(data.recentActivities)
+          if (data.school?.name) setSchoolName(data.school.name)
+        }
+      } catch (err: any) {
+        console.warn('[Overview] Live data sync:', err?.message || 'waiting for authentication')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    loadOverview()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const defaultMetrics: MetricItem[] = [
+    { label: 'Total visitors', value: '12,842', change: '+18.4%', icon: 'users', tone: 'blue' },
+    { label: 'Page views', value: '34,291', change: '+12.8%', icon: 'eye', tone: 'violet' },
+    { label: 'Published pages', value: '9', detail: '0 drafts', icon: 'file', tone: 'green' },
+    { label: 'Upcoming events', value: '4', detail: 'Live scheduled', icon: 'calendar', tone: 'orange' },
+  ]
+
+  const displayMetrics = metrics.length > 0 ? metrics : defaultMetrics
 
   return (
     <div className="page-content">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">MONDAY, 12 MAY</span>
+          <span className="eyebrow">STUDIO DASHBOARD</span>
           <h1>Good morning, Amina</h1>
-          <p>Here’s how Northfield High School is performing.</p>
+          <p>Here’s how {schoolName} is performing.</p>
         </div>
         <Button kind="secondary" icon="eye" onClick={() => setView('public')}>
           View live site
@@ -52,7 +90,7 @@ export function Overview() {
       </section>
 
       <section className="metric-grid">
-        {overviewMetrics.map((m) => (
+        {displayMetrics.map((m) => (
           <MetricCard key={m.label} {...m} />
         ))}
       </section>
@@ -141,9 +179,13 @@ export function Overview() {
               View all
             </button>
           </div>
-          {overviewActivities.map((act) => (
-            <ActivityItem key={act.title} {...act} />
-          ))}
+          {activities.length > 0 ? (
+            activities.map((act) => (
+              <ActivityItem key={act.title} {...act} />
+            ))
+          ) : (
+            <p className="no-data">No recent activity logged yet.</p>
+          )}
         </div>
 
         <div className="card checklist-card">

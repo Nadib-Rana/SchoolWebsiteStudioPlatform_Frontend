@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/common/Icon'
 import { campusImage, heroImage, interiorImage } from '@/config/templates'
-import { publicPagesContent } from '@/constants/mock-data'
+import { publicPagesContent } from '@/config/public-pages'
 import { useState } from 'react'
 
 import { api } from '@/lib/api-client'

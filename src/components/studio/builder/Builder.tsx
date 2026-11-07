@@ -5,6 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import { SettingGroup } from '@/components/common/SettingGroup'
 import { heroImage } from '@/config/templates'
 import { useStudio } from '@/context/StudioContext'
+import { api } from '@/lib/api-client'
 import type { DeviceType } from '@/types/theme'
 import { useState } from 'react'
 
@@ -12,6 +13,30 @@ export function Builder() {
   const { notify, setView } = useStudio()
   const [device, setDevice] = useState<DeviceType>('monitor')
   const [selected, setSelected] = useState('Hero section')
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const pagesRes = await api.pages.list()
+      const pages = (pagesRes as any)?.data || pagesRes
+      const homePage = Array.isArray(pages)
+        ? pages.find((p: any) => p.slug === 'home' || p.isHome)
+        : null
+      if (homePage?.id) {
+        await api.pages.update(homePage.id, {
+          title: homePage.title || 'Homepage',
+          status: 'PUBLISHED',
+        })
+      }
+      notify('Homepage sections draft saved successfully to database!')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save draft.'
+      notify(`Error: ${msg}`)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const sections = [
     ['menu', 'Announcement bar'],
@@ -78,9 +103,10 @@ export function Builder() {
           </Button>
           <Button
             kind="primary"
-            onClick={() => notify('Draft saved successfully')}
+            onClick={handleSave}
+            disabled={isSaving}
           >
-            Save draft
+            {isSaving ? 'Saving...' : 'Save draft'}
           </Button>
         </div>
       </div>

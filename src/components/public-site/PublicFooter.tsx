@@ -1,24 +1,67 @@
-export function PublicFooter() {
+'use client'
+
+import Link from 'next/link'
+
+export interface PublicFooterProps {
+  schoolSlug?: string
+  schoolName?: string
+  motto?: string
+  address?: string
+  phone?: string
+  email?: string
+  setPage?: (p: string) => void
+}
+
+export function PublicFooter({
+  schoolSlug,
+  schoolName = 'Northfield High School',
+  motto = 'Learn · Lead · Serve',
+  address = '27 Lakeview Avenue, Dhaka',
+  phone = '+880 2 555 0142',
+  email = 'hello@northfield.edu',
+  setPage,
+}: PublicFooterProps) {
+  const initial = (schoolName || 'N').charAt(0).toUpperCase()
+
+  const links = [
+    { label: 'About', path: '/about', page: 'About School' },
+    { label: 'Academics', path: '/academics', page: 'Academic Programs' },
+    { label: 'Admissions', path: '/admissions', page: 'Admission Information' },
+    { label: 'Notices', path: '/notices', page: 'Notices' },
+    { label: 'Contact', path: '/contact', page: 'Contact Us' },
+  ]
+
   return (
     <footer className="public-footer">
       <div className="public-logo">
-        <span>N</span>
+        <span>{initial}</span>
         <div>
-          <strong>Northfield High School</strong>
-          <small>Learn · Lead · Serve</small>
+          <strong>{schoolName}</strong>
+          <small>{motto}</small>
         </div>
       </div>
       <p>
-        27 Lakeview Avenue, Dhaka
+        {address}
         <br />
-        +880 2 555 0142 · hello@northfield.edu
+        {phone} · {email}
       </p>
       <div>
-        <span>About</span>
-        <span>Academics</span>
-        <span>Admissions</span>
-        <span>Notices</span>
-        <span>Contact</span>
+        {links.map((link) =>
+          schoolSlug ? (
+            <Link key={link.label} href={`/${schoolSlug}${link.path}`}>
+              {link.label}
+            </Link>
+          ) : (
+            <button
+              key={link.label}
+              type="button"
+              className="text-button"
+              onClick={() => setPage && setPage(link.page)}
+            >
+              {link.label}
+            </button>
+          )
+        )}
       </div>
     </footer>
   )

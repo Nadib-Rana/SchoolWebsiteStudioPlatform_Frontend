@@ -25,6 +25,12 @@ export const screenMeta: ScreenMetaMap = {
     description: 'Organize programs, classes, subjects, facilities, and achievements.',
     action: 'Add program',
   },
+  admissions: {
+    title: 'Admissions & enrollment',
+    eyebrow: 'STUDENT REGISTRY',
+    description: 'Review student applications, schedule interviews, and manage enrollment decisions.',
+    action: 'Refresh registry',
+  },
   notices: {
     title: 'Notices',
     eyebrow: 'SCHOOL UPDATES',

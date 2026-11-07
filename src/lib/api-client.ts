@@ -22,7 +22,7 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiClient {
-  private getAuthToken(): string | null {
+  public getAuthToken(): string | null {
     if (typeof window === 'undefined') return null
     return localStorage.getItem('studio_token')
   }
@@ -334,10 +334,52 @@ class ApiClient {
         body: JSON.stringify(data),
       })
     },
+    deleteAlbum: async (albumId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/gallery/albums/${albumId}`, {
+        method: 'DELETE',
+      })
+    },
+    addPhotoToAlbum: async (
+      albumId: string,
+      photo: { url: string; caption?: string },
+      schoolId?: string,
+    ) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(
+        `/schools/${id}/gallery/albums/${albumId}/photos`,
+        {
+          method: 'POST',
+          body: JSON.stringify(photo),
+        },
+      )
+    },
     getMedia: async (category?: string, schoolId?: string) => {
       const id = schoolId || this.getActiveSchoolId()
       const url = category ? `/schools/${id}/gallery/media?category=${category}` : `/schools/${id}/gallery/media`
       return this.request<any[]>(url)
+    },
+    createMedia: async (data: {
+      filename: string
+      originalName: string
+      mimeType: string
+      sizeBytes: number
+      url: string
+      thumbnailUrl?: string
+      category?: string
+      tags?: string[]
+    }, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/gallery/media`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    deleteMedia: async (assetId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/gallery/media/${assetId}`, {
+        method: 'DELETE',
+      })
     },
   }
 
@@ -454,6 +496,111 @@ class ApiClient {
       return this.request<any>('/public/inquiries', {
         method: 'POST',
         body: JSON.stringify(inquiry),
+      })
+    },
+  }
+
+  // --- Object Storage (MinIO / S3) ---
+  public storage = {
+    upload: async (file: File) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const token = this.getAuthToken()
+      const headers: Record<string, string> = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      const res = await fetch(`${API_BASE_URL}/storage/upload`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Failed to upload file to MinIO')
+      }
+      return json.data as { key: string; publicUrl: string }
+    },
+    getPresignedUploadUrl: async (filename: string, bucket?: string) => {
+      return this.request<{ uploadUrl: string; key: string; publicUrl: string }>('/storage/presign-upload', {
+        method: 'POST',
+        body: JSON.stringify({ filename, bucket }),
+      })
+    },
+    delete: async (key: string, bucket?: string) => {
+      return this.request<{ success: boolean; key: string }>('/storage/delete', {
+        method: 'POST',
+        body: JSON.stringify({ key, bucket }),
+      })
+    },
+  }
+
+  // --- Admissions Pipeline ---
+  public admissions = {
+    apply: async (data: {
+      schoolSlug: string
+      studentName: string
+      dateOfBirth: string
+      gender: string
+      applyingForGrade: string
+      previousSchool?: string
+      guardianName: string
+      guardianRelationship: string
+      guardianPhone: string
+      guardianEmail: string
+      address: string
+      documents?: Record<string, string>
+    }) => {
+      return this.request<{
+        success: boolean
+        applicationNumber: string
+        studentName: string
+        status: string
+        message: string
+      }>('/public/admissions/apply', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    track: async (applicationNumber: string, guardianPhone?: string) => {
+      const params = new URLSearchParams()
+      params.append('applicationNumber', applicationNumber)
+      if (guardianPhone) params.append('guardianPhone', guardianPhone)
+      return this.request<{
+        applicationNumber: string
+        schoolName: string
+        studentName: string
+        applyingForGrade: string
+        status: string
+        notes?: string
+        submittedAt: string
+        lastUpdatedAt: string
+      }>(`/public/admissions/track?${params.toString()}`)
+    },
+    list: async (
+      schoolId?: string,
+      query?: { search?: string; status?: string; grade?: string }
+    ) => {
+      const id = schoolId || this.getActiveSchoolId()
+      const params = new URLSearchParams()
+      if (query?.search) params.append('search', query.search)
+      if (query?.status) params.append('status', query.status)
+      if (query?.grade) params.append('grade', query.grade)
+      const qs = params.toString() ? `?${params.toString()}` : ''
+      return this.request<any[]>(`/schools/${id}/admissions${qs}`)
+    },
+    get: async (appId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/admissions/${appId}`)
+    },
+    updateStatus: async (
+      appId: string,
+      status: string,
+      notes?: string,
+      schoolId?: string
+    ) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/admissions/${appId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, notes }),
       })
     },
   }

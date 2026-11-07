@@ -12,16 +12,19 @@ export function Login() {
   const [email, setEmail] = useState('admin@northfield.edu')
   const [password, setPassword] = useState('Admin@12345')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleLogin = async () => {
     setLoading(true)
+    setError('')
     try {
       const res = await api.auth.login(email, password)
       notify(`Welcome back, ${res.data?.user?.firstName || 'Admin'}!`)
       setView('overview')
-    } catch {
-      notify('Signed in to Studio session')
-      setView('overview')
+    } catch (err: any) {
+      const msg = err?.message || 'Invalid email or password'
+      setError(msg)
+      notify(msg)
     } finally {
       setLoading(false)
     }

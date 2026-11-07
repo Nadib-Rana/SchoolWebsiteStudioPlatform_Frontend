@@ -9,6 +9,7 @@ export type View =
   | 'content'
   | 'teachers'
   | 'academics'
+  | 'admissions'
   | 'notices'
   | 'events'
   | 'gallery'
@@ -54,6 +55,8 @@ export type IconName =
   | 'clock'
   | 'external'
   | 'close'
+  | 'download'
+  | 'copy'
 
 export type NavItem = readonly [id: View, icon: IconName, label: string]
 

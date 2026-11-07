@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/common/Button'
 import { Academics } from '@/components/studio/academics/Academics'
+import { AdmissionsManager } from '@/components/studio/admissions/AdmissionsManager'
 import { Analytics } from '@/components/studio/analytics/Analytics'
 import { ContentManager } from '@/components/studio/content/ContentManager'
 import { DataManager } from '@/components/studio/data-manager/DataManager'
@@ -27,6 +28,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
   const { notify, setView } = useStudio()
   const meta = screenMeta[view] || screenMeta.pages
   const [modal, setModal] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const doAction = () => {
     if (['pages', 'teachers', 'notices', 'events', 'gallery', 'media'].includes(view)) {
@@ -34,7 +36,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
     } else {
       notify(
         view === 'publishing'
-          ? 'Website version 2.8 published successfully'
+          ? 'Website version published successfully'
           : 'Changes saved successfully'
       )
     }
@@ -65,10 +67,11 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
       </div>
 
       {['pages', 'teachers', 'notices', 'events'].includes(view) && (
-        <DataManager type={view} />
+        <DataManager type={view} refreshKey={refreshKey} />
       )}
       {view === 'content' && <ContentManager />}
       {view === 'academics' && <Academics />}
+      {view === 'admissions' && <AdmissionsManager />}
       {view === 'gallery' && <Gallery />}
       {view === 'navigation' && <NavigationManager />}
       {view === 'media' && <MediaLibrary />}
@@ -85,8 +88,9 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
           close={() => setModal(false)}
           save={() => {
             setModal(false)
+            setRefreshKey((k) => k + 1)
             notify(
-              `New ${view === 'media' ? 'asset' : view.slice(0, -1)} saved as draft`
+              `New ${view === 'media' ? 'asset' : view.slice(0, -1)} saved successfully`
             )
           }}
         />
