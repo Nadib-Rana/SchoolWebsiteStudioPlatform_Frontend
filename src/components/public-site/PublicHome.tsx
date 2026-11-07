@@ -47,7 +47,8 @@ export function PublicHome({
   }, [])
 
   const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
-  const isCustomizedForTheme = builderData?.appliedTheme === theme
+  const isCustomizedForTheme =
+    !builderData?.appliedTheme || builderData?.appliedTheme === theme
 
   const schoolName =
     isCustomizedForTheme && builderData?.schoolName

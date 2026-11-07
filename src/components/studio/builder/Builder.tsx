@@ -227,7 +227,7 @@ const SECTION_TEMPLATES = [
 ]
 
 export function Builder() {
-  const { notify, setView } = useStudio()
+  const { notify, setView, previewTheme } = useStudio()
   const isInitializedRef = useRef(false)
   const [device, setDevice] = useState<DeviceType>('monitor')
   const [selected, setSelected] = useState('Hero section')
@@ -461,6 +461,7 @@ export function Builder() {
   }
 
   const getBuilderState = () => ({
+    appliedTheme: previewTheme || 'modern',
     showAnnouncement,
     announcementText,
     announcementLink,

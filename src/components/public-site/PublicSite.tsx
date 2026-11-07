@@ -78,7 +78,8 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
   }
 
   const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
-  const isCustomizedForTheme = builderData?.appliedTheme === theme
+  const isCustomizedForTheme =
+    !builderData?.appliedTheme || builderData?.appliedTheme === theme
 
   const effectiveSchoolName =
     isCustomizedForTheme && builderData?.schoolName
@@ -99,13 +100,11 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
       : activeCfg.announcementText
   const announcementLink = builderData?.announcementLink || 'Apply now'
   const effectiveAnnouncementBg =
-    isCustomizedForTheme && builderData?.sectionStyles?.['Announcement bar']?.bg
-      ? builderData.sectionStyles['Announcement bar'].bg
-      : activeCfg.primaryColor
+    builderData?.sectionStyles?.['Announcement bar']?.bg ||
+    activeCfg.primaryColor
   const effectiveHeaderBg =
-    isCustomizedForTheme && builderData?.sectionStyles?.['Header']?.bg
-      ? builderData.sectionStyles['Header'].bg
-      : activeCfg.headerBg
+    builderData?.sectionStyles?.['Header']?.bg ||
+    activeCfg.headerBg
 
   return (
     <div
@@ -162,7 +161,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         applyButtonText={builderData?.applyButtonText || 'Apply now'}
         navigation={siteData?.navigation}
         headerStyle={{
-          ...(isCustomizedForTheme ? builderData?.sectionStyles?.['Header'] : {}),
+          ...(builderData?.sectionStyles?.['Header'] || {}),
           bg: effectiveHeaderBg,
         }}
       />
