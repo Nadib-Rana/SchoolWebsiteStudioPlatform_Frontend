@@ -5,6 +5,7 @@ import { PublicHeader } from '@/components/public-site/PublicHeader'
 import { PublicHome } from '@/components/public-site/PublicHome'
 import { PublicInnerPage } from '@/components/public-site/PublicInnerPage'
 import { PublicPreviewBar } from '@/components/public-site/PublicPreviewBar'
+import { THEME_CONFIGS } from '@/config/themes'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import type { PublicSiteData } from '@/lib/public-site'
@@ -65,28 +66,57 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
     }
   }, [])
 
+  useEffect(() => {
+    if (previewTheme && previewTheme !== theme) {
+      setTheme(previewTheme)
+    }
+  }, [previewTheme])
+
   const handleThemeChange = (newTheme: SchoolTheme) => {
     setTheme(newTheme)
     setPreviewTheme(newTheme)
   }
 
+  const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
+  const isCustomizedForTheme = builderData?.appliedTheme === theme
+
   const effectiveSchoolName =
-    builderData?.schoolName || siteData?.school?.name || 'Northfield High School'
+    isCustomizedForTheme && builderData?.schoolName
+      ? builderData.schoolName
+      : activeCfg.schoolName
   const effectiveMotto =
-    builderData?.eyebrow || siteData?.profile?.motto || 'LEARN · LEAD · MAKE A DIFFERENCE'
+    isCustomizedForTheme && builderData?.eyebrow
+      ? builderData.eyebrow
+      : activeCfg.eyebrow
 
   const showAnnouncement =
     builderData?.showAnnouncement !== undefined
       ? builderData.showAnnouncement
       : true
   const announcementText =
-    builderData?.announcementText ||
-    '📢 Admissions open for the 2026–2027 Academic Year · Limited seats available!'
+    isCustomizedForTheme && builderData?.announcementText
+      ? builderData.announcementText
+      : activeCfg.announcementText
   const announcementLink = builderData?.announcementLink || 'Apply now'
-  const announcementStyle = builderData?.sectionStyles?.['Announcement bar']
+  const effectiveAnnouncementBg =
+    isCustomizedForTheme && builderData?.sectionStyles?.['Announcement bar']?.bg
+      ? builderData.sectionStyles['Announcement bar'].bg
+      : activeCfg.primaryColor
+  const effectiveHeaderBg =
+    isCustomizedForTheme && builderData?.sectionStyles?.['Header']?.bg
+      ? builderData.sectionStyles['Header'].bg
+      : activeCfg.headerBg
 
   return (
-    <div className={`public-site theme-${theme}`}>
+    <div
+      className={`public-site theme-${theme}`}
+      style={
+        {
+          '--navy': activeCfg.primaryColor,
+          '--accent': activeCfg.secondaryColor,
+        } as React.CSSProperties
+      }
+    >
       <PublicPreviewBar
         page={page}
         setPage={setPage}
@@ -96,28 +126,16 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
       {showAnnouncement && (
         <div
           style={{
-            background: announcementStyle?.bg || '#0e2447',
+            background: effectiveAnnouncementBg,
             color: '#f8fafc',
-            padding:
-              announcementStyle?.padding === 'compact'
-                ? '8px 20px'
-                : announcementStyle?.padding === 'spacious'
-                ? '16px 20px'
-                : '11px 20px',
+            padding: '11px 20px',
             fontSize: '13px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '12px',
             textAlign: 'center',
-            ...(announcementStyle?.border
-              ? { borderBottom: '2px solid #2563eb' }
-              : {}),
-            ...(announcementStyle?.shadow === 'subtle'
-              ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
-              : announcementStyle?.shadow === 'card'
-              ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
-              : {}),
+            transition: 'background 0.3s ease',
           }}
         >
           <span>{announcementText}</span>
@@ -139,11 +157,14 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         schoolSlug={siteData?.school?.slug || 'northfield-high'}
         schoolName={effectiveSchoolName}
         motto={effectiveMotto}
-        logoUrl={siteData?.school?.logoUrl || undefined}
-        logoLetter={builderData?.logoLetter}
-        applyButtonText={builderData?.applyButtonText}
+        logoUrl={isCustomizedForTheme ? siteData?.school?.logoUrl || undefined : undefined}
+        logoLetter={effectiveSchoolName.charAt(0)}
+        applyButtonText={builderData?.applyButtonText || 'Apply now'}
         navigation={siteData?.navigation}
-        headerStyle={builderData?.sectionStyles?.['Header']}
+        headerStyle={{
+          ...(isCustomizedForTheme ? builderData?.sectionStyles?.['Header'] : {}),
+          bg: effectiveHeaderBg,
+        }}
       />
       {page === 'Home' ? (
         <PublicHome
@@ -164,7 +185,10 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         phone={builderData?.footerPhone || siteData?.profile?.phone}
         email={builderData?.footerEmail || siteData?.profile?.email}
         copyright={builderData?.footerCopyright}
-        footerStyle={builderData?.sectionStyles?.['Footer']}
+        footerStyle={{
+          ...(isCustomizedForTheme ? builderData?.sectionStyles?.['Footer'] : {}),
+          bg: activeCfg.primaryColor,
+        }}
       />
     </div>
   )

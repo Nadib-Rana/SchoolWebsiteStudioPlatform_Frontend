@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Icon } from '@/components/common/Icon'
 import { campusImage, heroImage, interiorImage } from '@/config/templates'
-import { themeHeadlines } from '@/config/themes'
+import { THEME_CONFIGS, themeHeadlines } from '@/config/themes'
 import type { SchoolTheme } from '@/types/theme'
 import type { PublicSiteData } from '@/lib/public-site'
 import { useState, useEffect } from 'react'
@@ -46,41 +46,37 @@ export function PublicHome({
     }
   }, [])
 
+  const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
+  const isCustomizedForTheme = builderData?.appliedTheme === theme
+
   const schoolName =
-    builderData?.schoolName ||
-    schoolData?.school?.name ||
-    'Northfield High School'
+    isCustomizedForTheme && builderData?.schoolName
+      ? builderData.schoolName
+      : activeCfg.schoolName
   const motto =
-    builderData?.eyebrow ||
-    schoolData?.profile?.motto ||
-    'LEARN · LEAD · MAKE A DIFFERENCE'
+    isCustomizedForTheme && builderData?.eyebrow
+      ? builderData.eyebrow
+      : activeCfg.eyebrow
   const establishedYear = schoolData?.profile?.established || 1983
   const address =
     builderData?.footerAddress ||
     schoolData?.profile?.address ||
     '27 Lakeview Avenue, Riverdale, NY 10471'
 
-  // Announcement bar
-  const showAnnouncement =
-    builderData?.showAnnouncement !== undefined
-      ? builderData.showAnnouncement
-      : true
-  const announcementText =
-    builderData?.announcementText ||
-    '📢 Admissions open for the 2026–2027 Academic Year · Limited seats available!'
-  const announcementLink = builderData?.announcementLink || 'Apply now'
-
   // Hero section
   const heroHeading =
-    builderData?.heading ||
-    themeHeadlines[theme] ||
-    'Shaping thinkers.\nBuilding character.'
+    isCustomizedForTheme && builderData?.heading
+      ? builderData.heading
+      : activeCfg.headline
   const heroDesc =
-    builderData?.description ||
-    schoolData?.profile?.shortBio ||
-    schoolData?.profile?.visionStatement ||
-    'A vibrant learning community where every student is known, challenged, and inspired to thrive.'
-  const heroBtnLabel = builderData?.buttonLabel || 'Discover Northfield'
+    isCustomizedForTheme && builderData?.description
+      ? builderData.description
+      : activeCfg.description
+  const heroBtnLabel =
+    isCustomizedForTheme && builderData?.buttonLabel
+      ? builderData.buttonLabel
+      : activeCfg.buttonLabel
+  const currentHeroImage = activeCfg.heroImage || heroImage
   const heroBtnLink = builderData?.buttonLink || '/about'
   const heroOverlay =
     builderData?.overlayOpacity !== undefined ? builderData.overlayOpacity : 65
@@ -171,7 +167,7 @@ export function PublicHome({
       <section
         className="public-hero"
         style={{
-          backgroundImage: `linear-gradient(90deg,rgba(7,24,48,${heroOverlay / 100}),rgba(7,24,48,${(heroOverlay / 100) * 0.25})),url(${heroImage})`,
+          backgroundImage: `linear-gradient(90deg,rgba(7,24,48,${heroOverlay / 100}),rgba(7,24,48,${(heroOverlay / 100) * 0.25})),url(${currentHeroImage})`,
           textAlign: sectionStyles['Hero section']?.align || 'left',
           paddingTop:
             sectionStyles['Hero section']?.padding === 'compact'

@@ -30,8 +30,32 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<View>('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [toast, setToast] = useState('')
-  const [previewTheme, setPreviewTheme] = useState<SchoolTheme>('modern')
+  const [previewTheme, setPreviewThemeState] = useState<SchoolTheme>('modern')
   const [unreadNotifications, setUnreadNotifications] = useState(3)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('studio_selected_theme') as SchoolTheme
+        if (saved) {
+          setPreviewThemeState(saved)
+        }
+      } catch (e) {
+        console.debug('Failed to load selected theme:', e)
+      }
+    }
+  }, [])
+
+  const setPreviewTheme = useCallback((theme: SchoolTheme) => {
+    setPreviewThemeState(theme)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('studio_selected_theme', theme)
+      } catch (e) {
+        console.debug('Failed to save selected theme:', e)
+      }
+    }
+  }, [])
 
   const notify = useCallback((message: string) => {
     setToast(message)
