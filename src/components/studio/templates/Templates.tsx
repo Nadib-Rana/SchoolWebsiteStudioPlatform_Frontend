@@ -178,9 +178,10 @@ export function Templates() {
                 </div>
                 <Button
                   kind={i === 0 ? 'primary' : 'secondary'}
-                  onClick={() =>
-                    notify(`${t.name} selected. Your content is unchanged.`)
-                  }
+                  onClick={() => {
+                    setPreviewTheme(t.theme)
+                    notify(`${t.name} template selected! Switched live preview theme to ${t.name}.`)
+                  }}
                 >
                   {i === 0 ? 'Current template' : 'Select'}
                 </Button>
