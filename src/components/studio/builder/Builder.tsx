@@ -9,12 +9,163 @@ import { api } from '@/lib/api-client'
 import type { DeviceType } from '@/types/theme'
 import { useState } from 'react'
 
+interface SectionStyle {
+  bg: string
+  align: 'left' | 'center' | 'right'
+  padding: 'compact' | 'normal' | 'spacious'
+  border: boolean
+  shadow: 'none' | 'subtle' | 'card'
+  hideOnMobile: boolean
+  animation: string
+  customId: string
+  customClass: string
+}
+
+const DEFAULT_STYLES: Record<string, SectionStyle> = {
+  'Announcement bar': {
+    bg: '#0e2447',
+    align: 'center',
+    padding: 'compact',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-announcement-bar',
+    customClass: '',
+  },
+  'Header': {
+    bg: '#ffffff',
+    align: 'left',
+    padding: 'compact',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-header',
+    customClass: '',
+  },
+  'Hero section': {
+    bg: '#091b35',
+    align: 'left',
+    padding: 'spacious',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-hero-section',
+    customClass: '',
+  },
+  'Statistics': {
+    bg: '#163d72',
+    align: 'center',
+    padding: 'compact',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-statistics',
+    customClass: '',
+  },
+  'School introduction': {
+    bg: '#ffffff',
+    align: 'center',
+    padding: 'normal',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-school-introduction',
+    customClass: '',
+  },
+  'Principal message': {
+    bg: '#f8fafc',
+    align: 'left',
+    padding: 'normal',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-principal-message',
+    customClass: '',
+  },
+  'Latest notices': {
+    bg: '#ffffff',
+    align: 'left',
+    padding: 'normal',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-latest-notices',
+    customClass: '',
+  },
+  'Upcoming events': {
+    bg: '#f1f5f9',
+    align: 'left',
+    padding: 'normal',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-upcoming-events',
+    customClass: '',
+  },
+  'Gallery': {
+    bg: '#ffffff',
+    align: 'center',
+    padding: 'normal',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-gallery',
+    customClass: '',
+  },
+  'Footer': {
+    bg: '#091a30',
+    align: 'left',
+    padding: 'spacious',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: 'canvas-footer',
+    customClass: '',
+  },
+}
+
 export function Builder() {
   const { notify, setView } = useStudio()
   const [device, setDevice] = useState<DeviceType>('monitor')
   const [selected, setSelected] = useState('Hero section')
   const [isSaving, setIsSaving] = useState(false)
   const [showSettings, setShowSettings] = useState(true)
+  const [activeTab, setActiveTab] = useState<'content' | 'style' | 'advanced'>('content')
+
+  // Per-section styles & advanced settings map
+  const [sectionStyles, setSectionStyles] = useState<Record<string, SectionStyle>>(DEFAULT_STYLES)
+
+  const activeStyle = sectionStyles[selected] || DEFAULT_STYLES[selected] || {
+    bg: '#ffffff',
+    align: 'left',
+    padding: 'normal',
+    border: false,
+    shadow: 'none',
+    hideOnMobile: false,
+    animation: 'none',
+    customId: '',
+    customClass: '',
+  }
+
+  const updateActiveStyle = (patch: Partial<SectionStyle>) => {
+    setSectionStyles((prev) => ({
+      ...prev,
+      [selected]: {
+        ...(prev[selected] || DEFAULT_STYLES[selected] || activeStyle),
+        ...patch,
+      },
+    }))
+  }
 
   // 1. Announcement bar state
   const [showAnnouncement, setShowAnnouncement] = useState(true)
@@ -131,8 +282,11 @@ export function Builder() {
   const handleSelectSection = (label: string) => {
     setSelected(label)
     setShowSettings(true)
+    const customId = sectionStyles[label]?.customId
     const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    const el = document.getElementById(`canvas-${slug}`)
+    const el =
+      (customId && document.getElementById(customId)) ||
+      document.getElementById(`canvas-${slug}`)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
@@ -293,16 +447,35 @@ export function Builder() {
             {/* 1. Announcement bar section */}
             {showAnnouncement && (
               <div
-                id="canvas-announcement-bar"
+                id={
+                  sectionStyles['Announcement bar']?.customId ||
+                  'canvas-announcement-bar'
+                }
                 onClick={() => setSelected('Announcement bar')}
+                className={sectionStyles['Announcement bar']?.customClass || ''}
                 style={{
-                  background: '#0e2447',
+                  background:
+                    sectionStyles['Announcement bar']?.bg || '#0e2447',
                   color: '#f8fafc',
-                  padding: '8px 20px',
+                  padding:
+                    sectionStyles['Announcement bar']?.padding === 'compact'
+                      ? '6px 20px'
+                      : sectionStyles['Announcement bar']?.padding === 'spacious'
+                      ? '16px 20px'
+                      : '10px 20px',
                   fontSize: '12px',
-                  display: 'flex',
+                  display:
+                    sectionStyles['Announcement bar']?.hideOnMobile &&
+                    device === 'mobile'
+                      ? 'none'
+                      : 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justifyContent:
+                    sectionStyles['Announcement bar']?.align === 'left'
+                      ? 'flex-start'
+                      : sectionStyles['Announcement bar']?.align === 'right'
+                      ? 'flex-end'
+                      : 'center',
                   gap: '12px',
                   cursor: 'pointer',
                   position: 'relative',
@@ -311,6 +484,14 @@ export function Builder() {
                       ? '2px solid #2563eb'
                       : 'none',
                   outlineOffset: '-2px',
+                  ...(sectionStyles['Announcement bar']?.border
+                    ? { borderBottom: '2px solid #2563eb' }
+                    : {}),
+                  ...(sectionStyles['Announcement bar']?.shadow === 'subtle'
+                    ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                    : sectionStyles['Announcement bar']?.shadow === 'card'
+                    ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                    : {}),
                 }}
               >
                 {selected === 'Announcement bar' && (
@@ -332,14 +513,39 @@ export function Builder() {
 
             {/* 2. Header / Navigation */}
             <div
-              id="canvas-header"
+              id={sectionStyles['Header']?.customId || 'canvas-header'}
               onClick={() => setSelected('Header')}
-              className={`site-mini-nav ${selected === 'Header' ? 'selected' : ''}`}
+              className={`site-mini-nav ${selected === 'Header' ? 'selected' : ''} ${sectionStyles['Header']?.customClass || ''}`}
               style={{
                 cursor: 'pointer',
                 position: 'relative',
+                background: sectionStyles['Header']?.bg || '#ffffff',
+                paddingTop:
+                  sectionStyles['Header']?.padding === 'compact'
+                    ? '8px'
+                    : sectionStyles['Header']?.padding === 'spacious'
+                    ? '24px'
+                    : '14px',
+                paddingBottom:
+                  sectionStyles['Header']?.padding === 'compact'
+                    ? '8px'
+                    : sectionStyles['Header']?.padding === 'spacious'
+                    ? '24px'
+                    : '14px',
+                display:
+                  sectionStyles['Header']?.hideOnMobile && device === 'mobile'
+                    ? 'none'
+                    : 'flex',
                 outline: selected === 'Header' ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Header']?.border
+                  ? { borderBottom: '2px solid #2563eb' }
+                  : {}),
+                ...(sectionStyles['Header']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Header']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Header' && (
@@ -359,13 +565,44 @@ export function Builder() {
 
             {/* 3. Hero Section */}
             <div
-              id="canvas-hero-section"
+              id={
+                sectionStyles['Hero section']?.customId || 'canvas-hero-section'
+              }
               onClick={() => setSelected('Hero section')}
-              className={`mini-hero ${selected === 'Hero section' ? 'selected' : ''}`}
+              className={`mini-hero ${selected === 'Hero section' ? 'selected' : ''} ${sectionStyles['Hero section']?.customClass || ''}`}
               style={{
                 backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${heroImage})`,
+                textAlign: sectionStyles['Hero section']?.align || 'left',
+                paddingTop:
+                  sectionStyles['Hero section']?.padding === 'compact'
+                    ? '35px'
+                    : sectionStyles['Hero section']?.padding === 'spacious'
+                    ? '95px'
+                    : '60px',
+                paddingBottom:
+                  sectionStyles['Hero section']?.padding === 'compact'
+                    ? '35px'
+                    : sectionStyles['Hero section']?.padding === 'spacious'
+                    ? '95px'
+                    : '60px',
+                display:
+                  sectionStyles['Hero section']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'flex',
                 cursor: 'pointer',
                 position: 'relative',
+                outline:
+                  selected === 'Hero section' ? '2px solid #2563eb' : 'none',
+                outlineOffset: '-2px',
+                ...(sectionStyles['Hero section']?.border
+                  ? { borderBottom: '2px solid #2563eb' }
+                  : {}),
+                ...(sectionStyles['Hero section']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Hero section']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Hero section' && (
@@ -390,15 +627,47 @@ export function Builder() {
 
             {/* 4. Statistics */}
             <div
-              id="canvas-statistics"
+              id={
+                sectionStyles['Statistics']?.customId || 'canvas-statistics'
+              }
               onClick={() => setSelected('Statistics')}
-              className={`mini-stats ${selected === 'Statistics' ? 'selected' : ''}`}
+              className={`mini-stats ${selected === 'Statistics' ? 'selected' : ''} ${sectionStyles['Statistics']?.customClass || ''}`}
               style={{
                 cursor: 'pointer',
                 position: 'relative',
+                background: sectionStyles['Statistics']?.bg || '#163d72',
+                textAlign: sectionStyles['Statistics']?.align || 'center',
+                paddingTop:
+                  sectionStyles['Statistics']?.padding === 'compact'
+                    ? '14px'
+                    : sectionStyles['Statistics']?.padding === 'spacious'
+                    ? '45px'
+                    : '26px',
+                paddingBottom:
+                  sectionStyles['Statistics']?.padding === 'compact'
+                    ? '14px'
+                    : sectionStyles['Statistics']?.padding === 'spacious'
+                    ? '45px'
+                    : '26px',
+                display:
+                  sectionStyles['Statistics']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'grid',
                 outline:
                   selected === 'Statistics' ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Statistics']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['Statistics']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Statistics']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Statistics' && (
@@ -424,17 +693,52 @@ export function Builder() {
 
             {/* 5. School Introduction */}
             <div
-              id="canvas-school-introduction"
+              id={
+                sectionStyles['School introduction']?.customId ||
+                'canvas-school-introduction'
+              }
               onClick={() => setSelected('School introduction')}
-              className={`mini-intro ${selected === 'School introduction' ? 'selected' : ''}`}
+              className={`mini-intro ${selected === 'School introduction' ? 'selected' : ''} ${sectionStyles['School introduction']?.customClass || ''}`}
               style={{
                 cursor: 'pointer',
                 position: 'relative',
+                background:
+                  sectionStyles['School introduction']?.bg || '#ffffff',
+                textAlign:
+                  sectionStyles['School introduction']?.align || 'center',
+                paddingTop:
+                  sectionStyles['School introduction']?.padding === 'compact'
+                    ? '18px'
+                    : sectionStyles['School introduction']?.padding === 'spacious'
+                    ? '65px'
+                    : '36px',
+                paddingBottom:
+                  sectionStyles['School introduction']?.padding === 'compact'
+                    ? '18px'
+                    : sectionStyles['School introduction']?.padding === 'spacious'
+                    ? '65px'
+                    : '36px',
+                display:
+                  sectionStyles['School introduction']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'block',
                 outline:
                   selected === 'School introduction'
                     ? '2px solid #2563eb'
                     : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['School introduction']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['School introduction']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['School introduction']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'School introduction' && (
@@ -456,14 +760,29 @@ export function Builder() {
 
             {/* 6. Principal Message */}
             <div
-              id="canvas-principal-message"
+              id={
+                sectionStyles['Principal message']?.customId ||
+                'canvas-principal-message'
+              }
               onClick={() => setSelected('Principal message')}
+              className={sectionStyles['Principal message']?.customClass || ''}
               style={{
-                padding: '30px',
-                background: '#f8fafc',
+                padding:
+                  sectionStyles['Principal message']?.padding === 'compact'
+                    ? '16px 25px'
+                    : sectionStyles['Principal message']?.padding === 'spacious'
+                    ? '55px 30px'
+                    : '30px',
+                background:
+                  sectionStyles['Principal message']?.bg || '#f8fafc',
+                textAlign: sectionStyles['Principal message']?.align || 'left',
                 borderTop: '1px solid #e2e8f0',
                 borderBottom: '1px solid #e2e8f0',
-                display: 'grid',
+                display:
+                  sectionStyles['Principal message']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'grid',
                 gridTemplateColumns: '120px 1fr',
                 gap: '24px',
                 alignItems: 'center',
@@ -474,6 +793,17 @@ export function Builder() {
                     ? '2px solid #2563eb'
                     : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Principal message']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['Principal message']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Principal message']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Principal message' && (
@@ -525,16 +855,43 @@ export function Builder() {
 
             {/* 7. Latest Notices */}
             <div
-              id="canvas-latest-notices"
+              id={
+                sectionStyles['Latest notices']?.customId ||
+                'canvas-latest-notices'
+              }
               onClick={() => setSelected('Latest notices')}
+              className={sectionStyles['Latest notices']?.customClass || ''}
               style={{
-                padding: '30px',
-                background: '#fff',
+                padding:
+                  sectionStyles['Latest notices']?.padding === 'compact'
+                    ? '16px 25px'
+                    : sectionStyles['Latest notices']?.padding === 'spacious'
+                    ? '55px 30px'
+                    : '30px',
+                background:
+                  sectionStyles['Latest notices']?.bg || '#ffffff',
+                textAlign: sectionStyles['Latest notices']?.align || 'left',
                 cursor: 'pointer',
                 position: 'relative',
+                display:
+                  sectionStyles['Latest notices']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'block',
                 outline:
                   selected === 'Latest notices' ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Latest notices']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['Latest notices']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Latest notices']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Latest notices' && (
@@ -629,16 +986,43 @@ export function Builder() {
 
             {/* 8. Upcoming Events */}
             <div
-              id="canvas-upcoming-events"
+              id={
+                sectionStyles['Upcoming events']?.customId ||
+                'canvas-upcoming-events'
+              }
               onClick={() => setSelected('Upcoming events')}
+              className={sectionStyles['Upcoming events']?.customClass || ''}
               style={{
-                padding: '30px',
-                background: '#f1f5f9',
+                padding:
+                  sectionStyles['Upcoming events']?.padding === 'compact'
+                    ? '16px 25px'
+                    : sectionStyles['Upcoming events']?.padding === 'spacious'
+                    ? '55px 30px'
+                    : '30px',
+                background:
+                  sectionStyles['Upcoming events']?.bg || '#f1f5f9',
+                textAlign: sectionStyles['Upcoming events']?.align || 'left',
                 cursor: 'pointer',
                 position: 'relative',
+                display:
+                  sectionStyles['Upcoming events']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'block',
                 outline:
                   selected === 'Upcoming events' ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Upcoming events']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['Upcoming events']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Upcoming events']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Upcoming events' && (
@@ -756,15 +1140,40 @@ export function Builder() {
 
             {/* 9. Gallery Section */}
             <div
-              id="canvas-gallery"
+              id={
+                sectionStyles['Gallery']?.customId || 'canvas-gallery'
+              }
               onClick={() => setSelected('Gallery')}
+              className={sectionStyles['Gallery']?.customClass || ''}
               style={{
-                padding: '30px',
-                background: '#fff',
+                padding:
+                  sectionStyles['Gallery']?.padding === 'compact'
+                    ? '16px 25px'
+                    : sectionStyles['Gallery']?.padding === 'spacious'
+                    ? '55px 30px'
+                    : '30px',
+                background: sectionStyles['Gallery']?.bg || '#ffffff',
+                textAlign: sectionStyles['Gallery']?.align || 'center',
                 cursor: 'pointer',
                 position: 'relative',
+                display:
+                  sectionStyles['Gallery']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'block',
                 outline: selected === 'Gallery' ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Gallery']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['Gallery']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Gallery']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Gallery' && (
@@ -830,16 +1239,41 @@ export function Builder() {
 
             {/* 10. Footer Section */}
             <div
-              id="canvas-footer"
+              id={
+                sectionStyles['Footer']?.customId || 'canvas-footer'
+              }
               onClick={() => setSelected('Footer')}
+              className={sectionStyles['Footer']?.customClass || ''}
               style={{
-                padding: '30px 25px',
-                background: '#091a30',
+                padding:
+                  sectionStyles['Footer']?.padding === 'compact'
+                    ? '18px 25px'
+                    : sectionStyles['Footer']?.padding === 'spacious'
+                    ? '60px 25px'
+                    : '30px 25px',
+                background: sectionStyles['Footer']?.bg || '#091a30',
                 color: '#d4deea',
+                textAlign: sectionStyles['Footer']?.align || 'left',
                 cursor: 'pointer',
                 position: 'relative',
+                display:
+                  sectionStyles['Footer']?.hideOnMobile &&
+                  device === 'mobile'
+                    ? 'none'
+                    : 'block',
                 outline: selected === 'Footer' ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
+                ...(sectionStyles['Footer']?.border
+                  ? {
+                      borderTop: '2px solid #2563eb',
+                      borderBottom: '2px solid #2563eb',
+                    }
+                  : {}),
+                ...(sectionStyles['Footer']?.shadow === 'subtle'
+                  ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                  : sectionStyles['Footer']?.shadow === 'card'
+                  ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                  : {}),
               }}
             >
               {selected === 'Footer' && (
@@ -939,25 +1373,34 @@ export function Builder() {
             </div>
 
             <div className="settings-tabs">
-              <button type="button" className="active">
+              <button
+                type="button"
+                className={activeTab === 'content' ? 'active' : ''}
+                onClick={() => setActiveTab('content')}
+              >
                 Content
               </button>
               <button
                 type="button"
-                onClick={() => notify('Style controls active')}
+                className={activeTab === 'style' ? 'active' : ''}
+                onClick={() => setActiveTab('style')}
               >
                 Style
               </button>
               <button
                 type="button"
-                onClick={() => notify('Advanced animations active')}
+                className={activeTab === 'advanced' ? 'active' : ''}
+                onClick={() => setActiveTab('advanced')}
               >
                 Advanced
               </button>
             </div>
 
-            {/* 1. Announcement bar Settings */}
-            {selected === 'Announcement bar' && (
+            {/* TAB 1: CONTENT SETTINGS */}
+            {activeTab === 'content' && (
+              <>
+                {/* 1. Announcement bar Settings */}
+                {selected === 'Announcement bar' && (
               <>
                 <SettingGroup title="Announcement settings">
                   <label
@@ -1400,6 +1843,258 @@ export function Builder() {
                     <input
                       value={footerCopyright}
                       onChange={(e) => setFooterCopyright(e.target.value)}
+                    />
+                  </label>
+                </SettingGroup>
+              </>
+            )}
+            </>
+            )}
+
+            {/* TAB 2: STYLE SETTINGS */}
+            {activeTab === 'style' && (
+              <>
+                <SettingGroup title="Section Colors">
+                  <label>
+                    Custom background color
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginTop: '6px',
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={activeStyle.bg.startsWith('#') ? activeStyle.bg : '#ffffff'}
+                        onChange={(e) => updateActiveStyle({ bg: e.target.value })}
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          padding: 0,
+                          border: 'none',
+                          cursor: 'pointer',
+                          borderRadius: '6px',
+                        }}
+                      />
+                      <input
+                        value={activeStyle.bg}
+                        onChange={(e) => updateActiveStyle({ bg: e.target.value })}
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                    {[
+                      { label: 'White', color: '#ffffff' },
+                      { label: 'Light', color: '#f8fafc' },
+                      { label: 'Slate', color: '#f1f5f9' },
+                      { label: 'Navy', color: '#091a30' },
+                      { label: 'Brand', color: '#163d72' },
+                    ].map((c) => (
+                      <button
+                        key={c.color}
+                        type="button"
+                        onClick={() => updateActiveStyle({ bg: c.color })}
+                        style={{
+                          flex: 1,
+                          padding: '6px 2px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          border:
+                            activeStyle.bg === c.color
+                              ? '2px solid #2563eb'
+                              : '1px solid #cbd5e1',
+                          background: c.color,
+                          color:
+                            c.color === '#091a30' || c.color === '#163d72'
+                              ? '#fff'
+                              : '#0f172a',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
+                </SettingGroup>
+
+                <SettingGroup title="Alignment & Spacing">
+                  <label>
+                    Text alignment
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      {(['left', 'center', 'right'] as const).map((a) => (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => updateActiveStyle({ align: a })}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            borderRadius: '6px',
+                            border:
+                              activeStyle.align === a
+                                ? '2px solid #2563eb'
+                                : '1px solid #e2e8f0',
+                            background: activeStyle.align === a ? '#eff6ff' : '#fff',
+                            color: activeStyle.align === a ? '#2563eb' : '#475569',
+                            fontWeight: activeStyle.align === a ? 700 : 500,
+                            textTransform: 'capitalize',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {a}
+                        </button>
+                      ))}
+                    </div>
+                  </label>
+
+                  <label style={{ marginTop: '12px', display: 'block' }}>
+                    Vertical padding (Spacing)
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      {[
+                        { id: 'compact', label: 'Compact' },
+                        { id: 'normal', label: 'Normal' },
+                        { id: 'spacious', label: 'Spacious' },
+                      ].map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => updateActiveStyle({ padding: p.id as any })}
+                          style={{
+                            flex: 1,
+                            padding: '8px 4px',
+                            fontSize: '12px',
+                            borderRadius: '6px',
+                            border:
+                              activeStyle.padding === p.id
+                                ? '2px solid #2563eb'
+                                : '1px solid #e2e8f0',
+                            background:
+                              activeStyle.padding === p.id ? '#eff6ff' : '#fff',
+                            color:
+                              activeStyle.padding === p.id ? '#2563eb' : '#475569',
+                            fontWeight: activeStyle.padding === p.id ? 700 : 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </label>
+                </SettingGroup>
+
+                <SettingGroup title="Borders & Shadows">
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={activeStyle.border}
+                      onChange={(e) => updateActiveStyle({ border: e.target.checked })}
+                      style={{ width: 'auto', margin: 0 }}
+                    />
+                    <span>Section divider border (Top & Bottom)</span>
+                  </label>
+
+                  <label>
+                    Card elevation shadow
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      {(['none', 'subtle', 'card'] as const).map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => updateActiveStyle({ shadow: s })}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            borderRadius: '6px',
+                            border:
+                              activeStyle.shadow === s
+                                ? '2px solid #2563eb'
+                                : '1px solid #e2e8f0',
+                            background:
+                              activeStyle.shadow === s ? '#eff6ff' : '#fff',
+                            color: activeStyle.shadow === s ? '#2563eb' : '#475569',
+                            fontWeight: activeStyle.shadow === s ? 700 : 500,
+                            textTransform: 'capitalize',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </label>
+                </SettingGroup>
+              </>
+            )}
+
+            {/* TAB 3: ADVANCED SETTINGS */}
+            {activeTab === 'advanced' && (
+              <>
+                <SettingGroup title="Device Visibility">
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={activeStyle.hideOnMobile}
+                      onChange={(e) => updateActiveStyle({ hideOnMobile: e.target.checked })}
+                      style={{ width: 'auto', margin: 0 }}
+                    />
+                    <span>Hide this section on mobile devices</span>
+                  </label>
+                  <small style={{ color: '#64748b', fontSize: '12px' }}>
+                    When checked, this section will automatically be hidden on phone screens.
+                  </small>
+                </SettingGroup>
+
+                <SettingGroup title="Scroll Animation">
+                  <label>
+                    Entrance effect
+                    <select
+                      value={activeStyle.animation}
+                      onChange={(e) => updateActiveStyle({ animation: e.target.value })}
+                      style={{ marginTop: '6px' }}
+                    >
+                      <option value="none">None (Immediate)</option>
+                      <option value="fade-in">Fade in on scroll</option>
+                      <option value="slide-up">Slide up smoothly</option>
+                      <option value="zoom-in">Subtle zoom in</option>
+                    </select>
+                  </label>
+                </SettingGroup>
+
+                <SettingGroup title="Developer Attributes">
+                  <label>
+                    Custom HTML ID (Anchor navigation)
+                    <input
+                      value={activeStyle.customId}
+                      onChange={(e) => updateActiveStyle({ customId: e.target.value })}
+                      placeholder="e.g. upcoming-events"
+                    />
+                  </label>
+                  <label style={{ marginTop: '10px', display: 'block' }}>
+                    Custom CSS Class names
+                    <input
+                      value={activeStyle.customClass}
+                      onChange={(e) => updateActiveStyle({ customClass: e.target.value })}
+                      placeholder="e.g. shadow-lg rounded-2xl"
                     />
                   </label>
                 </SettingGroup>
