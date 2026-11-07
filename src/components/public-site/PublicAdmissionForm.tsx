@@ -149,13 +149,17 @@ export function PublicAdmissionForm({
       setTrackError('Please provide your admission application reference number.')
       return
     }
+    if (!trackPhone.trim()) {
+      setTrackError('Please provide the guardian contact phone number for verification.')
+      return
+    }
 
     setIsTracking(true)
     setTrackError(null)
     setTrackResult(null)
 
     try {
-      const res = await api.admissions.track(trackAppNumber.trim(), trackPhone.trim() || undefined)
+      const res = await api.admissions.track(trackAppNumber.trim(), trackPhone.trim())
       if (res.data) {
         setTrackResult(res.data)
       }
@@ -684,10 +688,11 @@ export function PublicAdmissionForm({
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                  Guardian Phone (Optional Verification)
+                  Guardian Phone Number *
                 </label>
                 <input
                   type="tel"
+                  required
                   placeholder="e.g. +1 (555) 345-6789"
                   value={trackPhone}
                   onChange={(e) => setTrackPhone(e.target.value)}
