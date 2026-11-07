@@ -167,50 +167,7 @@ export function PublicHome({
 
   return (
     <>
-      {/* 1. Announcement bar from Builder */}
-      {showAnnouncement && (
-        <div
-          style={{
-            background: sectionStyles['Announcement bar']?.bg || '#0e2447',
-            color: '#f8fafc',
-            padding:
-              sectionStyles['Announcement bar']?.padding === 'compact'
-                ? '8px 20px'
-                : sectionStyles['Announcement bar']?.padding === 'spacious'
-                ? '18px 20px'
-                : '11px 20px',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            textAlign: 'center',
-            ...(sectionStyles['Announcement bar']?.border
-              ? { borderBottom: '2px solid #2563eb' }
-              : {}),
-            ...(sectionStyles['Announcement bar']?.shadow === 'subtle'
-              ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
-              : sectionStyles['Announcement bar']?.shadow === 'card'
-              ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
-              : {}),
-          }}
-        >
-          <span>{announcementText}</span>
-          <span
-            style={{
-              color: '#facc15',
-              fontWeight: 700,
-              textDecoration: 'underline',
-              cursor: 'pointer',
-            }}
-            onClick={() => setPage && setPage('Admission Information')}
-          >
-            {announcementLink} →
-          </span>
-        </div>
-      )}
-
-      {/* 2. Hero Section */}
+      {/* Hero Section */}
       <section
         className="public-hero"
         style={{
