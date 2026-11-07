@@ -12,6 +12,7 @@ export function ThemeCustomization() {
   const { notify, setPreviewTheme } = useStudio()
   const [style, setStyle] = useState('Rounded')
   const [header, setHeader] = useState('Centered')
+  const [previewDevice, setPreviewDevice] = useState<'monitor' | 'tablet' | 'mobile'>('monitor')
   const [isSaving, setIsSaving] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
 
@@ -246,29 +247,36 @@ export function ThemeCustomization() {
               Live preview
             </span>
             <div className="device-switch">
-              <button
-                type="button"
-                className="active"
-                aria-label="Desktop preview"
-              >
-                <Icon name="monitor" />
-              </button>
-              <button type="button" aria-label="Tablet preview">
-                <Icon name="tablet" />
-              </button>
-              <button type="button" aria-label="Mobile preview">
-                <Icon name="mobile" />
-              </button>
+              {(['monitor', 'tablet', 'mobile'] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  className={previewDevice === d ? 'active' : ''}
+                  onClick={() => setPreviewDevice(d)}
+                  aria-label={`${d} preview`}
+                >
+                  <Icon name={d} />
+                </button>
+              ))}
             </div>
             <span>Homepage</span>
           </div>
 
           <div
-            className="theme-browser"
+            className={`theme-browser ${previewDevice}`}
             style={
               {
                 '--navy': primaryColor,
                 '--accent': secondaryColor,
+                fontFamily: fontBody,
+                width:
+                  previewDevice === 'mobile'
+                    ? '320px'
+                    : previewDevice === 'tablet'
+                    ? '560px'
+                    : '100%',
+                margin: '0 auto',
+                transition: 'width 0.25s ease',
               } as React.CSSProperties
             }
           >
@@ -312,12 +320,12 @@ export function ThemeCustomization() {
                 <small style={{ color: secondaryColor }}>
                   LEARN · LEAD · MAKE A DIFFERENCE
                 </small>
-                <h2>
+                <h2 style={{ fontFamily: fontHeading }}>
                   Shaping thinkers.
                   <br />
                   Building character.
                 </h2>
-                <p>
+                <p style={{ fontFamily: fontBody }}>
                   A vibrant learning community where every student is known,
                   challenged, and inspired.
                 </p>
@@ -344,12 +352,14 @@ export function ThemeCustomization() {
               <span style={{ color: secondaryColor }}>
                 WELCOME TO NORTHFIELD
               </span>
-              <h3>
+              <h3 style={{ fontFamily: fontHeading }}>
                 Learning with purpose.
                 <br />
                 Growing with confidence.
               </h3>
-              <p>Education at Northfield goes beyond strong results.</p>
+              <p style={{ fontFamily: fontBody }}>
+                Education at Northfield goes beyond strong results.
+              </p>
             </div>
           </div>
         </div>

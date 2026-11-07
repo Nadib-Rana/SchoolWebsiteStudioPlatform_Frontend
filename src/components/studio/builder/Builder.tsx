@@ -15,6 +15,16 @@ export function Builder() {
   const [selected, setSelected] = useState('Hero section')
   const [isSaving, setIsSaving] = useState(false)
 
+  // Live customizable state for hero section
+  const [eyebrow, setEyebrow] = useState('LEARN · LEAD · MAKE A DIFFERENCE')
+  const [heading, setHeading] = useState('Shaping thinkers.\nBuilding character.')
+  const [description, setDescription] = useState(
+    'A vibrant learning community where every student is known, challenged, and inspired to thrive.'
+  )
+  const [buttonLabel, setButtonLabel] = useState('Discover Northfield')
+  const [buttonLink, setButtonLink] = useState('/about-us')
+  const [overlayOpacity, setOverlayOpacity] = useState(65)
+
   const handleSave = async () => {
     setIsSaving(true)
     try {
@@ -165,25 +175,25 @@ export function Builder() {
             <div
               className={`mini-hero ${selected === 'Hero section' ? 'selected' : ''}`}
               style={{
-                backgroundImage: `linear-gradient(90deg,rgba(9,27,53,.9),rgba(9,27,53,.18)),url(${heroImage})`,
+                backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${heroImage})`,
               }}
             >
               {selected === 'Hero section' && (
                 <div className="selection-label">Hero section</div>
               )}
               <div>
-                <small>LEARN · LEAD · MAKE A DIFFERENCE</small>
+                <small>{eyebrow}</small>
                 <h2>
-                  Shaping thinkers.
-                  <br />
-                  Building character.
+                  {heading.split('\n').map((line, idx) => (
+                    <span key={idx}>
+                      {line}
+                      {idx < heading.split('\n').length - 1 && <br />}
+                    </span>
+                  ))}
                 </h2>
-                <p>
-                  A vibrant learning community where every student is known, challenged,
-                  and inspired to thrive.
-                </p>
+                <p>{description}</p>
                 <button type="button">
-                  Discover Northfield <Icon name="arrow" size={13} />
+                  {buttonLabel} <Icon name="arrow" size={13} />
                 </button>
               </div>
             </div>
@@ -240,16 +250,23 @@ export function Builder() {
           <SettingGroup title="Hero content">
             <label>
               Eyebrow text
-              <input defaultValue="LEARN · LEAD · MAKE A DIFFERENCE" />
+              <input
+                value={eyebrow}
+                onChange={(e) => setEyebrow(e.target.value)}
+              />
             </label>
             <label>
               Heading
-              <textarea defaultValue={'Shaping thinkers.\nBuilding character.'} />
+              <textarea
+                value={heading}
+                onChange={(e) => setHeading(e.target.value)}
+              />
             </label>
             <label>
               Description
               <textarea
-                defaultValue="A vibrant learning community where every student is known, challenged, and inspired to thrive."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </label>
           </SettingGroup>
@@ -257,16 +274,26 @@ export function Builder() {
           <SettingGroup title="Actions">
             <label>
               Button label
-              <input defaultValue="Discover Northfield" />
+              <input
+                value={buttonLabel}
+                onChange={(e) => setButtonLabel(e.target.value)}
+              />
             </label>
             <label>
               Button link
               <div className="input-icon">
-                <input defaultValue="/about-us" />
+                <input
+                  value={buttonLink}
+                  onChange={(e) => setButtonLink(e.target.value)}
+                />
                 <Icon name="external" size={15} />
               </div>
             </label>
-            <button type="button" className="inline-add">
+            <button
+              type="button"
+              className="inline-add"
+              onClick={() => notify('Secondary button feature added to roadmap')}
+            >
               <Icon name="plus" size={15} /> Add secondary button
             </button>
           </SettingGroup>
@@ -276,13 +303,24 @@ export function Builder() {
               className="media-picker"
               style={{ backgroundImage: `url(${heroImage})` }}
             >
-              <button type="button">Replace image</button>
+              <button
+                type="button"
+                onClick={() => notify('Media library picker opened')}
+              >
+                Replace image
+              </button>
             </div>
             <label>
-              Image overlay
+              Image overlay ({overlayOpacity}%)
               <div className="range">
-                <input type="range" defaultValue="65" />
-                <span>65%</span>
+                <input
+                  type="range"
+                  min="15"
+                  max="95"
+                  value={overlayOpacity}
+                  onChange={(e) => setOverlayOpacity(Number(e.target.value))}
+                />
+                <span>{overlayOpacity}%</span>
               </div>
             </label>
           </SettingGroup>

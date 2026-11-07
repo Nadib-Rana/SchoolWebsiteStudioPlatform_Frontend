@@ -105,7 +105,11 @@ export function Settings() {
         <button
           type="button"
           className="signout"
-          onClick={() => setView('login')}
+          onClick={() => {
+            api.clearAuthToken()
+            notify('Signed out successfully')
+            setView('login')
+          }}
         >
           <Icon name="external" size={15} />
           Sign out

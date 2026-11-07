@@ -3,6 +3,7 @@
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import type { View } from '@/types/studio'
+import { api } from '@/lib/api-client'
 
 export interface ProfilePopoverProps {
   onClose: () => void
@@ -81,7 +82,11 @@ export function ProfilePopover({ onClose }: ProfilePopoverProps) {
       <button
         type="button"
         className="profile-signout"
-        onClick={() => navigate('login')}
+        onClick={() => {
+          api.clearAuthToken()
+          notify('Signed out successfully')
+          navigate('login')
+        }}
       >
         <Icon name="external" size={15} />
         Sign out
