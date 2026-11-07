@@ -126,8 +126,9 @@ export interface PublicSiteData {
 export const getPublicSiteData = cache(
   async (slug: string): Promise<PublicSiteData | null> => {
     try {
+      const normalizedSlug = slug === 'northfield' ? 'northfield-high' : slug
       const res = await fetch(
-        `${API_BASE_URL}/public/site?slug=${encodeURIComponent(slug)}`,
+        `${API_BASE_URL}/public/site?slug=${encodeURIComponent(normalizedSlug)}`,
         {
           next: { revalidate: 60 },
         },

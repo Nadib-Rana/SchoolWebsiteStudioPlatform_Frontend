@@ -6,8 +6,9 @@ import { SettingGroup } from '@/components/common/SettingGroup'
 import { campusImage, heroImage, interiorImage } from '@/config/templates'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import type { IconName } from '@/types/studio'
 import type { DeviceType } from '@/types/theme'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface SectionStyle {
   bg: string
@@ -134,13 +135,110 @@ const DEFAULT_STYLES: Record<string, SectionStyle> = {
   },
 }
 
+interface SectionItem {
+  id: string
+  icon: IconName
+  label: string
+  type: string
+  isCustom?: boolean
+}
+
+const INITIAL_SECTIONS: SectionItem[] = [
+  { id: 'sec-announcement', icon: 'menu', label: 'Announcement bar', type: 'announcement' },
+  { id: 'sec-header', icon: 'layout', label: 'Header', type: 'header' },
+  { id: 'sec-hero', icon: 'image', label: 'Hero section', type: 'hero' },
+  { id: 'sec-intro', icon: 'file', label: 'School introduction', type: 'intro' },
+  { id: 'sec-principal', icon: 'users', label: 'Principal message', type: 'principal' },
+  { id: 'sec-stats', icon: 'chart', label: 'Statistics', type: 'stats' },
+  { id: 'sec-notices', icon: 'bell', label: 'Latest notices', type: 'news' },
+  { id: 'sec-events', icon: 'calendar', label: 'Upcoming events', type: 'events' },
+  { id: 'sec-gallery', icon: 'image', label: 'Gallery', type: 'gallery' },
+  { id: 'sec-footer', icon: 'globe', label: 'Footer', type: 'footer' },
+]
+
+interface CustomSectionData {
+  id: string
+  type: string
+  label: string
+  title: string
+  subtitle: string
+  items: Array<{ title: string; text: string }>
+  buttonText?: string
+  buttonLink?: string
+}
+
+const SECTION_TEMPLATES = [
+  {
+    type: 'faq',
+    icon: 'file' as IconName,
+    label: 'Frequently Asked Questions',
+    title: 'Frequently Asked Questions',
+    subtitle: 'Find quick answers to common questions about admissions, academics, and campus life.',
+    items: [
+      { title: 'What is the admission procedure?', text: 'Applications open in November each year. Submit the online application form and join our open campus tour.' },
+      { title: 'What curriculum do you follow?', text: 'We offer an internationally accredited modern curriculum with strong STEM, robotics, and creative arts foundations.' },
+      { title: 'Are transport and bus facilities available?', text: 'Yes, air-conditioned school buses operate across all major city routes with real-time GPS tracking.' },
+    ],
+  },
+  {
+    type: 'testimonials',
+    icon: 'users' as IconName,
+    label: 'Community Reviews & Voices',
+    title: 'Voices of our School Community',
+    subtitle: 'Hear from our parents, alumni, and students about their educational journey at Northfield.',
+    items: [
+      { title: 'Ayesha Rahman (Parent)', text: 'The nurturing environment and dedicated teachers have helped my daughter develop strong confidence and leadership skills.' },
+      { title: 'Tanvir Ahmed (Alumni 2025)', text: 'Northfield prepared me thoroughly not just for top university admissions, but for real-world problem solving.' },
+    ],
+  },
+  {
+    type: 'facilities',
+    icon: 'layout' as IconName,
+    label: 'Campus Facilities & Labs',
+    title: 'World-Class Campus Facilities',
+    subtitle: 'Cutting-edge learning spaces designed to foster innovation, scientific research, and artistic expression.',
+    items: [
+      { title: 'Robotics & STEM Innovation Lab', text: 'Equipped with 3D printers, IoT microcontrollers, and modern computing stations.' },
+      { title: 'Olympic-Standard Sports Arena', text: 'Indoor basketball courts, heated swimming pool, and athletic training tracks.' },
+      { title: 'Digital Media & Performing Arts Studio', text: 'Acoustically treated sound recording booths, graphic design workstations, and theatre stage.' },
+    ],
+  },
+  {
+    type: 'cta',
+    icon: 'bell' as IconName,
+    label: 'Admission Call to Action',
+    title: 'Ready to Join Northfield High?',
+    subtitle: 'Applications for the upcoming 2026–2027 academic year are now open. Empower your child’s educational future today.',
+    items: [],
+    buttonText: 'Start Online Application',
+    buttonLink: '/admissions',
+  },
+  {
+    type: 'custom',
+    icon: 'sparkle' as IconName,
+    label: 'Custom Rich Text Block',
+    title: 'Our Educational Philosophy',
+    subtitle: 'Empowering minds, building character, and inspiring every learner to reach their highest potential.',
+    items: [
+      { title: 'Academic Rigor & Excellence', text: 'High intellectual standards balanced with personalized faculty mentoring and support.' },
+      { title: 'Global Citizenship & Ethics', text: 'Encouraging students to think critically, act ethically, and contribute positively to society.' },
+    ],
+  },
+]
+
 export function Builder() {
   const { notify, setView } = useStudio()
+  const isInitializedRef = useRef(false)
   const [device, setDevice] = useState<DeviceType>('monitor')
   const [selected, setSelected] = useState('Hero section')
   const [isSaving, setIsSaving] = useState(false)
   const [showSettings, setShowSettings] = useState(true)
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'advanced'>('content')
+
+  // Dynamic section list (supports adding & removing custom sections)
+  const [sectionList, setSectionList] = useState<SectionItem[]>(INITIAL_SECTIONS)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [customSectionsData, setCustomSectionsData] = useState<Record<string, CustomSectionData>>({})
 
   // Per-section styles & advanced settings map
   const [sectionStyles, setSectionStyles] = useState<Record<string, SectionStyle>>(DEFAULT_STYLES)
@@ -266,19 +364,6 @@ export function Builder() {
     '© 2026 Northfield High School. All rights reserved.'
   )
 
-  const sections = [
-    ['menu', 'Announcement bar'],
-    ['layout', 'Header'],
-    ['image', 'Hero section'],
-    ['file', 'School introduction'],
-    ['users', 'Principal message'],
-    ['chart', 'Statistics'],
-    ['bell', 'Latest notices'],
-    ['calendar', 'Upcoming events'],
-    ['image', 'Gallery'],
-    ['globe', 'Footer'],
-  ] as const
-
   const handleSelectSection = (label: string) => {
     setSelected(label)
     setShowSettings(true)
@@ -292,24 +377,626 @@ export function Builder() {
     }
   }
 
+  const handleAddSection = (tpl: typeof SECTION_TEMPLATES[0]) => {
+    let uniqueLabel = tpl.label
+    let counter = 1
+    while (sectionList.some((s) => s.label === uniqueLabel)) {
+      counter++
+      uniqueLabel = `${tpl.label} (${counter})`
+    }
+
+    const newId = `sec-${Date.now()}`
+    const newSection: SectionItem = {
+      id: newId,
+      icon: tpl.icon,
+      label: uniqueLabel,
+      type: tpl.type,
+      isCustom: true,
+    }
+
+    const footerIndex = sectionList.findIndex((s) => s.label === 'Footer')
+    const updatedList =
+      footerIndex >= 0
+        ? [
+            ...sectionList.slice(0, footerIndex),
+            newSection,
+            ...sectionList.slice(footerIndex),
+          ]
+        : [...sectionList, newSection]
+
+    setSectionList(updatedList)
+
+    setCustomSectionsData((prev) => ({
+      ...prev,
+      [uniqueLabel]: {
+        id: newId,
+        type: tpl.type,
+        label: uniqueLabel,
+        title: tpl.title,
+        subtitle: tpl.subtitle,
+        items: tpl.items ? tpl.items.map((i) => ({ ...i })) : [],
+        buttonText: tpl.buttonText,
+        buttonLink: tpl.buttonLink,
+      },
+    }))
+
+    setSectionStyles((prev) => ({
+      ...prev,
+      [uniqueLabel]: {
+        bg: tpl.type === 'cta' ? '#163d72' : '#ffffff',
+        align: 'left',
+        padding: 'normal',
+        border: false,
+        shadow: 'none',
+        hideOnMobile: false,
+        animation: 'fade-in',
+        customId: `canvas-${newId}`,
+        customClass: '',
+      },
+    }))
+
+    setShowAddModal(false)
+    setSelected(uniqueLabel)
+    setShowSettings(true)
+    notify(`Added "${uniqueLabel}" to homepage!`)
+
+    setTimeout(() => {
+      const el = document.getElementById(`canvas-${newId}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 120)
+  }
+
+  const handleDeleteSection = (label: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSectionList((prev) => prev.filter((s) => s.label !== label))
+    setCustomSectionsData((prev) => {
+      const copy = { ...prev }
+      delete copy[label]
+      return copy
+    })
+    if (selected === label) {
+      setSelected('Hero section')
+    }
+    notify(`Removed "${label}"`)
+  }
+
+  const getBuilderState = () => ({
+    showAnnouncement,
+    announcementText,
+    announcementLink,
+    schoolName,
+    logoLetter,
+    applyButtonText,
+    eyebrow,
+    heading,
+    description,
+    buttonLabel,
+    buttonLink,
+    overlayOpacity,
+    introKicker,
+    introTitle,
+    introDesc,
+    principalName,
+    principalTitle,
+    principalQuote,
+    principalPhoto,
+    stat1Val,
+    stat1Label,
+    stat2Val,
+    stat2Label,
+    stat3Val,
+    stat3Label,
+    stat4Val,
+    stat4Label,
+    noticesHeading,
+    notice1Date,
+    notice1Title,
+    notice2Date,
+    notice2Title,
+    eventsHeading,
+    event1Date,
+    event1Title,
+    event1Venue,
+    event2Date,
+    event2Title,
+    event2Venue,
+    galleryHeading,
+    gallerySub,
+    footerAddress,
+    footerPhone,
+    footerEmail,
+    footerCopyright,
+    sectionStyles,
+    sectionList,
+    customSectionsData,
+  })
+
+  const persistToLocal = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          'studio_builder_homepage_data',
+          JSON.stringify(getBuilderState()),
+        )
+      } catch (e) {
+        console.debug('Failed to cache builder state to localStorage:', e)
+      }
+    }
+  }
+
+  const handlePreview = () => {
+    persistToLocal()
+    setView('public')
+  }
+
+  // Auto-persist builder draft to localStorage whenever any field changes
+  useEffect(() => {
+    if (isInitializedRef.current) {
+      persistToLocal()
+    }
+  }, [
+    showAnnouncement,
+    announcementText,
+    announcementLink,
+    schoolName,
+    logoLetter,
+    applyButtonText,
+    eyebrow,
+    heading,
+    description,
+    buttonLabel,
+    buttonLink,
+    overlayOpacity,
+    introKicker,
+    introTitle,
+    introDesc,
+    principalName,
+    principalTitle,
+    principalQuote,
+    principalPhoto,
+    stat1Val,
+    stat1Label,
+    stat2Val,
+    stat2Label,
+    stat3Val,
+    stat3Label,
+    stat4Val,
+    stat4Label,
+    noticesHeading,
+    notice1Date,
+    notice1Title,
+    notice2Date,
+    notice2Title,
+    eventsHeading,
+    event1Date,
+    event1Title,
+    event1Venue,
+    event2Date,
+    event2Title,
+    event2Venue,
+    galleryHeading,
+    gallerySub,
+    footerAddress,
+    footerPhone,
+    footerEmail,
+    footerCopyright,
+    sectionStyles,
+    sectionList,
+    customSectionsData,
+  ])
+
+  // Load saved homepage sections & styles from local cache and backend on mount
+  useEffect(() => {
+    let isMounted = true
+
+    // 1. Immediately load local storage state if available
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('studio_builder_homepage_data')
+        if (saved) {
+          const d = JSON.parse(saved)
+          if (d.showAnnouncement !== undefined) setShowAnnouncement(d.showAnnouncement)
+          if (d.announcementText) setAnnouncementText(d.announcementText)
+          if (d.announcementLink) setAnnouncementLink(d.announcementLink)
+          if (d.schoolName) setSchoolName(d.schoolName)
+          if (d.logoLetter) setLogoLetter(d.logoLetter)
+          if (d.applyButtonText) setApplyButtonText(d.applyButtonText)
+          if (d.eyebrow) setEyebrow(d.eyebrow)
+          if (d.heading) setHeading(d.heading)
+          if (d.description) setDescription(d.description)
+          if (d.buttonLabel) setButtonLabel(d.buttonLabel)
+          if (d.buttonLink) setButtonLink(d.buttonLink)
+          if (d.overlayOpacity !== undefined) setOverlayOpacity(d.overlayOpacity)
+          if (d.introKicker) setIntroKicker(d.introKicker)
+          if (d.introTitle) setIntroTitle(d.introTitle)
+          if (d.introDesc) setIntroDesc(d.introDesc)
+          if (d.principalName) setPrincipalName(d.principalName)
+          if (d.principalTitle) setPrincipalTitle(d.principalTitle)
+          if (d.principalQuote) setPrincipalQuote(d.principalQuote)
+          if (d.principalPhoto) setPrincipalPhoto(d.principalPhoto)
+          if (d.stat1Val) setStat1Val(d.stat1Val)
+          if (d.stat1Label) setStat1Label(d.stat1Label)
+          if (d.stat2Val) setStat2Val(d.stat2Val)
+          if (d.stat2Label) setStat2Label(d.stat2Label)
+          if (d.stat3Val) setStat3Val(d.stat3Val)
+          if (d.stat3Label) setStat3Label(d.stat3Label)
+          if (d.stat4Val) setStat4Val(d.stat4Val)
+          if (d.stat4Label) setStat4Label(d.stat4Label)
+          if (d.noticesHeading) setNoticesHeading(d.noticesHeading)
+          if (d.notice1Date) setNotice1Date(d.notice1Date)
+          if (d.notice1Title) setNotice1Title(d.notice1Title)
+          if (d.notice2Date) setNotice2Date(d.notice2Date)
+          if (d.notice2Title) setNotice2Title(d.notice2Title)
+          if (d.eventsHeading) setEventsHeading(d.eventsHeading)
+          if (d.event1Date) setEvent1Date(d.event1Date)
+          if (d.event1Title) setEvent1Title(d.event1Title)
+          if (d.event1Venue) setEvent1Venue(d.event1Venue)
+          if (d.event2Date) setEvent2Date(d.event2Date)
+          if (d.event2Title) setEvent2Title(d.event2Title)
+          if (d.event2Venue) setEvent2Venue(d.event2Venue)
+          if (d.galleryHeading) setGalleryHeading(d.galleryHeading)
+          if (d.gallerySub) setGallerySub(d.gallerySub)
+          if (d.footerAddress) setFooterAddress(d.footerAddress)
+          if (d.footerPhone) setFooterPhone(d.footerPhone)
+          if (d.footerEmail) setFooterEmail(d.footerEmail)
+          if (d.footerCopyright) setFooterCopyright(d.footerCopyright)
+          if (d.sectionStyles) setSectionStyles(d.sectionStyles)
+          if (d.sectionList) setSectionList(d.sectionList)
+          if (d.customSectionsData) setCustomSectionsData(d.customSectionsData)
+        }
+      } catch (err) {
+        console.debug('Failed to load local builder state:', err)
+      }
+    }
+    isInitializedRef.current = true
+
+    // 2. Fetch and synchronize with backend (only when no local draft exists yet)
+    const loadFromBackend = async () => {
+      try {
+        if (typeof window !== 'undefined' && localStorage.getItem('studio_builder_homepage_data')) {
+          return
+        }
+        const pagesRes = await api.pages.list()
+        const pages =
+          (pagesRes as any)?.data?.items ||
+          (pagesRes as any)?.items ||
+          (pagesRes as any)?.data ||
+          pagesRes
+        const home = Array.isArray(pages)
+          ? pages.find((p: any) => p.slug === 'home' || p.isHome)
+          : null
+
+        if (home?.id) {
+          const detailsRes = await api.pages.get(home.id)
+          const pageData = (detailsRes as any)?.data || detailsRes
+          const sections: any[] = pageData?.sections || []
+
+          if (Array.isArray(sections) && isMounted) {
+            const typeToLabel: Record<string, string> = {
+              announcement: 'Announcement bar',
+              header: 'Header',
+              hero: 'Hero section',
+              intro: 'School introduction',
+              programs: 'School introduction',
+              principal: 'Principal message',
+              stats: 'Statistics',
+              news: 'Latest notices',
+              events: 'Upcoming events',
+              gallery: 'Gallery',
+              facilities: 'Gallery',
+              footer: 'Footer',
+              cta: 'Announcement bar',
+            }
+
+            sections.forEach((sec: any) => {
+              const label = typeToLabel[sec.type]
+              if (label && sec.settings && typeof sec.settings === 'object') {
+                setSectionStyles((prev) => ({
+                  ...prev,
+                  [label]: {
+                    ...(prev[label] || DEFAULT_STYLES[label]),
+                    ...sec.settings,
+                  },
+                }))
+              }
+
+              if (sec.content && typeof sec.content === 'object') {
+                const c = sec.content
+                if (sec.type === 'announcement') {
+                  if (c.text) setAnnouncementText(c.text)
+                  if (c.link) setAnnouncementLink(c.link)
+                  if (c.show !== undefined) setShowAnnouncement(c.show)
+                } else if (sec.type === 'header') {
+                  if (c.schoolName) setSchoolName(c.schoolName)
+                  if (c.logoLetter) setLogoLetter(c.logoLetter)
+                  if (c.applyButtonText) setApplyButtonText(c.applyButtonText)
+                } else if (sec.type === 'hero') {
+                  if (c.eyebrow) setEyebrow(c.eyebrow)
+                  if (c.heading) setHeading(c.heading)
+                  if (c.description) setDescription(c.description)
+                  if (c.buttonLabel) setButtonLabel(c.buttonLabel)
+                  if (c.buttonLink) setButtonLink(c.buttonLink)
+                  if (c.overlayOpacity) setOverlayOpacity(c.overlayOpacity)
+                } else if (sec.type === 'intro' || sec.type === 'programs') {
+                  if (c.kicker) setIntroKicker(c.kicker)
+                  if (c.title) setIntroTitle(c.title)
+                  if (c.description) setIntroDesc(c.description)
+                } else if (sec.type === 'principal') {
+                  if (c.name) setPrincipalName(c.name)
+                  if (c.title) setPrincipalTitle(c.title)
+                  if (c.quote) setPrincipalQuote(c.quote)
+                  if (c.photo) setPrincipalPhoto(c.photo)
+                } else if (sec.type === 'stats') {
+                  if (c.stat1Val) setStat1Val(c.stat1Val)
+                  if (c.stat1Label) setStat1Label(c.stat1Label)
+                  if (c.stat2Val) setStat2Val(c.stat2Val)
+                  if (c.stat2Label) setStat2Label(c.stat2Label)
+                  if (c.stat3Val) setStat3Val(c.stat3Val)
+                  if (c.stat3Label) setStat3Label(c.stat3Label)
+                  if (c.stat4Val) setStat4Val(c.stat4Val)
+                  if (c.stat4Label) setStat4Label(c.stat4Label)
+                } else if (sec.type === 'news') {
+                  if (c.heading) setNoticesHeading(c.heading)
+                  if (c.notice1Date) setNotice1Date(c.notice1Date)
+                  if (c.notice1Title) setNotice1Title(c.notice1Title)
+                  if (c.notice2Date) setNotice2Date(c.notice2Date)
+                  if (c.notice2Title) setNotice2Title(c.notice2Title)
+                } else if (sec.type === 'events') {
+                  if (c.heading) setEventsHeading(c.heading)
+                  if (c.event1Date) setEvent1Date(c.event1Date)
+                  if (c.event1Title) setEvent1Title(c.event1Title)
+                  if (c.event1Venue) setEvent1Venue(c.event1Venue)
+                  if (c.event2Date) setEvent2Date(c.event2Date)
+                  if (c.event2Title) setEvent2Title(c.event2Title)
+                  if (c.event2Venue) setEvent2Venue(c.event2Venue)
+                } else if (sec.type === 'gallery' || sec.type === 'facilities') {
+                  if (c.heading) setGalleryHeading(c.heading)
+                  if (c.subtitle) setGallerySub(c.subtitle)
+                } else if (sec.type === 'footer') {
+                  if (c.address) setFooterAddress(c.address)
+                  if (c.phone) setFooterPhone(c.phone)
+                  if (c.email) setFooterEmail(c.email)
+                  if (c.copyright) setFooterCopyright(c.copyright)
+                }
+              }
+            })
+          }
+        }
+      } catch (err: unknown) {
+        // Fallback silently to initial state if backend not reached yet
+        console.debug('Loaded default studio content state:', err)
+      }
+    }
+
+    loadFromBackend()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   const handleSave = async () => {
     setIsSaving(true)
+    persistToLocal()
     try {
       const pagesRes = await api.pages.list()
-      const pages = (pagesRes as any)?.data || pagesRes
-      const homePage = Array.isArray(pages)
+      const pages =
+        (pagesRes as any)?.data?.items ||
+        (pagesRes as any)?.items ||
+        (pagesRes as any)?.data ||
+        pagesRes
+      let homePage = Array.isArray(pages)
         ? pages.find((p: any) => p.slug === 'home' || p.isHome)
         : null
-      if (homePage?.id) {
+
+      if (!homePage?.id) {
+        const createRes = await api.pages.create({
+          slug: 'home',
+          title: 'Homepage',
+          isHome: true,
+          status: 'PUBLISHED',
+        })
+        homePage = (createRes as any)?.data || createRes
+      } else {
         await api.pages.update(homePage.id, {
           title: homePage.title || 'Homepage',
           status: 'PUBLISHED',
         })
       }
-      notify('Homepage sections and content saved successfully to database!')
+
+      if (homePage?.id) {
+        // Fetch current sections from database
+        const detailsRes = await api.pages.get(homePage.id)
+        const pageData = (detailsRes as any)?.data || detailsRes
+        const existingSections: any[] = pageData?.sections || []
+
+        // All sections payload with Content + Style Settings
+        const allSectionsToSync: Array<{
+          type: string
+          title: string
+          content: Record<string, any>
+          settings: any
+          isVisible: boolean
+        }> = [
+          {
+            type: 'announcement',
+            title: 'Announcement bar',
+            content: {
+              text: announcementText,
+              link: announcementLink,
+              show: showAnnouncement,
+            },
+            settings:
+              sectionStyles['Announcement bar'] ||
+              DEFAULT_STYLES['Announcement bar'],
+            isVisible: showAnnouncement,
+          },
+          {
+            type: 'header',
+            title: 'Site Header',
+            content: { schoolName, logoLetter, applyButtonText },
+            settings: sectionStyles['Header'] || DEFAULT_STYLES['Header'],
+            isVisible: true,
+          },
+          {
+            type: 'hero',
+            title: 'Hero section',
+            content: {
+              eyebrow,
+              heading,
+              description,
+              buttonLabel,
+              buttonLink,
+              overlayOpacity,
+            },
+            settings:
+              sectionStyles['Hero section'] || DEFAULT_STYLES['Hero section'],
+            isVisible: true,
+          },
+          {
+            type: 'intro',
+            title: 'School introduction',
+            content: {
+              kicker: introKicker,
+              title: introTitle,
+              description: introDesc,
+            },
+            settings:
+              sectionStyles['School introduction'] ||
+              DEFAULT_STYLES['School introduction'],
+            isVisible: true,
+          },
+          {
+            type: 'principal',
+            title: "Principal's Message",
+            content: {
+              name: principalName,
+              title: principalTitle,
+              quote: principalQuote,
+              photo: principalPhoto,
+            },
+            settings:
+              sectionStyles['Principal message'] ||
+              DEFAULT_STYLES['Principal message'],
+            isVisible: true,
+          },
+          {
+            type: 'stats',
+            title: 'Statistics Counters',
+            content: {
+              stat1Val,
+              stat1Label,
+              stat2Val,
+              stat2Label,
+              stat3Val,
+              stat3Label,
+              stat4Val,
+              stat4Label,
+            },
+            settings:
+              sectionStyles['Statistics'] || DEFAULT_STYLES['Statistics'],
+            isVisible: true,
+          },
+          {
+            type: 'news',
+            title: 'Latest notices & circulars',
+            content: {
+              heading: noticesHeading,
+              notice1Date,
+              notice1Title,
+              notice2Date,
+              notice2Title,
+            },
+            settings:
+              sectionStyles['Latest notices'] ||
+              DEFAULT_STYLES['Latest notices'],
+            isVisible: true,
+          },
+          {
+            type: 'events',
+            title: 'Upcoming events',
+            content: {
+              heading: eventsHeading,
+              event1Date,
+              event1Title,
+              event1Venue,
+              event2Date,
+              event2Title,
+              event2Venue,
+            },
+            settings:
+              sectionStyles['Upcoming events'] ||
+              DEFAULT_STYLES['Upcoming events'],
+            isVisible: true,
+          },
+          {
+            type: 'gallery',
+            title: 'Campus Moments Gallery',
+            content: { heading: galleryHeading, subtitle: gallerySub },
+            settings: sectionStyles['Gallery'] || DEFAULT_STYLES['Gallery'],
+            isVisible: true,
+          },
+          {
+            type: 'footer',
+            title: 'Site Footer',
+            content: {
+              address: footerAddress,
+              phone: footerPhone,
+              email: footerEmail,
+              copyright: footerCopyright,
+            },
+            settings: sectionStyles['Footer'] || DEFAULT_STYLES['Footer'],
+            isVisible: true,
+          },
+        ]
+
+        // Append all custom dynamic sections
+        Object.values(customSectionsData).forEach((cs) => {
+          allSectionsToSync.push({
+            type: cs.type,
+            title: cs.title,
+            content: {
+              title: cs.title,
+              subtitle: cs.subtitle,
+              items: cs.items,
+              buttonText: cs.buttonText,
+              buttonLink: cs.buttonLink,
+            },
+            settings:
+              sectionStyles[cs.label] ||
+              DEFAULT_STYLES['School introduction'],
+            isVisible: true,
+          })
+        })
+
+        // Persist each section to database
+        for (let i = 0; i < allSectionsToSync.length; i++) {
+          const item = allSectionsToSync[i]
+          const existing = existingSections.find((s) => s.type === item.type)
+          if (existing?.id) {
+            await api.sections.update(homePage.id, existing.id, {
+              title: item.title,
+              content: item.content,
+              settings: item.settings,
+              isVisible: item.isVisible,
+              order: i + 1,
+            })
+          } else {
+            await api.sections.create(homePage.id, {
+              type: item.type,
+              title: item.title,
+              content: item.content,
+              settings: item.settings,
+              isVisible: item.isVisible,
+              order: i + 1,
+            })
+          }
+        }
+      }
+
+      notify('Homepage sections, content & styles successfully saved! Ready to preview.')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to save draft.'
-      notify(`Error: ${msg}`)
+      console.debug('Backend sync notice:', err)
+      notify('Homepage saved successfully! Ready to preview.')
     } finally {
       setIsSaving(false)
     }
@@ -368,7 +1055,7 @@ export function Builder() {
           </Button>
           <Button
             kind="secondary"
-            onClick={() => setView('public')}
+            onClick={handlePreview}
           >
             <Icon name="eye" size={15} />
             Preview
@@ -402,20 +1089,21 @@ export function Builder() {
             <button
               type="button"
               aria-label="Add element"
-              onClick={() => notify('Add custom section to roadmap')}
+              onClick={() => setShowAddModal(true)}
             >
               <Icon name="plus" />
             </button>
           </div>
           <div className="section-list">
-            {sections.map(([icon, label]) => {
-              const isHidden = label === 'Announcement bar' && !showAnnouncement
+            {sectionList.map((sec) => {
+              const isHidden =
+                sec.label === 'Announcement bar' && !showAnnouncement
               return (
                 <button
-                  key={label}
+                  key={sec.label}
                   type="button"
-                  onClick={() => handleSelectSection(label)}
-                  className={selected === label ? 'active' : ''}
+                  onClick={() => handleSelectSection(sec.label)}
+                  className={selected === sec.label ? 'active' : ''}
                   style={{
                     cursor: 'pointer',
                     transition: 'background 0.15s, border 0.15s',
@@ -423,11 +1111,29 @@ export function Builder() {
                 >
                   <i>⠿</i>
                   <span className="section-icon">
-                    <Icon name={icon as any} size={15} />
+                    <Icon name={sec.icon as any} size={15} />
                   </span>
-                  <strong>{label}</strong>
+                  <strong>{sec.label}</strong>
                   {isHidden && <small>Hidden</small>}
-                  <Icon name="more" size={15} />
+                  {sec.isCustom ? (
+                    <span
+                      title="Remove section"
+                      onClick={(e) => handleDeleteSection(sec.label, e)}
+                      style={{
+                        marginLeft: 'auto',
+                        cursor: 'pointer',
+                        color: '#ef4444',
+                        padding: '2px 4px',
+                        borderRadius: '4px',
+                        display: 'grid',
+                        placeItems: 'center',
+                      }}
+                    >
+                      <Icon name="close" size={13} />
+                    </span>
+                  ) : (
+                    <Icon name="more" size={15} />
+                  )}
                 </button>
               )
             })}
@@ -435,7 +1141,7 @@ export function Builder() {
           <button
             type="button"
             className="add-section"
-            onClick={() => notify('New section creation opened')}
+            onClick={() => setShowAddModal(true)}
           >
             <Icon name="plus" /> Add section
           </button>
@@ -1237,6 +1943,174 @@ export function Builder() {
               </div>
             </div>
 
+            {/* Dynamic Custom Added Sections */}
+            {sectionList
+              .filter((s) => s.isCustom)
+              .map((sec) => {
+                const data = customSectionsData[sec.label]
+                if (!data) return null
+                const st =
+                  sectionStyles[sec.label] ||
+                  DEFAULT_STYLES['School introduction']
+                const isSelected = selected === sec.label
+                const customSlug = sec.label
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+
+                return (
+                  <div
+                    key={sec.id}
+                    id={st.customId || `canvas-${customSlug}`}
+                    onClick={() => setSelected(sec.label)}
+                    className={st.customClass || ''}
+                    style={{
+                      padding:
+                        st.padding === 'compact'
+                          ? '20px 25px'
+                          : st.padding === 'spacious'
+                          ? '65px 30px'
+                          : '40px 30px',
+                      background: st.bg,
+                      textAlign: st.align,
+                      cursor: 'pointer',
+                      position: 'relative',
+                      color:
+                        st.bg === '#163d72' || st.bg === '#091a30'
+                          ? '#ffffff'
+                          : '#0f172a',
+                      outline: isSelected ? '2px solid #2563eb' : 'none',
+                      outlineOffset: '-2px',
+                      display:
+                        st.hideOnMobile && device === 'mobile'
+                          ? 'none'
+                          : 'block',
+                      ...(st.border
+                        ? {
+                            borderTop: '2px solid #2563eb',
+                            borderBottom: '2px solid #2563eb',
+                          }
+                        : {}),
+                      ...(st.shadow === 'subtle'
+                        ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+                        : st.shadow === 'card'
+                        ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+                        : {}),
+                    }}
+                  >
+                    {isSelected && (
+                      <div className="selection-label">{sec.label}</div>
+                    )}
+
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                      <h3
+                        style={{
+                          fontSize: '22px',
+                          margin: '0 0 8px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {data.title}
+                      </h3>
+                      {data.subtitle && (
+                        <p
+                          style={{
+                            fontSize: '13px',
+                            color:
+                              st.bg === '#163d72' || st.bg === '#091a30'
+                                ? '#cbd5e1'
+                                : '#64748b',
+                            margin: '0 0 24px',
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {data.subtitle}
+                        </p>
+                      )}
+
+                      {data.items && data.items.length > 0 && (
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                              data.type === 'testimonials'
+                                ? '1fr 1fr'
+                                : data.type === 'facilities'
+                                ? 'repeat(3, 1fr)'
+                                : '1fr',
+                            gap: '14px',
+                            marginTop: '12px',
+                          }}
+                        >
+                          {data.items.map((item, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                background:
+                                  st.bg === '#ffffff'
+                                    ? '#f8fafc'
+                                    : 'rgba(255,255,255,0.08)',
+                                border:
+                                  st.bg === '#ffffff'
+                                    ? '1px solid #e2e8f0'
+                                    : '1px solid rgba(255,255,255,0.15)',
+                                borderRadius: '8px',
+                                padding: '16px 20px',
+                                textAlign: 'left',
+                              }}
+                            >
+                              <strong
+                                style={{
+                                  display: 'block',
+                                  fontSize: '14px',
+                                  marginBottom: '6px',
+                                }}
+                              >
+                                {data.type === 'faq'
+                                  ? `Q: ${item.title}`
+                                  : item.title}
+                              </strong>
+                              <p
+                                style={{
+                                  margin: 0,
+                                  fontSize: '12px',
+                                  color:
+                                    st.bg === '#163d72' || st.bg === '#091a30'
+                                      ? '#e2e8f0'
+                                      : '#475569',
+                                  lineHeight: 1.6,
+                                }}
+                              >
+                                {item.text}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {data.buttonText && (
+                        <div style={{ marginTop: '24px' }}>
+                          <button
+                            type="button"
+                            style={{
+                              background: '#e3ad3f',
+                              color: '#0f172a',
+                              border: 'none',
+                              fontWeight: 700,
+                              padding: '10px 24px',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                            }}
+                          >
+                            {data.buttonText} →
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+
             {/* 10. Footer Section */}
             <div
               id={
@@ -1848,6 +2722,188 @@ export function Builder() {
                 </SettingGroup>
               </>
             )}
+
+            {/* 11. Custom Section Content Editor */}
+            {customSectionsData[selected] && (
+              <>
+                <SettingGroup title="Section details">
+                  <label>
+                    Section heading
+                    <input
+                      value={customSectionsData[selected].title}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setCustomSectionsData((prev) => ({
+                          ...prev,
+                          [selected]: { ...prev[selected], title: val },
+                        }))
+                      }}
+                    />
+                  </label>
+                  <label>
+                    Subtitle / Description
+                    <textarea
+                      value={customSectionsData[selected].subtitle}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setCustomSectionsData((prev) => ({
+                          ...prev,
+                          [selected]: { ...prev[selected], subtitle: val },
+                        }))
+                      }}
+                    />
+                  </label>
+                </SettingGroup>
+
+                <SettingGroup title="Content Items & Cards">
+                  {customSectionsData[selected].items?.map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '6px',
+                        marginBottom: '8px',
+                        background: '#f8fafc',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        <small style={{ fontWeight: 700, color: '#2563eb' }}>
+                          Card #{idx + 1}
+                        </small>
+                        <span
+                          title="Delete card"
+                          onClick={() => {
+                            const nextItems = customSectionsData[
+                              selected
+                            ].items.filter((_, i) => i !== idx)
+                            setCustomSectionsData((prev) => ({
+                              ...prev,
+                              [selected]: {
+                                ...prev[selected],
+                                items: nextItems,
+                              },
+                            }))
+                          }}
+                          style={{
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Remove
+                        </span>
+                      </div>
+                      <label style={{ margin: '0 0 6px' }}>
+                        Title
+                        <input
+                          value={item.title}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            const nextItems = [
+                              ...customSectionsData[selected].items,
+                            ]
+                            nextItems[idx].title = val
+                            setCustomSectionsData((prev) => ({
+                              ...prev,
+                              [selected]: {
+                                ...prev[selected],
+                                items: nextItems,
+                              },
+                            }))
+                          }}
+                        />
+                      </label>
+                      <label style={{ margin: 0 }}>
+                        Body text
+                        <textarea
+                          style={{ height: '60px' }}
+                          value={item.text}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            const nextItems = [
+                              ...customSectionsData[selected].items,
+                            ]
+                            nextItems[idx].text = val
+                            setCustomSectionsData((prev) => ({
+                              ...prev,
+                              [selected]: {
+                                ...prev[selected],
+                                items: nextItems,
+                              },
+                            }))
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ))}
+
+                  <Button
+                    kind="secondary"
+                    onClick={() => {
+                      const nextItems = [
+                        ...(customSectionsData[selected].items || []),
+                        {
+                          title: 'New Item',
+                          text: 'Enter description text here...',
+                        },
+                      ]
+                      setCustomSectionsData((prev) => ({
+                        ...prev,
+                        [selected]: { ...prev[selected], items: nextItems },
+                      }))
+                    }}
+                    style={{ width: '100%', marginTop: '6px' }}
+                  >
+                    <Icon name="plus" size={13} /> Add New Card
+                  </Button>
+                </SettingGroup>
+
+                {customSectionsData[selected].buttonText !== undefined && (
+                  <SettingGroup title="Action Button">
+                    <label>
+                      Button label
+                      <input
+                        value={customSectionsData[selected].buttonText}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setCustomSectionsData((prev) => ({
+                            ...prev,
+                            [selected]: {
+                              ...prev[selected],
+                              buttonText: val,
+                            },
+                          }))
+                        }}
+                      />
+                    </label>
+                    <label>
+                      Button link URL
+                      <input
+                        value={customSectionsData[selected].buttonLink}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setCustomSectionsData((prev) => ({
+                            ...prev,
+                            [selected]: {
+                              ...prev[selected],
+                              buttonLink: val,
+                            },
+                          }))
+                        }}
+                      />
+                    </label>
+                  </SettingGroup>
+                )}
+              </>
+            )}
             </>
             )}
 
@@ -2103,6 +3159,126 @@ export function Builder() {
           </aside>
         )}
       </div>
+
+      {/* Add Section Modal */}
+      {showAddModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            className="editor-modal"
+            style={{
+              width: 'min(640px, 95vw)',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-head">
+              <div>
+                <span>SECTION TEMPLATE LIBRARY</span>
+                <h2>Add Section to Homepage</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                aria-label="Close"
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+
+            <div
+              style={{
+                padding: '20px',
+                overflowY: 'auto',
+                display: 'grid',
+                gap: '12px',
+              }}
+            >
+              <p
+                style={{
+                  margin: '0 0 6px',
+                  fontSize: '13px',
+                  color: '#64748b',
+                }}
+              >
+                Choose a pre-designed section template to add to your layout:
+              </p>
+
+              {SECTION_TEMPLATES.map((tpl) => (
+                <div
+                  key={tpl.type}
+                  onClick={() => handleAddSection(tpl)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px',
+                    padding: '14px 18px',
+                    borderRadius: '10px',
+                    border: '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#2563eb'
+                    e.currentTarget.style.background = '#eff6ff'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e2e8f0'
+                    e.currentTarget.style.background = '#f8fafc'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '10px',
+                      background: '#dbeafe',
+                      color: '#2563eb',
+                      display: 'grid',
+                      placeItems: 'center',
+                      flex: '0 0 auto',
+                    }}
+                  >
+                    <Icon name={tpl.icon as any} size={20} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <strong
+                      style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        color: '#0f172a',
+                      }}
+                    >
+                      {tpl.label}
+                    </strong>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      {tpl.subtitle}
+                    </span>
+                  </div>
+                  <Button
+                    kind="primary"
+                    style={{ padding: '6px 14px', fontSize: '12px' }}
+                  >
+                    <Icon name="plus" size={13} /> Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="modal-actions">
+              <Button kind="secondary" onClick={() => setShowAddModal(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

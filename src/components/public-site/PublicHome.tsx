@@ -6,6 +6,7 @@ import { campusImage, heroImage, interiorImage } from '@/config/templates'
 import { themeHeadlines } from '@/config/themes'
 import type { SchoolTheme } from '@/types/theme'
 import type { PublicSiteData } from '@/lib/public-site'
+import { useState, useEffect } from 'react'
 
 export interface PublicHomeProps {
   theme?: SchoolTheme
@@ -20,99 +21,226 @@ export function PublicHome({
   schoolSlug,
   schoolData,
 }: PublicHomeProps) {
-  const schoolName = schoolData?.school?.name || 'Northfield High School'
-  const motto = schoolData?.profile?.motto || 'A PLACE TO LEARN, LEAD & BELONG'
+  const [builderData, setBuilderData] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('studio_builder_homepage_data')
+        return cached ? JSON.parse(cached) : null
+      } catch {
+        return null
+      }
+    }
+    return null
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('studio_builder_homepage_data')
+        if (cached) {
+          setBuilderData(JSON.parse(cached))
+        }
+      } catch (err) {
+        console.debug('Failed to load builder homepage data:', err)
+      }
+    }
+  }, [])
+
+  const schoolName =
+    builderData?.schoolName ||
+    schoolData?.school?.name ||
+    'Northfield High School'
+  const motto =
+    builderData?.eyebrow ||
+    schoolData?.profile?.motto ||
+    'LEARN · LEAD · MAKE A DIFFERENCE'
   const establishedYear = schoolData?.profile?.established || 1983
   const address =
-    schoolData?.profile?.address || '27 Lakeview Avenue, Dhanmondi, Dhaka 1209'
+    builderData?.footerAddress ||
+    schoolData?.profile?.address ||
+    '27 Lakeview Avenue, Riverdale, NY 10471'
+
+  // Announcement bar
+  const showAnnouncement =
+    builderData?.showAnnouncement !== undefined
+      ? builderData.showAnnouncement
+      : true
+  const announcementText =
+    builderData?.announcementText ||
+    '📢 Admissions open for the 2026–2027 Academic Year · Limited seats available!'
+  const announcementLink = builderData?.announcementLink || 'Apply now'
+
+  // Hero section
+  const heroHeading =
+    builderData?.heading ||
+    themeHeadlines[theme] ||
+    'Shaping thinkers.\nBuilding character.'
+  const heroDesc =
+    builderData?.description ||
+    schoolData?.profile?.shortBio ||
+    schoolData?.profile?.visionStatement ||
+    'A vibrant learning community where every student is known, challenged, and inspired to thrive.'
+  const heroBtnLabel = builderData?.buttonLabel || 'Discover Northfield'
+  const heroBtnLink = builderData?.buttonLink || '/about'
+  const heroOverlay =
+    builderData?.overlayOpacity !== undefined ? builderData.overlayOpacity : 65
+
+  // School intro
+  const introKicker =
+    builderData?.introKicker || `WELCOME TO ${schoolName.toUpperCase()}`
+  const introTitle =
+    builderData?.introTitle || 'Learning with purpose.\nGrowing with confidence.'
+  const introDesc =
+    builderData?.introDesc ||
+    schoolData?.profile?.missionStatement ||
+    'We combine academic excellence with a deeply supportive culture. Our students learn to think deeply, act with integrity, and use their gifts in service of others.'
+
+  // Principal message
   const principalName =
-    schoolData?.profile?.principalName || 'Dr. Farhana Noor'
+    builderData?.principalName ||
+    schoolData?.profile?.principalName ||
+    'Dr. Farhana Noor'
   const principalTitle =
-    schoolData?.profile?.principalTitle || 'Principal · ' + schoolName
-  const principalMessage =
+    builderData?.principalTitle ||
+    schoolData?.profile?.principalTitle ||
+    'Principal & Head Administrator'
+  const principalQuote =
+    builderData?.principalQuote ||
     schoolData?.profile?.principalBio ||
-    'At our school, we pair high expectations with genuine care. Our students learn to think deeply, act with integrity, and use their gifts in service of others.'
+    '“For more than four decades, Northfield has combined academic ambition with a culture of care, belonging, and purposeful growth.”'
+  const principalPhoto =
+    builderData?.principalPhoto ||
+    schoolData?.profile?.principalPhotoUrl ||
+    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=400'
 
   // Stats formatting
-  const rawStats = schoolData?.profile?.stats
-  let statsList: Array<{ value: string; label: string }> = []
-  if (Array.isArray(rawStats) && rawStats.length > 0) {
-    statsList = rawStats.map((s) => ({
-      value: String(s.value || ''),
-      label: String(s.label || ''),
-    }))
-  } else if (rawStats && typeof rawStats === 'object') {
-    statsList = Object.entries(rawStats).map(([key, val]) => ({
-      value: String(val),
-      label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase()),
-    }))
-  } else {
-    statsList = [
-      { value: '1,240', label: 'Students thriving' },
-      { value: `${new Date().getFullYear() - establishedYear}`, label: 'Years of excellence' },
-      { value: '98%', label: 'Graduation rate' },
-      { value: '16:1', label: 'Student–teacher ratio' },
-    ]
-  }
+  const statsList = builderData?.stat1Val
+    ? [
+        { value: builderData.stat1Val, label: builderData.stat1Label },
+        { value: builderData.stat2Val, label: builderData.stat2Label },
+        { value: builderData.stat3Val, label: builderData.stat3Label },
+        { value: builderData.stat4Val, label: builderData.stat4Label },
+      ]
+    : [
+        { value: '1,240', label: 'Students' },
+        { value: '98%', label: 'Graduation rate' },
+        { value: '42', label: 'Years of excellence' },
+        { value: '16:1', label: 'Student–teacher ratio' },
+      ]
 
-  // Teachers for home
-  const teachers =
-    schoolData?.teachers && schoolData.teachers.length > 0
-      ? schoolData.teachers.slice(0, 3)
-      : null
+  // Notices
+  const noticesHeading =
+    builderData?.noticesHeading || 'Latest notices & circulars'
+  const notice1Date = builderData?.notice1Date || 'Nov 05, 2026'
+  const notice1Title =
+    builderData?.notice1Title ||
+    'Term Examination Routine & Admit Card Distribution'
+  const notice2Date = builderData?.notice2Date || 'Nov 02, 2026'
+  const notice2Title =
+    builderData?.notice2Title ||
+    'Annual Inter-School Science & Tech Fair 2026 Registration'
 
-  // Notices for home
-  const notices =
-    schoolData?.notices && schoolData.notices.length > 0
-      ? schoolData.notices.slice(0, 3)
-      : null
+  // Events
+  const eventsHeading =
+    builderData?.eventsHeading || 'Upcoming events & calendar'
+  const event1Date = builderData?.event1Date || 'Nov 15'
+  const event1Title =
+    builderData?.event1Title || 'Annual Sports & Athletics Meet 2026'
+  const event1Venue = builderData?.event1Venue || 'Main Campus Stadium'
+  const event2Date = builderData?.event2Date || 'Nov 22'
+  const event2Title =
+    builderData?.event2Title || 'Parent-Teacher Academic Progress Conference'
+  const event2Venue = builderData?.event2Venue || 'Auditorium Hall'
 
-  // Events for home
-  const events =
-    schoolData?.events && schoolData.events.length > 0
-      ? schoolData.events.slice(0, 3)
-      : null
+  // Gallery
+  const galleryHeading =
+    builderData?.galleryHeading || 'Campus life & moments'
+  const gallerySub =
+    builderData?.gallerySub ||
+    'Explore our modern STEM labs, creative arts studios, and athletic facilities.'
 
-  const formatEventDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr)
-      const day = d.getDate().toString().padStart(2, '0')
-      const month = d.toLocaleString('en-US', { month: 'short' }).toUpperCase()
-      return { day, month }
-    } catch {
-      return { day: '01', month: 'JAN' }
-    }
-  }
-
-  const formatNoticeDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr)
-      return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toUpperCase()
-    } catch {
-      return 'RECENT'
-    }
-  }
+  // Custom sections & styling
+  const customSections = builderData?.customSectionsData
+    ? Object.values(builderData.customSectionsData)
+    : []
+  const sectionStyles = builderData?.sectionStyles || {}
 
   return (
     <>
+      {/* 1. Announcement bar from Builder */}
+      {showAnnouncement && (
+        <div
+          style={{
+            background: sectionStyles['Announcement bar']?.bg || '#0e2447',
+            color: '#f8fafc',
+            padding:
+              sectionStyles['Announcement bar']?.padding === 'compact'
+                ? '8px 20px'
+                : sectionStyles['Announcement bar']?.padding === 'spacious'
+                ? '18px 20px'
+                : '11px 20px',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            textAlign: 'center',
+            ...(sectionStyles['Announcement bar']?.border
+              ? { borderBottom: '2px solid #2563eb' }
+              : {}),
+            ...(sectionStyles['Announcement bar']?.shadow === 'subtle'
+              ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+              : sectionStyles['Announcement bar']?.shadow === 'card'
+              ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+              : {}),
+          }}
+        >
+          <span>{announcementText}</span>
+          <span
+            style={{
+              color: '#facc15',
+              fontWeight: 700,
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+            onClick={() => setPage && setPage('Admission Information')}
+          >
+            {announcementLink} →
+          </span>
+        </div>
+      )}
+
+      {/* 2. Hero Section */}
       <section
         className="public-hero"
         style={{
-          backgroundImage: `linear-gradient(90deg,rgba(7,24,48,.92),rgba(7,24,48,.15)),url(${heroImage})`,
+          backgroundImage: `linear-gradient(90deg,rgba(7,24,48,${heroOverlay / 100}),rgba(7,24,48,${(heroOverlay / 100) * 0.25})),url(${heroImage})`,
+          textAlign: sectionStyles['Hero section']?.align || 'left',
+          paddingTop:
+            sectionStyles['Hero section']?.padding === 'compact'
+              ? '60px'
+              : sectionStyles['Hero section']?.padding === 'spacious'
+              ? '140px'
+              : '100px',
+          paddingBottom:
+            sectionStyles['Hero section']?.padding === 'compact'
+              ? '60px'
+              : sectionStyles['Hero section']?.padding === 'spacious'
+              ? '140px'
+              : '100px',
         }}
       >
         <div>
-          <span className="public-eyebrow">{motto.toUpperCase()}</span>
-          <h1>{themeHeadlines[theme] || `${schoolName}`}</h1>
-          <p>
-            {schoolData?.profile?.shortBio ||
-              schoolData?.profile?.visionStatement ||
-              `${schoolName} is a vibrant learning community where every student is known, challenged, and inspired to make a difference.`}
-          </p>
+          <span className="public-eyebrow">{motto}</span>
+          <h1 style={{ whiteSpace: 'pre-line' }}>{heroHeading}</h1>
+          <p>{heroDesc}</p>
           <div>
             {schoolSlug ? (
-              <Link href={`/${schoolSlug}/about`} className="hero-primary">
-                Explore our school <Icon name="arrow" size={16} />
+              <Link
+                href={`/${schoolSlug}${heroBtnLink.startsWith('/') ? heroBtnLink : '/' + heroBtnLink}`}
+                className="hero-primary"
+              >
+                {heroBtnLabel} <Icon name="arrow" size={16} />
               </Link>
             ) : (
               <button
@@ -120,12 +248,15 @@ export function PublicHome({
                 className="hero-primary"
                 onClick={() => setPage && setPage('About School')}
               >
-                Explore our school <Icon name="arrow" size={16} />
+                {heroBtnLabel} <Icon name="arrow" size={16} />
               </button>
             )}
 
             {schoolSlug ? (
-              <Link href={`/${schoolSlug}/admissions`} className="hero-secondary">
+              <Link
+                href={`/${schoolSlug}/admissions`}
+                className="hero-secondary"
+              >
                 Apply for admission
               </Link>
             ) : (
@@ -139,10 +270,30 @@ export function PublicHome({
             )}
           </div>
         </div>
-        <span className="hero-caption">{schoolName} · {establishedYear}</span>
+        <span className="hero-caption">
+          {schoolName} · {establishedYear}
+        </span>
       </section>
 
-      <section className="public-stats">
+      {/* 3. Statistics Section */}
+      <section
+        className="public-stats"
+        style={{
+          background: sectionStyles['Statistics']?.bg || undefined,
+          paddingTop:
+            sectionStyles['Statistics']?.padding === 'compact'
+              ? '20px'
+              : sectionStyles['Statistics']?.padding === 'spacious'
+              ? '50px'
+              : '32px',
+          paddingBottom:
+            sectionStyles['Statistics']?.padding === 'compact'
+              ? '20px'
+              : sectionStyles['Statistics']?.padding === 'spacious'
+              ? '50px'
+              : '32px',
+        }}
+      >
         {statsList.slice(0, 4).map((stat, idx) => (
           <div key={idx}>
             <strong>{stat.value}</strong>
@@ -151,7 +302,26 @@ export function PublicHome({
         ))}
       </section>
 
-      <section className="public-intro">
+      {/* 4. School Introduction */}
+      <section
+        className="public-intro"
+        style={{
+          background:
+            sectionStyles['School introduction']?.bg || undefined,
+          paddingTop:
+            sectionStyles['School introduction']?.padding === 'compact'
+              ? '40px'
+              : sectionStyles['School introduction']?.padding === 'spacious'
+              ? '100px'
+              : '70px',
+          paddingBottom:
+            sectionStyles['School introduction']?.padding === 'compact'
+              ? '40px'
+              : sectionStyles['School introduction']?.padding === 'spacious'
+              ? '100px'
+              : '70px',
+        }}
+      >
         <div className="intro-image">
           <img src={campusImage} alt={`${schoolName} campus`} />
           <span>
@@ -160,16 +330,9 @@ export function PublicHome({
           </span>
         </div>
         <div>
-          <span className="section-kicker">WELCOME TO {schoolName.toUpperCase()}</span>
-          <h2>
-            Learning with purpose.
-            <br />
-            Growing with confidence.
-          </h2>
-          <p>
-            {schoolData?.profile?.missionStatement ||
-              `Education at ${schoolName} goes beyond strong results. We nurture curious minds, compassionate leaders, and young people ready to contribute with confidence.`}
-          </p>
+          <span className="section-kicker">{introKicker}</span>
+          <h2 style={{ whiteSpace: 'pre-line' }}>{introTitle}</h2>
+          <p>{introDesc}</p>
           <blockquote>
             “Every child deserves to be truly known, deeply supported, and meaningfully challenged.”
           </blockquote>
@@ -189,384 +352,285 @@ export function PublicHome({
         </div>
       </section>
 
-      <section className="principal-home">
+      {/* 5. Principal Message */}
+      <section
+        className="principal-home"
+        style={{
+          background:
+            sectionStyles['Principal message']?.bg || undefined,
+          paddingTop:
+            sectionStyles['Principal message']?.padding === 'compact'
+              ? '40px'
+              : sectionStyles['Principal message']?.padding === 'spacious'
+              ? '110px'
+              : '75px',
+          paddingBottom:
+            sectionStyles['Principal message']?.padding === 'compact'
+              ? '40px'
+              : sectionStyles['Principal message']?.padding === 'spacious'
+              ? '110px'
+              : '75px',
+        }}
+      >
         <div>
           <span className="section-kicker">A MESSAGE FROM OUR PRINCIPAL</span>
-          <blockquote>
-            “The true measure of a school is not only what students achieve, but who they become along the way.”
-          </blockquote>
-          <p>{principalMessage}</p>
-          {schoolSlug ? (
-            <Link href={`/${schoolSlug}/about`}>
-              Read {principalName}’s message <Icon name="arrow" size={14} />
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setPage && setPage('Principal’s Message')}
-            >
-              Read {principalName}’s message <Icon name="arrow" size={14} />
-            </button>
-          )}
+          <blockquote>{principalQuote}</blockquote>
+          <strong
+            style={{
+              display: 'block',
+              fontSize: '18px',
+              color: '#0f172a',
+              marginTop: '16px',
+            }}
+          >
+            {principalName}
+          </strong>
+          <span style={{ fontSize: '13px', color: '#64748b' }}>
+            {principalTitle}
+          </span>
         </div>
         <aside>
-          {schoolData?.profile?.principalPhotoUrl ? (
-            <img
-              src={schoolData.profile.principalPhotoUrl}
-              alt={principalName}
-              className="principal-portrait-img rounded-full w-20 h-20 object-cover mb-2"
-            />
-          ) : (
-            <div className="principal-portrait">
-              {principalName
-                .split(' ')
-                .map((n) => n[0])
-                .slice(0, 2)
-                .join('')}
-            </div>
-          )}
-          <strong>{principalName}</strong>
-          <span>{principalTitle}</span>
+          <img
+            src={principalPhoto}
+            alt={principalName}
+            style={{
+              width: '180px',
+              height: '220px',
+              objectFit: 'cover',
+              borderRadius: '12px',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
+              margin: '0 auto',
+            }}
+          />
         </aside>
       </section>
 
-      <section className="programs">
-        <div className="section-heading">
-          <div>
-            <span className="section-kicker">ACADEMIC JOURNEY</span>
-            <h2>Curiosity at every stage.</h2>
-          </div>
-          <p>
-            A connected learning journey designed to help every student discover strengths, deepen knowledge, and find their own voice.
-          </p>
-        </div>
-        <div className="program-grid">
-          {['Primary years', 'Middle school', 'Senior school'].map((x, i) => (
-            <article key={x}>
-              <span>0{i + 1}</span>
-              <small>
-                {i === 0
-                  ? 'GRADES 1–5'
-                  : i === 1
-                  ? 'GRADES 6–8'
-                  : 'GRADES 9–12'}
-              </small>
-              <h3>{x}</h3>
-              <p>
-                {i === 0
-                  ? 'Building joyful foundations through inquiry and discovery.'
-                  : i === 1
-                  ? 'Growing independence, confidence, and critical thought.'
-                  : 'Preparing ambitious learners for life beyond school.'}
-              </p>
-              {schoolSlug ? (
-                <Link href={`/${schoolSlug}/about`}>
-                  Explore program <Icon name="arrow" size={14} />
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setPage && setPage('Academic Programs')}
-                >
-                  Explore program <Icon name="arrow" size={14} />
-                </button>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="home-community">
-        <div className="section-heading">
-          <div>
-            <span className="section-kicker">PEOPLE OF {schoolName.toUpperCase()}</span>
-            <h2>
-              Teachers who make
-              <br />
-              learning personal.
-            </h2>
-          </div>
-          {schoolSlug ? (
-            <Link href={`/${schoolSlug}/teachers`}>
-              Meet our faculty <Icon name="arrow" size={14} />
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setPage && setPage('Teachers & Faculty')}
-            >
-              Meet our faculty <Icon name="arrow" size={14} />
-            </button>
-          )}
-        </div>
-        <div className="home-teachers">
-          {teachers ? (
-            teachers.map((t, i) => (
-              <article key={t.id}>
-                {t.photoUrl ? (
-                  <img
-                    src={t.photoUrl}
-                    alt={t.name}
-                    className={`faculty-photo fp${i % 3} object-cover`}
-                  />
-                ) : (
-                  <div className={`faculty-photo fp${i % 3}`}>
-                    {t.name
-                      .split(' ')
-                      .map((v) => v[0])
-                      .slice(0, 2)
-                      .join('')}
-                  </div>
-                )}
-                <small>{t.designation?.toUpperCase() || 'FACULTY'}</small>
-                <h3>{t.name}</h3>
-                {schoolSlug && (
-                  <Link
-                    href={`/${schoolSlug}/teachers/${t.id}`}
-                    className="text-xs text-blue-800 font-semibold mt-2 inline-flex items-center gap-1"
-                  >
-                    View profile <Icon name="arrow" size={11} />
-                  </Link>
-                )}
-              </article>
-            ))
-          ) : (
-            ['Mahmud Karim', 'Sara Jahan', 'Nabil Chowdhury'].map((x, i) => (
-              <article key={x}>
-                <div className={`faculty-photo fp${i}`}>
-                  {x
-                    .split(' ')
-                    .map((v) => v[0])
-                    .join('')}
-                </div>
-                <small>
-                  {i === 0
-                    ? 'HEAD OF SCIENCE'
-                    : i === 1
-                    ? 'SENIOR ENGLISH TEACHER'
-                    : 'MATHEMATICS TEACHER'}
-                </small>
-                <h3>{x}</h3>
-              </article>
-            ))
-          )}
-        </div>
-      </section>
-
+      {/* 6. Latest Notices */}
       <section className="home-news">
         <div>
           <span className="section-kicker">LATEST UPDATES</span>
-          <h2>
-            What’s happening
-            <br />
-            at {schoolName}.
-          </h2>
+          <h2>{noticesHeading}</h2>
           <p>
-            Stay connected with important announcements and moments across our community.
+            Stay connected with important announcements and circulars across our community.
           </p>
           {schoolSlug ? (
             <Link href={`/${schoolSlug}/notices`}>
               View all notices <Icon name="arrow" size={14} />
             </Link>
           ) : (
-            <button type="button" onClick={() => setPage && setPage('Notices')}>
+            <button
+              type="button"
+              onClick={() => setPage && setPage('Notices')}
+            >
               View all notices <Icon name="arrow" size={14} />
             </button>
           )}
         </div>
         <div>
-          {notices ? (
-            notices.map((n) => (
-              <article key={n.id}>
-                <span>{formatNoticeDate(n.publishDate)}</span>
-                <div>
-                  <small>{n.category?.toUpperCase() || 'GENERAL'}</small>
-                  <h3>{n.title}</h3>
-                </div>
-                {schoolSlug ? (
-                  <Link href={`/${schoolSlug}/notices/${n.id}`} aria-label={`View ${n.title}`}>
-                    <Icon name="arrow" />
-                  </Link>
-                ) : (
-                  <Icon name="arrow" />
-                )}
-              </article>
-            ))
-          ) : (
-            [
-              ['12 MAY', 'Summer schedule and office hours', 'GENERAL'],
-              ['10 MAY', 'Science Fair registration is now open', 'ACADEMIC'],
-              ['08 MAY', 'Parent–teacher meeting bookings', 'PARENTS'],
-            ].map((x) => (
-              <article key={x[1]}>
-                <span>{x[0]}</span>
-                <div>
-                  <small>{x[2]}</small>
-                  <h3>{x[1]}</h3>
-                </div>
-                <Icon name="arrow" />
-              </article>
-            ))
-          )}
+          {[
+            [notice1Date, notice1Title, 'ACADEMIC'],
+            [notice2Date, notice2Title, 'CIRCULAR'],
+          ].map((x) => (
+            <article key={x[1]}>
+              <span>{x[0]}</span>
+              <div>
+                <small>{x[2]}</small>
+                <h3>{x[1]}</h3>
+              </div>
+              <Icon name="arrow" />
+            </article>
+          ))}
         </div>
       </section>
 
+      {/* 7. Upcoming Events */}
       <section className="home-events">
         <div className="section-heading">
           <div>
             <span className="section-kicker">SAVE THE DATE</span>
-            <h2>Upcoming events.</h2>
+            <h2>{eventsHeading}</h2>
           </div>
           {schoolSlug ? (
             <Link href={`/${schoolSlug}/events`}>
               Full calendar <Icon name="arrow" size={14} />
             </Link>
           ) : (
-            <button type="button" onClick={() => setPage && setPage('Events')}>
+            <button
+              type="button"
+              onClick={() => setPage && setPage('Events')}
+            >
               Full calendar <Icon name="arrow" size={14} />
             </button>
           )}
         </div>
         <div>
-          {events ? (
-            events.map((ev) => {
-              const { day, month } = formatEventDate(ev.eventDate)
-              return (
-                <article key={ev.id}>
-                  <span>
-                    <strong>{day}</strong>
-                    <small>{month}</small>
-                  </span>
-                  <div>
-                    <h3>{ev.title}</h3>
-                    <p>{ev.venue || 'Main Campus'} {ev.time ? `· ${ev.time}` : ''}</p>
-                  </div>
-                  {schoolSlug ? (
-                    <Link
-                      href={`/${schoolSlug}/events/${ev.id}`}
-                      aria-label={`View ${ev.title}`}
-                    >
-                      <Icon name="arrow" />
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      aria-label={`View ${ev.title}`}
-                      onClick={() => setPage && setPage('Event Details')}
-                    >
-                      <Icon name="arrow" />
-                    </button>
-                  )}
-                </article>
-              )
-            })
-          ) : (
-            [
-              ['18', 'MAY', 'Inter-school Science Fair', 'Main Auditorium · 9:00 AM'],
-              ['22', 'MAY', 'Spring Music Evening', 'Performing Arts Hall · 6:30 PM'],
-              ['02', 'JUN', 'Parent Orientation', 'Conference Center · 10:00 AM'],
-            ].map((x) => (
-              <article key={x[2]}>
-                <span>
-                  <strong>{x[0]}</strong>
-                  <small>{x[1]}</small>
-                </span>
-                <div>
-                  <h3>{x[2]}</h3>
-                  <p>{x[3]}</p>
-                </div>
-                <button
-                  type="button"
-                  aria-label={`View ${x[2]}`}
-                  onClick={() => setPage && setPage('Event Details')}
-                >
-                  <Icon name="arrow" />
-                </button>
-              </article>
-            ))
-          )}
+          {[
+            [event1Date, 'NOV', event1Title, event1Venue],
+            [event2Date, 'NOV', event2Title, event2Venue],
+          ].map((x) => (
+            <article key={x[2]}>
+              <span>
+                <strong>{x[0]}</strong>
+                <small>{x[1]}</small>
+              </span>
+              <div>
+                <h3>{x[2]}</h3>
+                <p>{x[3]}</p>
+              </div>
+              <Icon name="arrow" />
+            </article>
+          ))}
         </div>
       </section>
 
+      {/* 8. Campus Gallery */}
       <section className="home-gallery">
         <div className="gallery-copy">
           <span className="section-kicker">LIFE AT {schoolName.toUpperCase()}</span>
-          <h2>
-            Learning happens
-            <br />
-            everywhere.
-          </h2>
-          <p>
-            Explore the spaces, activities, and everyday moments that shape our school community.
-          </p>
+          <h2>{galleryHeading}</h2>
+          <p>{gallerySub}</p>
           {schoolSlug ? (
             <Link href={`/${schoolSlug}/gallery`}>
               Explore our gallery <Icon name="arrow" size={14} />
             </Link>
           ) : (
-            <button type="button" onClick={() => setPage && setPage('Photo Gallery')}>
+            <button
+              type="button"
+              onClick={() => setPage && setPage('Photo Gallery')}
+            >
               Explore our gallery <Icon name="arrow" size={14} />
             </button>
           )}
         </div>
         <img
-          src={
-            schoolData?.albums?.[0]?.photos?.[0]?.url ||
-            schoolData?.albums?.[0]?.coverUrl ||
-            campusImage
-          }
+          src={campusImage}
           alt={`Students around ${schoolName} campus`}
         />
         <img
-          src={
-            schoolData?.albums?.[1]?.photos?.[0]?.url ||
-            schoolData?.albums?.[0]?.photos?.[1]?.url ||
-            interiorImage
-          }
+          src={interiorImage}
           alt={`${schoolName} learning commons`}
         />
       </section>
 
-      <section className="facilities-strip">
-        {[
-          ['Science laboratories', 'Purpose-built spaces for investigation.'],
-          ['Library & media center', 'A calm home for reading and research.'],
-          ['Sports & wellbeing', 'Facilities for movement, teamwork, and health.'],
-          ['Arts & performance', 'Studios and stages for creative expression.'],
-        ].map((x, i) => (
-          <article key={x[0]}>
-            <span>0{i + 1}</span>
-            <h3>{x[0]}</h3>
-            <p>{x[1]}</p>
-          </article>
-        ))}
-      </section>
+      {/* 9. Dynamic Custom Added Sections from Builder (FAQ, Reviews, Facilities, CTA) */}
+      {customSections.map((cs: any) => (
+        <section
+          key={cs.id || cs.label}
+          style={{
+            padding: '70px 10vw',
+            background: sectionStyles[cs.label]?.bg || '#f8fafc',
+            textAlign: sectionStyles[cs.label]?.align || 'left',
+          }}
+        >
+          <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+            <span
+              className="section-kicker"
+              style={{
+                color: '#2563eb',
+                fontWeight: 700,
+                fontSize: '12px',
+                letterSpacing: '1.2px',
+              }}
+            >
+              CUSTOM SECTION
+            </span>
+            <h2
+              style={{
+                fontSize: '28px',
+                margin: '6px 0 12px',
+                fontWeight: 700,
+              }}
+            >
+              {cs.title}
+            </h2>
+            {cs.subtitle && (
+              <p
+                style={{
+                  fontSize: '15px',
+                  color: '#64748b',
+                  marginBottom: '30px',
+                  lineHeight: 1.6,
+                }}
+              >
+                {cs.subtitle}
+              </p>
+            )}
 
-      <section className="public-cta">
-        <span>ADMISSIONS OPEN</span>
-        <h2>
-          See where your child’s
-          <br />
-          story could lead.
-        </h2>
-        <p>
-          Applications are now open. Discover our learning community and take the next step with {schoolName}.
-        </p>
-        {schoolSlug ? (
-          <Link href={`/${schoolSlug}/admissions`} className="hero-primary">
-            Start your application <Icon name="external" size={15} />
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setPage && setPage('Admission Information')}
-          >
-            Start your application <Icon name="external" size={15} />
-          </button>
-        )}
-        <small>You’ll continue securely to our admissions portal.</small>
-      </section>
+            {cs.items && cs.items.length > 0 && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    cs.type === 'testimonials'
+                      ? '1fr 1fr'
+                      : cs.type === 'facilities'
+                      ? 'repeat(3, 1fr)'
+                      : '1fr',
+                  gap: '16px',
+                  marginTop: '16px',
+                }}
+              >
+                {cs.items.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    style={{
+                      background: '#fff',
+                      borderRadius: '10px',
+                      padding: '20px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <strong
+                      style={{
+                        display: 'block',
+                        fontSize: '15px',
+                        color: '#0f172a',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      {cs.type === 'faq' ? `Q: ${item.title}` : item.title}
+                    </strong>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: '13px',
+                        color: '#475569',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
 
+            {cs.buttonText && (
+              <div style={{ marginTop: '28px' }}>
+                <button
+                  type="button"
+                  style={{
+                    background: '#e3ad3f',
+                    color: '#0f172a',
+                    border: 'none',
+                    fontWeight: 700,
+                    padding: '12px 28px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                  }}
+                  onClick={() => setPage && setPage('Admission Information')}
+                >
+                  {cs.buttonText} →
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      ))}
+
+      {/* 10. Visit & Contact */}
       <section className="home-contact">
         <div>
           <span className="section-kicker">VISIT {schoolName.toUpperCase()}</span>
@@ -577,7 +641,10 @@ export function PublicHome({
               Plan your visit <Icon name="arrow" size={14} />
             </Link>
           ) : (
-            <button type="button" onClick={() => setPage && setPage('Contact Us')}>
+            <button
+              type="button"
+              onClick={() => setPage && setPage('Contact Us')}
+            >
               Plan your visit <Icon name="arrow" size={14} />
             </button>
           )}

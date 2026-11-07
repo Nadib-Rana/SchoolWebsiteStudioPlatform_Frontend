@@ -9,6 +9,7 @@ export interface PublicFooterProps {
   address?: string
   phone?: string
   email?: string
+  copyright?: string
   setPage?: (p: string) => void
 }
 
@@ -19,6 +20,7 @@ export function PublicFooter({
   address = '27 Lakeview Avenue, Dhaka',
   phone = '+880 2 555 0142',
   email = 'hello@northfield.edu',
+  copyright,
   setPage,
 }: PublicFooterProps) {
   const initial = (schoolName || 'N').charAt(0).toUpperCase()
@@ -63,6 +65,11 @@ export function PublicFooter({
           )
         )}
       </div>
+      {copyright && (
+        <div style={{ width: '100%', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '12px', opacity: 0.75, textAlign: 'center' }}>
+          {copyright}
+        </div>
+      )}
     </footer>
   )
 }

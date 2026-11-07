@@ -51,6 +51,11 @@ class ApiClient {
     }
   }
 
+  public getActiveSchoolSlug(): string {
+    if (typeof window === 'undefined') return 'northfield-high'
+    return localStorage.getItem('studio_school_slug') || 'northfield-high'
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
@@ -223,6 +228,30 @@ class ApiClient {
       return this.request<any>(`/schools/${id}/pages/${pageId}/sections/reorder`, {
         method: 'PATCH',
         body: JSON.stringify({ sectionIds }),
+      })
+    },
+  }
+
+  // --- Builder Sections ---
+  public sections = {
+    create: async (pageId: string, data: any, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/pages/${pageId}/sections`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    update: async (pageId: string, sectionId: string, data: any, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/pages/${pageId}/sections/${sectionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      })
+    },
+    delete: async (pageId: string, sectionId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/pages/${pageId}/sections/${sectionId}`, {
+        method: 'DELETE',
       })
     },
   }

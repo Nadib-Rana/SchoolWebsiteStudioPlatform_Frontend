@@ -27,7 +27,7 @@ export function PublicPreviewBar({
         <Button
           kind="ghost"
           icon="arrow"
-          onClick={() => setView('templates')}
+          onClick={() => setView('builder')}
         >
           Back to Studio
         </Button>
@@ -56,9 +56,17 @@ export function PublicPreviewBar({
         ))}
       </div>
 
-      <Button kind="primary" onClick={() => setView('builder')}>
-        Edit this page
-      </Button>
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <Button
+          kind="secondary"
+          onClick={() => window.open('/preview', '_blank')}
+        >
+          Open in new tab ↗
+        </Button>
+        <Button kind="primary" onClick={() => setView('builder')}>
+          Edit this page
+        </Button>
+      </div>
     </div>
   )
 }

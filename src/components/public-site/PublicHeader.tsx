@@ -8,8 +8,10 @@ export interface PublicHeaderProps {
   schoolName?: string
   motto?: string
   logoUrl?: string
+  logoLetter?: string
   navigation?: Array<{ label: string; url: string }>
   setPage?: (p: string) => void
+  applyButtonText?: string
 }
 
 export function PublicHeader({
@@ -17,8 +19,10 @@ export function PublicHeader({
   schoolName = 'Northfield High School',
   motto = 'Learn · Lead · Serve',
   logoUrl,
+  logoLetter,
   navigation,
   setPage,
+  applyButtonText,
 }: PublicHeaderProps) {
   const defaultNav = [
     { label: 'About', path: '/about', page: 'About School' },
@@ -38,7 +42,7 @@ export function PublicHeader({
       }))
     : defaultNav
 
-  const initial = (schoolName || 'N').charAt(0).toUpperCase()
+  const initial = logoLetter || (schoolName || 'N').charAt(0).toUpperCase()
 
   return (
     <header className="public-header">
@@ -96,7 +100,7 @@ export function PublicHeader({
 
       {schoolSlug ? (
         <Link href={`/${schoolSlug}/admissions`} className="admission-button">
-          Apply for admission <Icon name="arrow" size={15} />
+          {applyButtonText || 'Apply now'} <Icon name="arrow" size={15} />
         </Link>
       ) : (
         <button
@@ -104,7 +108,7 @@ export function PublicHeader({
           className="admission-button"
           onClick={() => setPage && setPage('Admission Information')}
         >
-          Apply for admission <Icon name="arrow" size={15} />
+          {applyButtonText || 'Apply now'} <Icon name="arrow" size={15} />
         </button>
       )}
 
