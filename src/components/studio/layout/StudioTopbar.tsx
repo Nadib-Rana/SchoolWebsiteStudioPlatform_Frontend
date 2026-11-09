@@ -5,6 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import { NotificationsPopover } from '@/components/studio/layout/NotificationsPopover'
 import { ProfilePopover } from '@/components/studio/layout/ProfilePopover'
 import { useStudio } from '@/context/StudioContext'
+import { api } from '@/lib/api-client'
 import { useState } from 'react'
 
 export function StudioTopbar() {
@@ -15,10 +16,12 @@ export function StudioTopbar() {
     unreadNotifications,
     user,
     currentSchool,
+    refreshSchools,
   } = useStudio()
 
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
 
   const toggleNotifications = () => {
     setNotificationsOpen(!notificationsOpen)
@@ -44,6 +47,51 @@ export function StudioTopbar() {
 
   const isLive = currentSchool?.isPublished ?? true
   const schoolSlug = currentSchool?.slug || 'northfield-high'
+
+  const handleGlobalPublish = async () => {
+    if (isPublishing) return
+    setIsPublishing(true)
+    const schoolId = currentSchool?.id || api.getActiveSchoolId()
+    const schoolName = currentSchool?.name || 'School'
+
+    try {
+      // 1. Determine next version tag
+      let nextTag = 'v1.1'
+      try {
+        const statusRes = await api.publishing.getStatus(schoolId)
+        const data = (statusRes as any)?.data || statusRes
+        const currentTag = data?.currentVersionTag || 'v1.0'
+        const match = currentTag.match(/v?(\d+)\.(\d+)/)
+        if (match) {
+          const major = parseInt(match[1], 10)
+          const minor = parseInt(match[2], 10) + 1
+          nextTag = `v${major}.${minor}`
+        }
+      } catch (e) {
+        nextTag = `v1.${Date.now().toString().slice(-2)}`
+      }
+
+      // 2. Execute release version snapshot on backend
+      await api.publishing.release(
+        {
+          versionTag: nextTag,
+          summary: `Production release ${nextTag} published via studio topbar for ${schoolName}`,
+        },
+        schoolId
+      )
+
+      // 3. Refresh studio schools state so isPublished is guaranteed true
+      await refreshSchools(schoolId)
+
+      notify(`🚀 Version ${nextTag} of ${schoolName} is now live!`)
+    } catch (err: any) {
+      console.error('[Publish] Release failed:', err)
+      const msg = err?.message || 'Publishing release failed'
+      notify(`⚠️ Failed to publish: ${msg}`)
+    } finally {
+      setIsPublishing(false)
+    }
+  }
 
   return (
     <header className="topbar">
@@ -136,9 +184,13 @@ export function StudioTopbar() {
           kind="primary"
           icon="sparkle"
           className="publish-button"
-          onClick={() => notify(`Changes published for ${currentSchool?.name || 'school'}!`)}
+          onClick={handleGlobalPublish}
+          disabled={isPublishing}
+          title={`Publish changes for ${currentSchool?.name || 'school'}`}
         >
-          <span className="publish-label">Publish</span>
+          <span className="publish-label">
+            {isPublishing ? 'Publishing...' : 'Publish'}
+          </span>
         </Button>
       </div>
     </header>
