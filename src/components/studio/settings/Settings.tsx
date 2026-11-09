@@ -27,13 +27,27 @@ function SettingsTitle({
   )
 }
 
-function SettingsSave({ text, notify }: { text: string; notify: () => void }) {
+function SettingsSave({
+  text,
+  notify,
+  onSave,
+  isSaving,
+}: {
+  text: string
+  notify?: () => void
+  onSave?: () => void
+  isSaving?: boolean
+}) {
   return (
     <div className="form-actions">
       <span>{text}</span>
-      <Button>Cancel</Button>
-      <Button kind="primary" onClick={notify}>
-        Save changes
+      <Button disabled={isSaving}>Cancel</Button>
+      <Button
+        kind="primary"
+        onClick={onSave || notify}
+        disabled={isSaving}
+      >
+        {isSaving ? 'Saving...' : 'Save changes'}
       </Button>
     </div>
   )
@@ -48,6 +62,19 @@ export function Settings() {
     ['SJ', 'Sara Jahan', 'sara@northfield.edu', 'Content manager', 'Active'],
     ['TN', 'Tanvir Noor', 'tanvir@northfield.edu', 'Analyst', 'Pending'],
   ])
+
+  // School profile & preferences
+  const [schoolName, setSchoolName] = useState('Northfield High School')
+  const [schoolType, setSchoolType] = useState('Secondary school')
+  const [timezone, setTimezone] = useState('Asia/Dhaka (GMT+6)')
+  const [language, setLanguage] = useState('English')
+  const [dateFormat, setDateFormat] = useState('DD MMM YYYY')
+  const [academicYearStart, setAcademicYearStart] = useState('January')
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+
+  // Website preferences
+  const [maintenanceMode, setMaintenanceMode] = useState(false)
+  const [isSavingWebsite, setIsSavingWebsite] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -71,11 +98,78 @@ export function Settings() {
         console.warn('[Settings] Team members sync:', err?.message || 'pending authentication')
       }
     }
+
+    const loadSchoolAndSettings = async () => {
+      try {
+        const schoolRes = await api.schools.getById(api.getActiveSchoolId())
+        const school = (schoolRes as any)?.data || schoolRes
+        if (mounted && school) {
+          if (school.name) setSchoolName(school.name)
+        }
+      } catch (err: any) {
+        console.warn('[Settings] School load warning:', err?.message)
+      }
+
+      try {
+        const settingsRes = await api.settings.get()
+        const settings = (settingsRes as any)?.data || settingsRes
+        if (mounted && settings) {
+          if (settings.timezone) setTimezone(settings.timezone)
+          if (settings.language) setLanguage(settings.language)
+          if (settings.dateFormat) setDateFormat(settings.dateFormat)
+          if (typeof settings.maintenanceMode === 'boolean') {
+            setMaintenanceMode(settings.maintenanceMode)
+          }
+        }
+      } catch (err: any) {
+        console.warn('[Settings] Settings load warning:', err?.message)
+      }
+    }
+
     loadMembers()
+    loadSchoolAndSettings()
     return () => {
       mounted = false
     }
   }, [])
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true)
+    try {
+      const promises: Promise<any>[] = []
+      const activeId = api.getActiveSchoolId()
+      if (schoolName) {
+        promises.push(api.schools.update(activeId, { name: schoolName }))
+      }
+      promises.push(
+        api.settings.update({
+          timezone,
+          language,
+          dateFormat,
+        })
+      )
+      await Promise.all(promises)
+      notify('School profile saved successfully')
+    } catch (err: any) {
+      notify(`Failed to save: ${err?.message || 'Check network connection'}`)
+    } finally {
+      setIsSavingProfile(false)
+    }
+  }
+
+  const handleSaveWebsite = async () => {
+    setIsSavingWebsite(true)
+    try {
+      await api.settings.update({
+        maintenanceMode,
+      })
+      notify('Website preferences saved successfully')
+    } catch (err: any) {
+      notify(`Failed to save: ${err?.message || 'Check network connection'}`)
+    } finally {
+      setIsSavingWebsite(false)
+    }
+  }
 
   const tabs: [string, IconName][] = [
     ['School profile', 'home'],
@@ -134,42 +228,71 @@ export function Settings() {
             <div className="form-grid">
               <label>
                 School display name
-                <input defaultValue="Northfield High School" />
+                <input
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  placeholder="Enter school name"
+                />
               </label>
               <label>
                 School type
-                <select defaultValue="Secondary school">
-                  <option>Secondary school</option>
+                <select
+                  value={schoolType}
+                  onChange={(e) => setSchoolType(e.target.value)}
+                >
+                  <option value="Secondary school">Secondary school</option>
+                  <option value="Primary & Secondary">Primary & Secondary</option>
+                  <option value="College & Academy">College & Academy</option>
                 </select>
               </label>
               <label>
                 Timezone
-                <select defaultValue="Asia/Dhaka (GMT+6)">
-                  <option>Asia/Dhaka (GMT+6)</option>
+                <select
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                >
+                  <option value="Asia/Dhaka (GMT+6)">Asia/Dhaka (GMT+6)</option>
+                  <option value="America/New_York (EST)">America/New_York (EST)</option>
+                  <option value="Europe/London (GMT)">Europe/London (GMT)</option>
                 </select>
               </label>
               <label>
                 Default language
-                <select defaultValue="English">
-                  <option>English</option>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="English">English</option>
+                  <option value="Bengali">Bengali</option>
                 </select>
               </label>
               <label>
                 Date format
-                <select defaultValue="DD MMM YYYY">
-                  <option>DD MMM YYYY</option>
+                <select
+                  value={dateFormat}
+                  onChange={(e) => setDateFormat(e.target.value)}
+                >
+                  <option value="DD MMM YYYY">DD MMM YYYY</option>
+                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                 </select>
               </label>
               <label>
                 Academic year starts
-                <select defaultValue="January">
-                  <option>January</option>
+                <select
+                  value={academicYearStart}
+                  onChange={(e) => setAcademicYearStart(e.target.value)}
+                >
+                  <option value="January">January</option>
+                  <option value="July">July</option>
+                  <option value="September">September</option>
                 </select>
               </label>
             </div>
             <SettingsSave
               text="Changes apply across the workspace"
-              notify={() => notify('School profile saved')}
+              onSave={handleSaveProfile}
+              isSaving={isSavingProfile}
             />
           </div>
         )}
@@ -406,21 +529,47 @@ export function Settings() {
               </label>
             </div>
             {[
-              ['Maintenance mode', 'Temporarily hide the public website from visitors', false],
-              ['Search engine indexing', 'Allow approved pages to appear in search results', true],
-              ['Automatic image optimization', 'Resize and compress uploaded images for performance', true],
-              ['Show “Powered by SchoolCanvas”', 'Display platform attribution in the public footer', false],
-              ['Cookie preference banner', 'Show visitors privacy and analytics choices', true],
+              {
+                title: 'Maintenance mode',
+                desc: 'Temporarily hide the public website from visitors',
+                active: maintenanceMode,
+                toggle: () => setMaintenanceMode((prev) => !prev),
+              },
+              {
+                title: 'Search engine indexing',
+                desc: 'Allow approved pages to appear in search results',
+                active: true,
+                toggle: () => {},
+              },
+              {
+                title: 'Automatic image optimization',
+                desc: 'Resize and compress uploaded images for performance',
+                active: true,
+                toggle: () => {},
+              },
+              {
+                title: 'Show “Powered by SchoolCanvas”',
+                desc: 'Display platform attribution in the public footer',
+                active: false,
+                toggle: () => {},
+              },
+              {
+                title: 'Cookie preference banner',
+                desc: 'Show visitors privacy and analytics choices',
+                active: true,
+                toggle: () => {},
+              },
             ].map((x) => (
-              <div className="toggle-row" key={String(x[0])}>
+              <div className="toggle-row" key={x.title}>
                 <div>
-                  <strong>{x[0]}</strong>
-                  <small>{x[1]}</small>
+                  <strong>{x.title}</strong>
+                  <small>{x.desc}</small>
                 </div>
                 <button
                   type="button"
-                  className={x[2] ? 'toggle on' : 'toggle'}
-                  aria-label={`Toggle ${x[0]}`}
+                  className={x.active ? 'toggle on' : 'toggle'}
+                  onClick={x.toggle}
+                  aria-label={`Toggle ${x.title}`}
                 >
                   <i />
                 </button>
@@ -428,7 +577,8 @@ export function Settings() {
             ))}
             <SettingsSave
               text="Website preferences affect the next published version"
-              notify={() => notify('Website preferences saved')}
+              onSave={handleSaveWebsite}
+              isSaving={isSavingWebsite}
             />
           </div>
         )}

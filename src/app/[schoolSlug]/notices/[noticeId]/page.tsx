@@ -16,7 +16,9 @@ export default async function NoticeDetailPage({ params }: PageProps) {
   }
 
   // Preloaded or single fetch
-  let notice = siteData.notices?.find((n) => n.id === noticeId)
+  let notice = siteData.notices?.find(
+    (n) => n.id === noticeId || n.slug === noticeId,
+  )
   if (!notice) {
     notice = (await getPublicNotice(schoolSlug, noticeId)) || undefined
   }

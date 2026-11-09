@@ -1,10 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-import { useEffect, useState } from 'react'
 
 export function NavigationManager() {
   const { notify } = useStudio()
@@ -13,7 +13,7 @@ export function NavigationManager() {
     'Home',
     'About Us',
     'Academics',
-    'Teachers',
+    'Faculty',
     'Admissions',
     'Notices',
     'Events',
@@ -21,6 +21,8 @@ export function NavigationManager() {
     'Contact Us',
   ])
   const [saving, setSaving] = useState(false)
+  const activeSlug = api.getActiveSchoolSlug()
+  const schoolInitial = activeSlug.charAt(0).toUpperCase() || 'S'
 
   useEffect(() => {
     let mounted = true
@@ -38,7 +40,7 @@ export function NavigationManager() {
         console.warn('Failed to load navigation menu:', err)
       }
     }
-    loadNavigation()
+    void loadNavigation()
     return () => {
       mounted = false
     }
@@ -49,16 +51,50 @@ export function NavigationManager() {
     try {
       const formattedItems = menuItems.map((label, idx) => ({
         label,
-        url: label === 'Home' ? '/' : `/${label.toLowerCase().replace(/\s+/g, '-')}`,
+        url:
+          label.toLowerCase() === 'home'
+            ? '/'
+            : `/${label.toLowerCase().replace(/\s+/g, '-')}`,
         order: idx,
       }))
       await api.navigation.update(activeTab, formattedItems)
-      notify(`${activeTab === 'HEADER' ? 'Header' : 'Footer'} navigation saved to database`)
+      notify(
+        `${activeTab === 'HEADER' ? 'Header' : 'Footer'} navigation saved to database`,
+      )
     } catch (err) {
       console.error('Failed to save navigation:', err)
       notify('Failed to save navigation')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleMoveUp = (index: number) => {
+    if (index <= 0) return
+    const updated = [...menuItems]
+    const temp = updated[index]
+    updated[index] = updated[index - 1]
+    updated[index - 1] = temp
+    setMenuItems(updated)
+  }
+
+  const handleMoveDown = (index: number) => {
+    if (index >= menuItems.length - 1) return
+    const updated = [...menuItems]
+    const temp = updated[index]
+    updated[index] = updated[index + 1]
+    updated[index + 1] = temp
+    setMenuItems(updated)
+  }
+
+  const handleRemove = (index: number) => {
+    setMenuItems(menuItems.filter((_, i) => i !== index))
+  }
+
+  const handleAddItem = () => {
+    const newItem = typeof window !== 'undefined' ? window.prompt('Enter menu item label:') : null
+    if (newItem?.trim()) {
+      setMenuItems([...menuItems, newItem.trim()])
     }
   }
 
@@ -81,30 +117,54 @@ export function NavigationManager() {
             Footer navigation
           </button>
         </div>
+
         <div className="menu-list">
           {menuItems.map((x, i) => (
-            <div key={x}>
-              <i>⠿</i>
-              <span className="section-icon">
-                <Icon name={i === 0 ? 'home' : 'file'} size={14} />
-              </span>
-              <strong>{x}</strong>
-              <small>{i === 1 || i === 2 ? 'Dropdown' : 'Page'}</small>
-              <button type="button" aria-label={`Options for ${x}`}>
-                <Icon name="more" />
-              </button>
+            <div key={x + i} className="flex items-center justify-between p-3 border-b border-slate-100 last:border-b-0">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400 text-xs font-mono w-4">{i + 1}</span>
+                <span className="section-icon">
+                  <Icon name={i === 0 ? 'home' : 'file'} size={14} />
+                </span>
+                <strong className="text-sm text-slate-800">{x}</strong>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleMoveUp(i)}
+                  disabled={i === 0}
+                  title="Move up"
+                  className="p-1 text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleMoveDown(i)}
+                  disabled={i === menuItems.length - 1}
+                  title="Move down"
+                  className="p-1 text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ▼
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(i)}
+                  title="Remove item"
+                  className="p-1 text-rose-500 hover:text-rose-700 ml-2"
+                >
+                  <Icon name="close" size={13} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
         <button
           type="button"
           className="add-section"
-          onClick={() => {
-            const newItem = prompt('Enter menu item label:')
-            if (newItem?.trim()) {
-              setMenuItems([...menuItems, newItem.trim()])
-            }
-          }}
+          onClick={handleAddItem}
         >
           <Icon name="plus" /> Add menu item
         </button>
@@ -114,8 +174,8 @@ export function NavigationManager() {
         <span>LIVE DATABASE PREVIEW</span>
         <div>
           <div className="public-logo">
-            <b>N</b>
-            <strong>Northfield</strong>
+            <b>{schoolInitial}</b>
+            <strong className="capitalize">{activeSlug.replace(/-/g, ' ')}</strong>
           </div>
           <nav>
             {menuItems.slice(0, 6).map((x) => (

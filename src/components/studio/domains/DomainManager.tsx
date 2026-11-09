@@ -14,11 +14,11 @@ interface DomainItem {
 
 export function DomainManager() {
   const { notify } = useStudio()
+  const activeSlug = api.getActiveSchoolSlug()
   const [domains, setDomains] = useState<DomainItem[]>([
-    { domain: 'www.northfield.edu', type: 'Custom domain', status: 'Active' },
     {
-      domain: 'northfield.schoolcanvas.app',
-      type: 'Platform URL',
+      domain: `${activeSlug}.schoolcanvas.app`,
+      type: 'Platform Subdomain',
       status: 'Active',
     },
   ])
@@ -31,23 +31,40 @@ export function DomainManager() {
       try {
         const res = await api.domains.get()
         const data = (res as any)?.data || res
-        if (mounted && Array.isArray(data) && data.length > 0) {
-          const mapped: DomainItem[] = data.map((d: any) => ({
-            domain: d.domain,
-            type: d.isPrimary ? 'Primary domain' : 'Custom domain',
-            status: d.verified ? 'Active' : 'Pending',
-          }))
-          setDomains(mapped)
+        if (mounted) {
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped: DomainItem[] = data.map((d: any) => ({
+              domain: d.domain,
+              type: d.isPrimary ? 'Primary domain' : 'Custom domain',
+              status: d.verified ? 'Active' : 'Pending',
+            }))
+            setDomains([
+              ...mapped,
+              {
+                domain: `${activeSlug}.schoolcanvas.app`,
+                type: 'Platform Subdomain',
+                status: 'Active',
+              },
+            ])
+          } else {
+            setDomains([
+              {
+                domain: `${activeSlug}.schoolcanvas.app`,
+                type: 'Platform Subdomain',
+                status: 'Active',
+              },
+            ])
+          }
         }
       } catch (err) {
         console.warn('Failed to load domains from backend:', err)
       }
     }
-    loadDomains()
+    void loadDomains()
     return () => {
       mounted = false
     }
-  }, [])
+  }, [activeSlug])
 
   const handleAddDomain = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,7 +99,7 @@ export function DomainManager() {
           <span className="live-badge">
             <i /> PRIMARY DOMAIN
           </span>
-          <h2>{primary?.domain || 'www.northfield.edu'}</h2>
+          <h2>{primary?.domain || `${activeSlug}.schoolcanvas.app`}</h2>
           <p>
             Your custom domain is connected, secure, and routing traffic to your
             school website.

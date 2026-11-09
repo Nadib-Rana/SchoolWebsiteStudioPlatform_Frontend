@@ -43,12 +43,13 @@ export function Gallery() {
         } else {
           setAlbums([])
         }
-        if (data.stats) {
+        const storage = data.storage || data.stats
+        if (storage) {
+          const usedFormatted = storage.usedMb ? `${storage.usedMb} MB` : (storage.formattedUsed || '0 MB')
+          const limitFormatted = storage.limitGb ? `${storage.limitGb} GB` : (storage.formattedLimit || '10 GB')
           setStorageInfo({
-            percentUsed: data.stats.percentUsed || 48,
-            formatted: `${data.stats.formattedUsed || '4.8 GB'} of ${
-              data.stats.formattedLimit || '10 GB'
-            } used`,
+            percentUsed: storage.usagePercent !== undefined ? storage.usagePercent : (storage.percentUsed || 0),
+            formatted: `${usedFormatted} of ${limitFormatted} used`,
           })
         }
       }
@@ -60,44 +61,7 @@ export function Gallery() {
   }
 
   useEffect(() => {
-    let active = true
-    const fetchOverview = async () => {
-      try {
-        const res = await api.gallery.getOverview()
-        const data = (res as any)?.data || res
-        if (active && data) {
-          if (data.albums?.length) {
-            setAlbums(
-              data.albums.map((a: any) => ({
-                id: a.id,
-                title: a.title,
-                coverUrl: a.coverUrl || heroImage,
-                photosCount: a.photosCount || a.photos?.length || 0,
-              })),
-            )
-          } else {
-            setAlbums([])
-          }
-          if (data.stats) {
-            setStorageInfo({
-              percentUsed: data.stats.percentUsed || 48,
-              formatted: `${data.stats.formattedUsed || '4.8 GB'} of ${
-                data.stats.formattedLimit || '10 GB'
-              } used`,
-            })
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load gallery overview:', err)
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    void fetchOverview()
-    return () => {
-      active = false
-    }
+    void loadGallery()
   }, [])
 
   const handleDeleteAlbum = async (albumId: string, title: string) => {

@@ -41,7 +41,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
       try {
         if (type === 'pages') {
           const res = await api.pages.list()
-          const data = (res as any)?.data || res
+          const raw = (res as any)?.data || res
+          const data = Array.isArray(raw) ? raw : (raw?.items || [])
           if (mounted && Array.isArray(data)) {
             const mapped: DataItem[] = data.map((p: any) => ({
               id: p.id,
@@ -58,7 +59,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
           }
         } else if (type === 'teachers') {
           const res = await api.teachers.list()
-          const data = (res as any)?.data || res
+          const raw = (res as any)?.data || res
+          const data = Array.isArray(raw) ? raw : (raw?.items || [])
           if (mounted && Array.isArray(data)) {
             const mapped: DataItem[] = data.map((t: any) => ({
               id: t.id,
@@ -75,7 +77,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
           }
         } else if (type === 'notices') {
           const res = await api.notices.list()
-          const data = (res as any)?.data || res
+          const raw = (res as any)?.data || res
+          const data = Array.isArray(raw) ? raw : (raw?.items || [])
           if (mounted && Array.isArray(data)) {
             const mapped: DataItem[] = data.map((n: any) => ({
               id: n.id,
@@ -98,7 +101,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
           }
         } else if (type === 'events') {
           const res = await api.events.list()
-          const data = (res as any)?.data || res
+          const raw = (res as any)?.data || res
+          const data = Array.isArray(raw) ? raw : (raw?.items || [])
           if (mounted && Array.isArray(data)) {
             const mapped: DataItem[] = data.map((e: any) => ({
               id: e.id,

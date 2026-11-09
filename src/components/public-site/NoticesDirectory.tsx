@@ -135,7 +135,7 @@ export function NoticesDirectory({
 
               <h2 className="text-xl font-serif font-bold text-slate-900 mb-2">
                 <Link
-                  href={`/${schoolSlug}/notices/${n.id}`}
+                  href={`/${schoolSlug}/notices/${n.slug || n.id}`}
                   className="hover:text-blue-900 transition-colors"
                 >
                   {n.title}
@@ -148,7 +148,7 @@ export function NoticesDirectory({
 
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <Link
-                  href={`/${schoolSlug}/notices/${n.id}`}
+                  href={`/${schoolSlug}/notices/${n.slug || n.id}`}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 hover:underline"
                 >
                   Read full notice <Icon name="arrow" size={12} />

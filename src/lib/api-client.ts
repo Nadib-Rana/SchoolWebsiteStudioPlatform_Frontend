@@ -510,6 +510,13 @@ class ApiClient {
         body: JSON.stringify(data),
       })
     },
+    toggleStatus: async (isPublished: boolean, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/publishing/toggle-status`, {
+        method: 'POST',
+        body: JSON.stringify({ isPublished }),
+      })
+    },
   }
 
   // --- Public Website Delivery ---

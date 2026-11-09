@@ -39,6 +39,7 @@ export interface TeacherData {
 
 export interface NoticeData {
   id: string
+  slug?: string | null
   title: string
   category: string
   description: string

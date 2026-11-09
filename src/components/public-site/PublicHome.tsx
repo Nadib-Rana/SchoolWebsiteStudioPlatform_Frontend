@@ -51,17 +51,19 @@ export function PublicHome({
     !builderData?.appliedTheme || builderData?.appliedTheme === theme
 
   const schoolName =
-    isCustomizedForTheme && builderData?.schoolName
+    schoolData?.school?.name ||
+    (isCustomizedForTheme && builderData?.schoolName
       ? builderData.schoolName
-      : activeCfg.schoolName
+      : activeCfg.schoolName)
   const motto =
-    isCustomizedForTheme && builderData?.eyebrow
+    schoolData?.profile?.motto ||
+    (isCustomizedForTheme && builderData?.eyebrow
       ? builderData.eyebrow
-      : activeCfg.eyebrow
+      : activeCfg.eyebrow)
   const establishedYear = schoolData?.profile?.established || 1983
   const address =
-    builderData?.footerAddress ||
     schoolData?.profile?.address ||
+    builderData?.footerAddress ||
     '27 Lakeview Avenue, Riverdale, NY 10471'
 
   // Hero section
@@ -94,21 +96,32 @@ export function PublicHome({
 
   // Principal message
   const principalName =
-    builderData?.principalName ||
     schoolData?.profile?.principalName ||
+    builderData?.principalName ||
     'Dr. Farhana Noor'
   const principalTitle =
-    builderData?.principalTitle ||
     schoolData?.profile?.principalTitle ||
+    builderData?.principalTitle ||
     'Principal & Head Administrator'
   const principalQuote =
-    builderData?.principalQuote ||
     schoolData?.profile?.principalBio ||
-    '“For more than four decades, Northfield has combined academic ambition with a culture of care, belonging, and purposeful growth.”'
+    builderData?.principalQuote ||
+    `“For more than four decades, ${schoolName} has combined academic ambition with a culture of care, belonging, and purposeful growth.”`
   const principalPhoto =
-    builderData?.principalPhoto ||
     schoolData?.profile?.principalPhotoUrl ||
+    builderData?.principalPhoto ||
     'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=400'
+
+  // Dynamic notices & events from database
+  const publishedNotices = schoolData?.notices || []
+  const hasDbNotices = publishedNotices.length > 0
+  const publishedEvents = schoolData?.events || []
+  const hasDbEvents = publishedEvents.length > 0
+
+  // Dynamic gallery photos from database
+  const albumPhotos = schoolData?.albums?.[0]?.photos || []
+  const galleryPhoto1 = albumPhotos[0]?.url || campusImage
+  const galleryPhoto2 = albumPhotos[1]?.url || interiorImage
 
   // Stats formatting
   const statsList = builderData?.stat1Val
@@ -381,19 +394,56 @@ export function PublicHome({
           )}
         </div>
         <div>
-          {[
-            [notice1Date, notice1Title, 'ACADEMIC'],
-            [notice2Date, notice2Title, 'CIRCULAR'],
-          ].map((x) => (
-            <article key={x[1]}>
-              <span>{x[0]}</span>
-              <div>
-                <small>{x[2]}</small>
-                <h3>{x[1]}</h3>
-              </div>
-              <Icon name="arrow" />
-            </article>
-          ))}
+          {hasDbNotices
+            ? publishedNotices.slice(0, 3).map((n) => {
+                const formattedDate = new Date(n.publishDate).toLocaleDateString(
+                  'en-US',
+                  {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  },
+                )
+                const articleContent = (
+                  <article key={n.id} style={{ cursor: 'pointer' }}>
+                    <span>{formattedDate}</span>
+                    <div>
+                      <small>{n.category?.toUpperCase() || 'ANNOUNCEMENT'}</small>
+                      <h3>{n.title}</h3>
+                    </div>
+                    <Icon name="arrow" />
+                  </article>
+                )
+                return schoolSlug ? (
+                  <Link
+                    key={n.id}
+                    href={`/${schoolSlug}/notices/${n.slug || n.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    {articleContent}
+                  </Link>
+                ) : (
+                  <div
+                    key={n.id}
+                    onClick={() => setPage && setPage('Notices')}
+                  >
+                    {articleContent}
+                  </div>
+                )
+              })
+            : [
+                [notice1Date, notice1Title, 'ACADEMIC'],
+                [notice2Date, notice2Title, 'CIRCULAR'],
+              ].map((x) => (
+                <article key={x[1]}>
+                  <span>{x[0]}</span>
+                  <div>
+                    <small>{x[2]}</small>
+                    <h3>{x[1]}</h3>
+                  </div>
+                  <Icon name="arrow" />
+                </article>
+              ))}
         </div>
       </section>
 
@@ -418,22 +468,59 @@ export function PublicHome({
           )}
         </div>
         <div>
-          {[
-            [event1Date, 'NOV', event1Title, event1Venue],
-            [event2Date, 'NOV', event2Title, event2Venue],
-          ].map((x) => (
-            <article key={x[2]}>
-              <span>
-                <strong>{x[0]}</strong>
-                <small>{x[1]}</small>
-              </span>
-              <div>
-                <h3>{x[2]}</h3>
-                <p>{x[3]}</p>
-              </div>
-              <Icon name="arrow" />
-            </article>
-          ))}
+          {hasDbEvents
+            ? publishedEvents.slice(0, 2).map((ev) => {
+                const d = new Date(ev.eventDate)
+                const day = d.getDate()
+                const month = d
+                  .toLocaleDateString('en-US', { month: 'short' })
+                  .toUpperCase()
+                const articleContent = (
+                  <article key={ev.id} style={{ cursor: 'pointer' }}>
+                    <span>
+                      <strong>{day}</strong>
+                      <small>{month}</small>
+                    </span>
+                    <div>
+                      <h3>{ev.title}</h3>
+                      <p>{ev.venue || 'Main Campus'}</p>
+                    </div>
+                    <Icon name="arrow" />
+                  </article>
+                )
+                return schoolSlug ? (
+                  <Link
+                    key={ev.id}
+                    href={`/${schoolSlug}/events/${ev.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    {articleContent}
+                  </Link>
+                ) : (
+                  <div
+                    key={ev.id}
+                    onClick={() => setPage && setPage('Events')}
+                  >
+                    {articleContent}
+                  </div>
+                )
+              })
+            : [
+                [event1Date, 'NOV', event1Title, event1Venue],
+                [event2Date, 'NOV', event2Title, event2Venue],
+              ].map((x) => (
+                <article key={x[2]}>
+                  <span>
+                    <strong>{x[0]}</strong>
+                    <small>{x[1]}</small>
+                  </span>
+                  <div>
+                    <h3>{x[2]}</h3>
+                    <p>{x[3]}</p>
+                  </div>
+                  <Icon name="arrow" />
+                </article>
+              ))}
         </div>
       </section>
 
@@ -457,11 +544,11 @@ export function PublicHome({
           )}
         </div>
         <img
-          src={campusImage}
+          src={galleryPhoto1}
           alt={`Students around ${schoolName} campus`}
         />
         <img
-          src={interiorImage}
+          src={galleryPhoto2}
           alt={`${schoolName} learning commons`}
         />
       </section>
