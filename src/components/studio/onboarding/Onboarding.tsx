@@ -11,6 +11,8 @@ export function Onboarding() {
   const { setView, notify } = useStudio()
   const [step, setStep] = useState(1)
   const [isPublishing, setIsPublishing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   // Step 1: School Information
   const [schoolName, setSchoolName] = useState('Riverside Academy')
@@ -48,6 +50,9 @@ export function Onboarding() {
 
   const handleSchoolNameChange = (val: string) => {
     setSchoolName(val)
+    if (fieldErrors.schoolName) {
+      setFieldErrors((prev) => ({ ...prev, schoolName: '' }))
+    }
     const autoSlug = val
       .toLowerCase()
       .trim()
@@ -55,12 +60,63 @@ export function Onboarding() {
       .replace(/^-|-$/g, '')
     if (autoSlug) {
       setSlug(autoSlug)
+      if (fieldErrors.slug) {
+        setFieldErrors((prev) => ({ ...prev, slug: '' }))
+      }
+    }
+  }
+
+  const validateStep = (currentStep: number): boolean => {
+    setErrorMessage('')
+    const errors: Record<string, string> = {}
+
+    if (currentStep === 1) {
+      if (!schoolName.trim()) {
+        errors.schoolName = 'School name is required.'
+      }
+      if (!contactEmail.trim()) {
+        errors.contactEmail = 'Public email is required.'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
+        errors.contactEmail = 'Please enter a valid email address (e.g. info@school.edu).'
+      }
+      if (!contactPhone.trim()) {
+        errors.contactPhone = 'Contact phone number is required.'
+      }
+    }
+
+    if (currentStep === 2) {
+      const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '')
+      if (!cleanSlug) {
+        errors.slug = 'Website address (slug) is required.'
+      } else if (cleanSlug.length < 3) {
+        errors.slug = 'Website address must be at least 3 characters long.'
+      } else if (cleanSlug !== slug) {
+        errors.slug = 'Website address can only contain lowercase letters, numbers, and hyphens (no spaces or special symbols).'
+      }
+    }
+
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      setErrorMessage('Please fix the highlighted errors before proceeding.')
+      return false
+    }
+    return true
+  }
+
+  const handleNext = () => {
+    if (validateStep(step)) {
+      setStep(step + 1)
     }
   }
 
   const handlePublish = async () => {
-    if (!schoolName || !slug) {
-      notify('Please provide both school name and website slug')
+    setErrorMessage('')
+    if (!api.getAuthToken()) {
+      setErrorMessage('You must be signed in to provision a school. Please sign in first.')
+      return
+    }
+
+    if (!validateStep(1) || !validateStep(2)) {
       return
     }
 
@@ -73,14 +129,14 @@ export function Onboarding() {
         .replace(/^-|-$/g, '')
 
       const payload = {
-        name: schoolName,
+        name: schoolName.trim(),
         slug: cleanSlug,
         templateId: templates[selectedTemplateIndex]?.name || 'Aster Academy',
         themePreset: 'theme-classic',
         primaryColor,
-        principalName,
-        contactEmail,
-        contactPhone,
+        principalName: principalName.trim(),
+        contactEmail: contactEmail.trim(),
+        contactPhone: contactPhone.trim(),
         selectedPages: ['home', 'about', 'academics', 'admissions', 'teachers', 'contact'],
       }
 
@@ -94,7 +150,14 @@ export function Onboarding() {
       setView('overview')
     } catch (err: any) {
       console.error('[Onboarding] Error:', err)
-      notify(`Registration failed: ${err?.message || 'Please check network or duplicate slug'}`)
+      const msg = err?.message || ''
+      if (msg.includes('already exists') || err?.status === 409) {
+        setErrorMessage(
+          `⚠️ The website address "${slug}" is already taken by another school. Please choose a different slug (e.g. "${slug}-academy" or "${slug}-school").`
+        )
+      } else {
+        setErrorMessage(`⚠️ Registration failed: ${msg || 'Please check your connection and try again.'}`)
+      }
     } finally {
       setIsPublishing(false)
     }
@@ -127,7 +190,11 @@ export function Onboarding() {
               className={
                 step === i + 1 ? 'active' : step > i + 1 ? 'complete' : ''
               }
-              onClick={() => setStep(i + 1)}
+              onClick={() => {
+                if (validateStep(step)) {
+                  setStep(i + 1)
+                }
+              }}
             >
               <span>
                 {step > i + 1 ? <Icon name="check" size={13} /> : i + 1}
@@ -148,6 +215,51 @@ export function Onboarding() {
             </i>
           </div>
 
+          {/* Visible Error Banner */}
+          {errorMessage && (
+            <div
+              style={{
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                padding: '14px 18px',
+                marginBottom: '24px',
+                color: '#991b1b',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                fontSize: '13px',
+                lineHeight: '1.5',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                <span>⚠️</span>
+                <span>Attention Required</span>
+              </div>
+              <div>{errorMessage}</div>
+              {errorMessage.includes('already taken') && (
+                <div style={{ marginTop: '4px' }}>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setStep(2)
+                      setErrorMessage('')
+                    }}
+                    style={{
+                      background: '#b91c1c',
+                      color: '#fff',
+                      fontSize: '12px',
+                      padding: '4px 12px',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    Go to Step 2 to change URL
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           {step === 1 && (
             <>
               <span className="eyebrow">TELL US ABOUT YOUR SCHOOL</span>
@@ -165,12 +277,18 @@ export function Onboarding() {
               </div>
               <div className="form-grid">
                 <label>
-                  School name
+                  School name <span style={{ color: '#ef4444' }}>*</span>
                   <input
                     value={schoolName}
                     onChange={(e) => handleSchoolNameChange(e.target.value)}
                     placeholder="e.g. Riverside Academy"
+                    style={fieldErrors.schoolName ? { borderColor: '#ef4444' } : {}}
                   />
+                  {fieldErrors.schoolName && (
+                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      {fieldErrors.schoolName}
+                    </small>
+                  )}
                 </label>
                 <label>
                   School type
@@ -192,21 +310,39 @@ export function Onboarding() {
                   />
                 </label>
                 <label>
-                  Contact number
+                  Contact number <span style={{ color: '#ef4444' }}>*</span>
                   <input
                     value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
+                    onChange={(e) => {
+                      setContactPhone(e.target.value)
+                      if (fieldErrors.contactPhone) setFieldErrors((p) => ({ ...p, contactPhone: '' }))
+                    }}
                     placeholder="+880 1712 000 000"
+                    style={fieldErrors.contactPhone ? { borderColor: '#ef4444' } : {}}
                   />
+                  {fieldErrors.contactPhone && (
+                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      {fieldErrors.contactPhone}
+                    </small>
+                  )}
                 </label>
                 <label>
-                  Public email
+                  Public email <span style={{ color: '#ef4444' }}>*</span>
                   <input
                     type="email"
                     value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
+                    onChange={(e) => {
+                      setContactEmail(e.target.value)
+                      if (fieldErrors.contactEmail) setFieldErrors((p) => ({ ...p, contactEmail: '' }))
+                    }}
                     placeholder="info@school.edu"
+                    style={fieldErrors.contactEmail ? { borderColor: '#ef4444' } : {}}
                   />
+                  {fieldErrors.contactEmail && (
+                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      {fieldErrors.contactEmail}
+                    </small>
+                  )}
                 </label>
                 <label>
                   Established year
@@ -224,25 +360,38 @@ export function Onboarding() {
             <>
               <span className="eyebrow">CREATE YOUR IDENTITY</span>
               <h1>Make it unmistakably yours.</h1>
-              <p>Choose a website slug, brand colors, and mission motto.</p>
+              <p>Choose a unique website address (slug), brand colors, and description.</p>
               <div className="form-grid">
                 <label className="full">
-                  Website name
+                  Website name <span style={{ color: '#ef4444' }}>*</span>
                   <input
                     value={schoolName}
                     onChange={(e) => handleSchoolNameChange(e.target.value)}
                   />
                 </label>
                 <label className="full">
-                  Website address (Slug)
-                  <div className="slug-input">
+                  Website address (Slug) <span style={{ color: '#ef4444' }}>*</span>
+                  <div className="slug-input" style={fieldErrors.slug ? { borderColor: '#ef4444' } : {}}>
                     <span>schoolcanvas.app/</span>
                     <input
                       value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                        setSlug(val)
+                        if (fieldErrors.slug) setFieldErrors((p) => ({ ...p, slug: '' }))
+                      }}
                       placeholder="e.g. riverside-academy"
                     />
                   </div>
+                  {fieldErrors.slug ? (
+                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      {fieldErrors.slug}
+                    </small>
+                  ) : (
+                    <small style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      Your public website URL will be: <strong>http://localhost:3000/{slug || 'your-school'}</strong>
+                    </small>
+                  )}
                 </label>
                 <label className="full">
                   Short school description
@@ -387,7 +536,10 @@ export function Onboarding() {
           <div className="onboard-actions">
             <Button
               disabled={isPublishing}
-              onClick={() => step > 1 && setStep(step - 1)}
+              onClick={() => {
+                setErrorMessage('')
+                if (step > 1) setStep(step - 1)
+              }}
             >
               {step === 1 ? 'Save draft' : 'Back'}
             </Button>
@@ -396,7 +548,7 @@ export function Onboarding() {
               disabled={isPublishing}
               onClick={() => {
                 if (step < 5) {
-                  setStep(step + 1)
+                  handleNext()
                 } else {
                   handlePublish()
                 }
