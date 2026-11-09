@@ -14,6 +14,14 @@ export function Onboarding() {
   const [errorMessage, setErrorMessage] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
+  // Success State
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [createdSchool, setCreatedSchool] = useState<{
+    id: string
+    name: string
+    slug: string
+  } | null>(null)
+
   // Step 1: School Information
   const [schoolName, setSchoolName] = useState('Riverside Academy')
   const [schoolType, setSchoolType] = useState('Secondary School')
@@ -47,6 +55,14 @@ export function Onboarding() {
     'Initial content',
     'Preview & publish',
   ]
+
+  const handleExit = () => {
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/onboarding')) {
+      window.location.href = '/'
+    } else {
+      setView('overview')
+    }
+  }
 
   const handleSchoolNameChange = (val: string) => {
     setSchoolName(val)
@@ -112,7 +128,7 @@ export function Onboarding() {
   const handlePublish = async () => {
     setErrorMessage('')
     if (!api.getAuthToken()) {
-      setErrorMessage('You must be signed in to provision a school. Please sign in first.')
+      setErrorMessage('You must be signed in to provision a school. Please log in first.')
       return
     }
 
@@ -142,12 +158,21 @@ export function Onboarding() {
 
       const res = await api.schools.onboarding(payload)
       const data = (res as any)?.data || res
-      if (data?.id) {
-        api.setActiveSchoolId(data.id)
-        api.setActiveSchoolSlug(data.slug || cleanSlug)
+      const newSchoolId = data?.id
+      const newSchoolSlug = data?.slug || cleanSlug
+
+      if (newSchoolId) {
+        api.setActiveSchoolId(newSchoolId)
+        api.setActiveSchoolSlug(newSchoolSlug)
       }
-      notify(`School "${schoolName}" successfully registered & published!`)
-      setView('overview')
+
+      setCreatedSchool({
+        id: newSchoolId,
+        name: schoolName,
+        slug: newSchoolSlug,
+      })
+      setIsSuccess(true)
+      notify(`Congratulations! School "${schoolName}" has been created and published!`)
     } catch (err: any) {
       console.error('[Onboarding] Error:', err)
       const msg = err?.message || ''
@@ -163,6 +188,177 @@ export function Onboarding() {
     }
   }
 
+  // --- CELEBRATION / SUCCESS SCREEN ---
+  if (isSuccess && createdSchool) {
+    return (
+      <div
+        className="onboarding-page"
+        style={{
+          background: '#f8fafc',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div className="onboarding-head">
+          <div className="brand-mark">
+            <Icon name="layers" />
+          </div>
+          <strong>School Registration Complete</strong>
+          <Button
+            kind="primary"
+            onClick={() => {
+              if (createdSchool.id) {
+                api.setActiveSchoolId(createdSchool.id)
+                api.setActiveSchoolSlug(createdSchool.slug)
+              }
+              window.location.href = '/'
+            }}
+          >
+            Go to Studio Dashboard
+          </Button>
+        </div>
+
+        <div
+          style={{
+            maxWidth: '680px',
+            width: 'calc(100% - 32px)',
+            margin: '60px auto',
+            background: '#fff',
+            padding: '48px 36px',
+            borderRadius: '16px',
+            boxShadow: '0 4px 25px rgba(0,0,0,0.06)',
+            textAlign: 'center',
+            border: '1px solid #e2e8f0',
+          }}
+        >
+          <div
+            style={{
+              width: '76px',
+              height: '76px',
+              background: '#dcfce7',
+              color: '#16a34a',
+              borderRadius: '50%',
+              display: 'grid',
+              placeItems: 'center',
+              margin: '0 auto 20px',
+              fontSize: '36px',
+              boxShadow: '0 0 0 8px #f0fdf4',
+            }}
+          >
+            ✓
+          </div>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#16a34a',
+              fontWeight: 800,
+              letterSpacing: '1.8px',
+              textTransform: 'uppercase',
+            }}
+          >
+            SCHOOL CREATED & LIVE
+          </span>
+          <h1
+            style={{
+              fontSize: '32px',
+              fontWeight: 800,
+              margin: '12px 0 8px',
+              color: '#0f172a',
+              letterSpacing: '-0.8px',
+            }}
+          >
+            {createdSchool.name} is Live!
+          </h1>
+          <p
+            style={{
+              color: '#64748b',
+              fontSize: '15px',
+              lineHeight: 1.6,
+              maxWidth: '480px',
+              margin: '0 auto 28px',
+            }}
+          >
+            Your school has been provisioned on the platform. All 6 initial
+            pages, theme configuration, and navigation have been published.
+          </p>
+
+          <div
+            style={{
+              background: '#f1f5f9',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '32px',
+              border: '1px solid #cbd5e1',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <div style={{ textAlign: 'left' }}>
+              <small
+                style={{
+                  color: '#64748b',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  display: 'block',
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                PUBLIC WEBSITE URL
+              </small>
+              <strong style={{ fontSize: '15px', color: '#1e293b' }}>
+                http://localhost:3000/{createdSchool.slug}
+              </strong>
+            </div>
+            <Button
+              kind="ghost"
+              onClick={() => {
+                window.open(`/${createdSchool.slug}`, '_blank')
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span>Visit Public Site</span>
+              <Icon name="external" size={14} />
+            </Button>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '14px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <Button
+              onClick={() => {
+                window.open(`/${createdSchool.slug}`, '_blank')
+              }}
+            >
+              View Public Website
+            </Button>
+            <Button
+              kind="primary"
+              onClick={() => {
+                if (createdSchool.id) {
+                  api.setActiveSchoolId(createdSchool.id)
+                  api.setActiveSchoolSlug(createdSchool.slug)
+                }
+                window.location.href = '/'
+              }}
+            >
+              Open Studio Dashboard →
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="onboarding-page">
       <div className="onboarding-head">
@@ -170,7 +366,7 @@ export function Onboarding() {
           <Icon name="layers" />
         </div>
         <strong>Register School: {schoolName}</strong>
-        <Button kind="ghost" onClick={() => setView('overview')}>
+        <Button kind="ghost" onClick={handleExit}>
           Save and exit
         </Button>
       </div>
@@ -232,7 +428,14 @@ export function Onboarding() {
                 lineHeight: '1.5',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: 600,
+                }}
+              >
                 <span>⚠️</span>
                 <span>Attention Required</span>
               </div>
@@ -270,7 +473,10 @@ export function Onboarding() {
                 <span>
                   <strong>Upload school logo</strong>
                   <small>PNG, JPG or SVG · Recommended 512 × 512</small>
-                  <button type="button" onClick={() => notify('Default logo assigned')}>
+                  <button
+                    type="button"
+                    onClick={() => notify('Default logo assigned')}
+                  >
                     Choose image
                   </button>
                 </span>
@@ -282,10 +488,19 @@ export function Onboarding() {
                     value={schoolName}
                     onChange={(e) => handleSchoolNameChange(e.target.value)}
                     placeholder="e.g. Riverside Academy"
-                    style={fieldErrors.schoolName ? { borderColor: '#ef4444' } : {}}
+                    style={
+                      fieldErrors.schoolName ? { borderColor: '#ef4444' } : {}
+                    }
                   />
                   {fieldErrors.schoolName && (
-                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    <small
+                      style={{
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        marginTop: '4px',
+                        display: 'block',
+                      }}
+                    >
                       {fieldErrors.schoolName}
                     </small>
                   )}
@@ -297,7 +512,9 @@ export function Onboarding() {
                     onChange={(e) => setSchoolType(e.target.value)}
                   >
                     <option value="Secondary School">Secondary School</option>
-                    <option value="Primary & Secondary">Primary & Secondary</option>
+                    <option value="Primary & Secondary">
+                      Primary & Secondary
+                    </option>
                     <option value="College & Academy">College & Academy</option>
                   </select>
                 </label>
@@ -315,13 +532,23 @@ export function Onboarding() {
                     value={contactPhone}
                     onChange={(e) => {
                       setContactPhone(e.target.value)
-                      if (fieldErrors.contactPhone) setFieldErrors((p) => ({ ...p, contactPhone: '' }))
+                      if (fieldErrors.contactPhone)
+                        setFieldErrors((p) => ({ ...p, contactPhone: '' }))
                     }}
                     placeholder="+880 1712 000 000"
-                    style={fieldErrors.contactPhone ? { borderColor: '#ef4444' } : {}}
+                    style={
+                      fieldErrors.contactPhone ? { borderColor: '#ef4444' } : {}
+                    }
                   />
                   {fieldErrors.contactPhone && (
-                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    <small
+                      style={{
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        marginTop: '4px',
+                        display: 'block',
+                      }}
+                    >
                       {fieldErrors.contactPhone}
                     </small>
                   )}
@@ -333,13 +560,23 @@ export function Onboarding() {
                     value={contactEmail}
                     onChange={(e) => {
                       setContactEmail(e.target.value)
-                      if (fieldErrors.contactEmail) setFieldErrors((p) => ({ ...p, contactEmail: '' }))
+                      if (fieldErrors.contactEmail)
+                        setFieldErrors((p) => ({ ...p, contactEmail: '' }))
                     }}
                     placeholder="info@school.edu"
-                    style={fieldErrors.contactEmail ? { borderColor: '#ef4444' } : {}}
+                    style={
+                      fieldErrors.contactEmail ? { borderColor: '#ef4444' } : {}
+                    }
                   />
                   {fieldErrors.contactEmail && (
-                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    <small
+                      style={{
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        marginTop: '4px',
+                        display: 'block',
+                      }}
+                    >
                       {fieldErrors.contactEmail}
                     </small>
                   )}
@@ -360,7 +597,10 @@ export function Onboarding() {
             <>
               <span className="eyebrow">CREATE YOUR IDENTITY</span>
               <h1>Make it unmistakably yours.</h1>
-              <p>Choose a unique website address (slug), brand colors, and description.</p>
+              <p>
+                Choose a unique website address (slug), brand colors, and
+                description.
+              </p>
               <div className="form-grid">
                 <label className="full">
                   Website name <span style={{ color: '#ef4444' }}>*</span>
@@ -370,26 +610,50 @@ export function Onboarding() {
                   />
                 </label>
                 <label className="full">
-                  Website address (Slug) <span style={{ color: '#ef4444' }}>*</span>
-                  <div className="slug-input" style={fieldErrors.slug ? { borderColor: '#ef4444' } : {}}>
+                  Website address (Slug){' '}
+                  <span style={{ color: '#ef4444' }}>*</span>
+                  <div
+                    className="slug-input"
+                    style={fieldErrors.slug ? { borderColor: '#ef4444' } : {}}
+                  >
                     <span>schoolcanvas.app/</span>
                     <input
                       value={slug}
                       onChange={(e) => {
-                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                        const val = e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-z0-9-]/g, '')
                         setSlug(val)
-                        if (fieldErrors.slug) setFieldErrors((p) => ({ ...p, slug: '' }))
+                        if (fieldErrors.slug)
+                          setFieldErrors((p) => ({ ...p, slug: '' }))
                       }}
                       placeholder="e.g. riverside-academy"
                     />
                   </div>
                   {fieldErrors.slug ? (
-                    <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    <small
+                      style={{
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        marginTop: '4px',
+                        display: 'block',
+                      }}
+                    >
                       {fieldErrors.slug}
                     </small>
                   ) : (
-                    <small style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                      Your public website URL will be: <strong>http://localhost:3000/{slug || 'your-school'}</strong>
+                    <small
+                      style={{
+                        color: '#64748b',
+                        fontSize: '12px',
+                        marginTop: '4px',
+                        display: 'block',
+                      }}
+                    >
+                      Your public website URL will be:{' '}
+                      <strong>
+                        http://localhost:3000/{slug || 'your-school'}
+                      </strong>
                     </small>
                   )}
                 </label>
@@ -498,8 +762,8 @@ export function Onboarding() {
               <span className="eyebrow">READY TO SHARE</span>
               <h1>Your website is ready to launch.</h1>
               <p>
-                Review your foundation, then provision and publish your brand new
-                school website.
+                Review your foundation, then provision and publish your brand
+                new school website.
               </p>
               <div
                 className="onboard-preview"
