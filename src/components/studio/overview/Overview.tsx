@@ -12,17 +12,19 @@ import type { ActivityItem as ActivityItemType, MetricItem } from '@/types/studi
 import { useEffect, useState } from 'react'
 
 export function Overview() {
-  const { setView } = useStudio()
+  const { setView, user, currentSchool, schoolSwitchKey } = useStudio()
   const [metrics, setMetrics] = useState<MetricItem[]>([])
   const [activities, setActivities] = useState<ActivityItemType[]>([])
-  const [schoolName, setSchoolName] = useState('Northfield High School')
+  const [schoolName, setSchoolName] = useState(currentSchool?.name || 'School Studio')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let mounted = true
+    setLoading(true)
     const loadOverview = async () => {
       try {
-        const res = await api.schools.getOverview()
+        const activeId = currentSchool?.id || api.getActiveSchoolId()
+        const res = await api.schools.getOverview(activeId)
         const data = (res as any)?.data || res
         if (mounted && data) {
           if (data.metrics) setMetrics(data.metrics)
@@ -39,7 +41,7 @@ export function Overview() {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [currentSchool?.id, schoolSwitchKey])
 
   const defaultMetrics: MetricItem[] = [
     { label: 'Total visitors', value: '12,842', change: '+18.4%', icon: 'users', tone: 'blue' },
@@ -49,16 +51,27 @@ export function Overview() {
   ]
 
   const displayMetrics = metrics.length > 0 ? metrics : defaultMetrics
+  const userGreeting = user?.firstName || 'Admin'
+  const activeSchoolName = currentSchool?.name || schoolName
+  const activeSlug = currentSchool?.slug || 'northfield-high'
 
   return (
     <div className="page-content">
       <div className="page-heading">
         <div>
           <span className="eyebrow">STUDIO DASHBOARD</span>
-          <h1>Good morning, Amina</h1>
-          <p>Here’s how {schoolName} is performing.</p>
+          <h1>Welcome, {userGreeting}</h1>
+          <p>Here’s how {activeSchoolName} is performing.</p>
         </div>
-        <Button kind="secondary" icon="eye" onClick={() => setView('public')}>
+        <Button
+          kind="secondary"
+          icon="eye"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.open(`/${activeSlug}`, '_blank')
+            }
+          }}
+        >
           View live site
         </Button>
       </div>

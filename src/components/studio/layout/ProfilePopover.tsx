@@ -3,39 +3,74 @@
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import type { View } from '@/types/studio'
-import { api } from '@/lib/api-client'
 
 export interface ProfilePopoverProps {
   onClose: () => void
 }
 
 export function ProfilePopover({ onClose }: ProfilePopoverProps) {
-  const { setView, notify } = useStudio()
+  const { setView, notify, user, currentSchool, logout } = useStudio()
 
   const navigate = (next: View) => {
     setView(next)
     onClose()
   }
 
+  const fullName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || user.email
+    : 'Administrator'
+
+  const userInitials =
+    fullName
+      .split(/\s+/)
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'AD'
+
+  const schoolName = currentSchool?.name || 'School Studio'
+  const schoolInitials =
+    schoolName
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'SC'
+
+  const isLive = currentSchool?.isPublished ?? true
+
   return (
     <div className="topbar-popover profile-panel">
       <div className="profile-summary">
-        <div>AR</div>
+        <div style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+          {userInitials}
+        </div>
         <span>
-          <strong>Amina Rahman</strong>
-          <small>admin@northfield.edu</small>
+          <strong>{fullName}</strong>
+          <small>{user?.email || 'user@example.com'}</small>
         </span>
       </div>
 
       <div className="profile-school">
-        <span className="school-avatar">NH</span>
-        <div>
-          <strong>Northfield High School</strong>
-          <small>Workspace administrator</small>
+        <span className="school-avatar" style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+          {schoolInitials}
+        </span>
+        <div style={{ overflow: 'hidden' }}>
+          <strong
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: 'block',
+            }}
+          >
+            {schoolName}
+          </strong>
+          <small>{currentSchool?.role || 'Workspace Owner'}</small>
         </div>
-        <span className="state-badge published">
+        <span className={`state-badge ${isLive ? 'published' : 'draft'}`}>
           <i />
-          Live
+          {isLive ? 'Live' : 'Draft'}
         </span>
       </div>
 
@@ -51,8 +86,8 @@ export function ProfilePopover({ onClose }: ProfilePopoverProps) {
         <button type="button" onClick={() => navigate('onboarding')}>
           <Icon name="home" size={16} />
           <span>
-            <strong>School setup</strong>
-            <small>Identity and website details</small>
+            <strong>Register school</strong>
+            <small>Create another school website</small>
           </span>
         </button>
 
@@ -60,7 +95,7 @@ export function ProfilePopover({ onClose }: ProfilePopoverProps) {
           <Icon name="clock" size={16} />
           <span>
             <strong>Publishing activity</strong>
-            <small>Versions and recent changes</small>
+            <small>Versions and live status</small>
           </span>
         </button>
 
@@ -83,9 +118,8 @@ export function ProfilePopover({ onClose }: ProfilePopoverProps) {
         type="button"
         className="profile-signout"
         onClick={() => {
-          api.clearAuthToken()
-          notify('Signed out successfully')
-          navigate('login')
+          logout()
+          onClose()
         }}
       >
         <Icon name="external" size={15} />

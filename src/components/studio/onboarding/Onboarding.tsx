@@ -8,7 +8,7 @@ import { api } from '@/lib/api-client'
 import { useState } from 'react'
 
 export function Onboarding() {
-  const { setView, notify } = useStudio()
+  const { setView, notify, refreshSchools } = useStudio()
   const [step, setStep] = useState(1)
   const [isPublishing, setIsPublishing] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -164,6 +164,7 @@ export function Onboarding() {
       if (newSchoolId) {
         api.setActiveSchoolId(newSchoolId)
         api.setActiveSchoolSlug(newSchoolSlug)
+        await refreshSchools(newSchoolId)
       }
 
       setCreatedSchool({

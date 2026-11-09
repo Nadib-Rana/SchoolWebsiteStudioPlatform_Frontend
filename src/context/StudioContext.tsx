@@ -2,6 +2,7 @@
 
 import type { SchoolTheme } from '@/types/theme'
 import type { View } from '@/types/studio'
+import { api } from '@/lib/api-client'
 import {
   createContext,
   useCallback,
@@ -10,6 +11,27 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+
+export interface CurrentUser {
+  id: string
+  email: string
+  username?: string
+  firstName?: string
+  lastName?: string
+  avatarUrl?: string
+  role?: string
+}
+
+export interface CurrentSchool {
+  id: string
+  name: string
+  slug: string
+  customDomain?: string | null
+  logoUrl?: string | null
+  plan?: string
+  isPublished?: boolean
+  role?: string
+}
 
 interface StudioContextType {
   view: View
@@ -22,6 +44,16 @@ interface StudioContextType {
   setPreviewTheme: (theme: SchoolTheme) => void
   unreadNotifications: number
   setUnreadNotifications: (count: number) => void
+
+  // User & Tenant State
+  user: CurrentUser | null
+  currentSchool: CurrentSchool | null
+  userSchools: CurrentSchool[]
+  loadingSchools: boolean
+  schoolSwitchKey: number
+  switchSchool: (schoolId: string) => Promise<void>
+  refreshSchools: (preferredSchoolId?: string) => Promise<void>
+  logout: () => void
 }
 
 const StudioContext = createContext<StudioContextType | undefined>(undefined)
@@ -32,6 +64,13 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState('')
   const [previewTheme, setPreviewThemeState] = useState<SchoolTheme>('modern')
   const [unreadNotifications, setUnreadNotifications] = useState(3)
+
+  // Dynamic User & Multi-Tenant State
+  const [user, setUser] = useState<CurrentUser | null>(null)
+  const [currentSchool, setCurrentSchool] = useState<CurrentSchool | null>(null)
+  const [userSchools, setUserSchools] = useState<CurrentSchool[]>([])
+  const [loadingSchools, setLoadingSchools] = useState(true)
+  const [schoolSwitchKey, setSchoolSwitchKey] = useState(0)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -59,10 +98,92 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
   const notify = useCallback((message: string) => {
     setToast(message)
-    window.setTimeout(() => setToast(''), 2600)
+    window.setTimeout(() => setToast(''), 2800)
   }, [])
 
-  // Auto aria-label accessibility helper matching old implementation
+  const refreshSchools = useCallback(async (preferredSchoolId?: string) => {
+    try {
+      const token = api.getAuthToken()
+      if (!token) {
+        setUser(null)
+        setUserSchools([])
+        setCurrentSchool(null)
+        setLoadingSchools(false)
+        return
+      }
+
+      // Fetch user profile and schools concurrently
+      const [profileRes, schoolsRes] = await Promise.allSettled([
+        api.auth.getProfile(),
+        api.schools.getMySchools(),
+      ])
+
+      if (profileRes.status === 'fulfilled' && profileRes.value?.data) {
+        setUser(profileRes.value.data)
+      }
+
+      if (schoolsRes.status === 'fulfilled' && Array.isArray(schoolsRes.value?.data)) {
+        const schools: CurrentSchool[] = schoolsRes.value.data.map((item: any) => ({
+          id: item.school?.id || item.id,
+          name: item.school?.name || item.name || 'Unnamed School',
+          slug: item.school?.slug || item.slug || 'school',
+          customDomain: item.school?.customDomain || item.customDomain || null,
+          logoUrl: item.school?.logoUrl || item.logoUrl || null,
+          plan: item.school?.plan || item.plan || 'STARTER',
+          isPublished: item.school?.isPublished ?? item.isPublished ?? true,
+          role: item.role || 'MEMBER',
+        }))
+
+        setUserSchools(schools)
+
+        if (schools.length > 0) {
+          const storedId = preferredSchoolId || api.getActiveSchoolId()
+          const matched = schools.find((s) => s.id === storedId || s.slug === storedId)
+          const active = matched || schools[0]
+
+          setCurrentSchool(active)
+          api.setActiveSchoolId(active.id)
+          api.setActiveSchoolSlug(active.slug)
+        } else {
+          setCurrentSchool(null)
+        }
+      }
+    } catch (err) {
+      console.error('[StudioContext] Error refreshing schools:', err)
+    } finally {
+      setLoadingSchools(false)
+    }
+  }, [])
+
+  const switchSchool = useCallback(
+    async (schoolId: string) => {
+      const target = userSchools.find((s) => s.id === schoolId)
+      if (target) {
+        setCurrentSchool(target)
+        api.setActiveSchoolId(target.id)
+        api.setActiveSchoolSlug(target.slug)
+        setSchoolSwitchKey((prev) => prev + 1)
+        notify(`Switched to ${target.name}`)
+      }
+    },
+    [userSchools, notify]
+  )
+
+  const logout = useCallback(() => {
+    api.auth.logout()
+    setUser(null)
+    setCurrentSchool(null)
+    setUserSchools([])
+    notify('Signed out successfully.')
+    setView('login')
+  }, [notify])
+
+  // Initial load
+  useEffect(() => {
+    refreshSchools()
+  }, [refreshSchools])
+
+  // Auto aria-label accessibility helper
   useEffect(() => {
     const labels: Partial<Record<string, string>> = {
       more: 'More options',
@@ -100,6 +221,14 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         setPreviewTheme,
         unreadNotifications,
         setUnreadNotifications,
+        user,
+        currentSchool,
+        userSchools,
+        loadingSchools,
+        schoolSwitchKey,
+        switchSchool,
+        refreshSchools,
+        logout,
       }}
     >
       {children}

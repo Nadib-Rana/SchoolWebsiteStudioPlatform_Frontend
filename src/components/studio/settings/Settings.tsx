@@ -54,7 +54,7 @@ function SettingsSave({
 }
 
 export function Settings() {
-  const { notify, setView } = useStudio()
+  const { notify, setView, currentSchool, schoolSwitchKey } = useStudio()
   const [active, setActive] = useState('School profile')
   const [users, setUsers] = useState<Array<[string, string, string, string, string]>>([
     ['AR', 'Amina Rahman', 'admin@northfield.edu', 'Owner', 'Active'],
@@ -131,7 +131,7 @@ export function Settings() {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [currentSchool?.id, schoolSwitchKey])
 
   const handleSaveProfile = async () => {
     setIsSavingProfile(true)

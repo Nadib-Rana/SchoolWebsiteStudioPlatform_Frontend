@@ -8,7 +8,15 @@ import { useStudio } from '@/context/StudioContext'
 import { useState } from 'react'
 
 export function StudioTopbar() {
-  const { setSidebarOpen, setView, notify, unreadNotifications } = useStudio()
+  const {
+    setSidebarOpen,
+    setView,
+    notify,
+    unreadNotifications,
+    user,
+    currentSchool,
+  } = useStudio()
+
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
 
@@ -22,6 +30,21 @@ export function StudioTopbar() {
     setNotificationsOpen(false)
   }
 
+  const fullName = user
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || user.email
+    : 'Administrator'
+
+  const userInitials =
+    fullName
+      .split(/\s+/)
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'AD'
+
+  const isLive = currentSchool?.isPublished ?? true
+  const schoolSlug = currentSchool?.slug || 'northfield-high'
+
   return (
     <header className="topbar">
       <button
@@ -33,18 +56,30 @@ export function StudioTopbar() {
         <Icon name="menu" />
       </button>
 
-      <div className="status">
-        <span className="status-dot" />
-        Website is live <small>Last published 2h ago</small>
+      <div className="status" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span
+          className="status-dot"
+          style={{
+            background: isLive ? '#10b981' : '#f59e0b',
+            boxShadow: isLive ? '0 0 8px rgba(16, 185, 129, 0.4)' : 'none',
+          }}
+        />
+        <span style={{ fontSize: '13px' }}>
+          <strong>{currentSchool?.name || 'School'}</strong> is {isLive ? 'Live' : 'in Draft'}
+        </span>
       </div>
 
       <div className="top-actions">
         <Button
           kind="ghost"
           icon="eye"
-          onClick={() => setView('public')}
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.open(`/${schoolSlug}`, '_blank')
+            }
+          }}
         >
-          <span className="hide-mobile">Preview website</span>
+          <span className="hide-mobile">View Live Site</span>
         </Button>
 
         <div className="popover-anchor">
@@ -68,7 +103,12 @@ export function StudioTopbar() {
           )}
         </div>
 
-        <button type="button" className="icon-button hide-mobile" aria-label="Help">
+        <button
+          type="button"
+          className="icon-button hide-mobile"
+          aria-label="Help"
+          onClick={() => setView('settings')}
+        >
           <Icon name="help" />
         </button>
 
@@ -80,10 +120,12 @@ export function StudioTopbar() {
             aria-expanded={profileOpen}
             onClick={toggleProfile}
           >
-            <div>AR</div>
+            <div style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+              {userInitials}
+            </div>
             <span>
-              <strong>Amina Rahman</strong>
-              <small>Administrator</small>
+              <strong>{fullName}</strong>
+              <small>{currentSchool?.role || user?.role || 'Admin'}</small>
             </span>
             <Icon name="chevron" size={14} />
           </button>
@@ -94,7 +136,7 @@ export function StudioTopbar() {
           kind="primary"
           icon="sparkle"
           className="publish-button"
-          onClick={() => notify('Your latest changes are now live')}
+          onClick={() => notify(`Changes published for ${currentSchool?.name || 'school'}!`)}
         >
           <span className="publish-label">Publish</span>
         </Button>

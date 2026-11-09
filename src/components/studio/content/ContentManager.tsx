@@ -8,7 +8,7 @@ import { api } from '@/lib/api-client'
 import { useEffect, useState } from 'react'
 
 export function ContentManager() {
-  const { notify } = useStudio()
+  const { notify, currentSchool, schoolSwitchKey } = useStudio()
   const [activeItem, setActiveItem] = useState(0)
   const [items, setItems] = useState<Array<[string, string, string]>>([
     ['School information', 'Core identity, contact details, logo and address', '100%'],
@@ -115,7 +115,7 @@ export function ContentManager() {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [currentSchool?.id, schoolSwitchKey])
 
   const handleSave = async (publish = false) => {
     setSaving(true)

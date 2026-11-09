@@ -128,8 +128,15 @@ class ApiClient {
       })
       if (res.data?.accessToken) {
         this.setAuthToken(res.data.accessToken)
-        if (res.data.user?.activeSchool?.id) {
-          this.setActiveSchoolId(res.data.user.activeSchool.id)
+        const currentStored = this.getActiveSchoolId()
+        const defaultSchool = res.data.user?.activeSchool
+        if (defaultSchool?.id) {
+          if (!currentStored || currentStored === 'northfield-high') {
+            this.setActiveSchoolId(defaultSchool.id)
+            if (defaultSchool.slug) {
+              this.setActiveSchoolSlug(defaultSchool.slug)
+            }
+          }
         }
       }
       return res

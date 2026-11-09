@@ -7,7 +7,7 @@ import { api } from '@/lib/api-client'
 import { useState } from 'react'
 
 export function Login() {
-  const { setView, notify } = useStudio()
+  const { setView, notify, refreshSchools } = useStudio()
   const [mode, setMode] = useState<'login' | 'register'>('login')
 
   // Login form state
@@ -35,6 +35,7 @@ export function Login() {
     try {
       const res = await api.auth.login(email, password)
       notify(`Welcome back, ${res.data?.user?.firstName || 'Admin'}!`)
+      await refreshSchools()
       setView('overview')
     } catch (err: any) {
       const msg = err?.message || 'Invalid email or password'
@@ -69,6 +70,7 @@ export function Login() {
       // Auto login immediately
       const loginRes = await api.auth.login(regEmail.trim(), regPassword)
       notify(`Account created! Welcome, ${loginRes.data?.user?.firstName || 'Admin'}!`)
+      await refreshSchools()
       // Direct them to onboarding to create their first school
       setView('onboarding')
     } catch (err: any) {
