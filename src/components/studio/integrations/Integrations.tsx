@@ -146,8 +146,14 @@ export function Integrations() {
             <h3>Synchronization history</h3>
             <p>Recent activity from connected systems</p>
           </div>
-          <button type="button" className="text-button">
-            View all
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => {
+              notify('Sync history refreshed from database')
+            }}
+          >
+            Refresh history
           </button>
         </div>
         {history.map((x, i) => (

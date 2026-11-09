@@ -54,6 +54,7 @@ export function PublicHeader({
   headerStyle,
 }: PublicHeaderProps) {
   const [imgError, setImgError] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const defaultNav = [
     { label: 'About', path: '/about', page: 'About School' },
@@ -260,9 +261,76 @@ export function PublicHeader({
         </button>
       )}
 
-      <button type="button" className="public-menu" aria-label="Open mobile menu">
-        <Icon name="menu" />
+      <button
+        type="button"
+        className="public-menu"
+        aria-label="Toggle mobile menu"
+        aria-expanded={mobileMenuOpen}
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      >
+        <Icon name={mobileMenuOpen ? 'close' : 'menu'} />
       </button>
+
+      {mobileMenuOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: headerStyle?.bg || (isDark ? '#091b35' : '#ffffff'),
+            color: isDark ? '#ffffff' : '#1e293b',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            zIndex: 100,
+            padding: '12px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+        >
+          {navItems.map((n) =>
+            schoolSlug ? (
+              <Link
+                key={n.path}
+                href={n.path === '/' ? `/${schoolSlug}` : `/${schoolSlug}${n.path}`}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'inherit',
+                  textDecoration: 'none',
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {n.label}
+              </Link>
+            ) : (
+              <button
+                key={n.label}
+                type="button"
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'inherit',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setPage && setPage(n.page)
+                  setMobileMenuOpen(false)
+                }}
+              >
+                {n.label}
+              </button>
+            )
+          )}
+        </div>
+      )}
     </header>
   )
 }

@@ -125,7 +125,12 @@ export function Gallery() {
           </span>
         </div>
         <b>{storageInfo.formatted}</b>
-        <Button onClick={() => notify('Storage usage refreshed')}>
+        <Button
+          onClick={async () => {
+            await loadGallery()
+            notify('Storage usage and albums refreshed from database')
+          }}
+        >
           Refresh status
         </Button>
       </div>

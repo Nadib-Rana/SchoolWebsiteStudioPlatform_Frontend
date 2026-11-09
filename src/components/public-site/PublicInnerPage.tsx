@@ -72,7 +72,12 @@ export function PublicInnerPage({ page, setPage }: PublicInnerPageProps) {
             <span>APPLICATIONS CLOSE</span>
             <strong>30 June 2025</strong>
             <p>Applications for Grades 1–9 are currently open, subject to available places.</p>
-            <button type="button">
+            <button
+              type="button"
+              onClick={() => {
+                alert('Admissions portal: Please contact admissions@northfield.edu or visit the campus office Sunday–Thursday (8:00 AM–4:00 PM) to submit application materials.')
+              }}
+            >
               Continue to application <Icon name="external" size={15} />
             </button>
             <small>Securely opens the existing admissions system</small>

@@ -5,7 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import { heroImage, templates } from '@/config/templates'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 export function Onboarding() {
   const { setView, notify, refreshSchools } = useStudio()
@@ -29,6 +29,20 @@ export function Onboarding() {
   const [contactPhone, setContactPhone] = useState('+880 1712 998 877')
   const [contactEmail, setContactEmail] = useState('info@riverside.edu')
   const [establishedYear, setEstablishedYear] = useState('1995')
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setLogoPreview(reader.result as string)
+        notify(`Logo "${file.name}" selected`)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   // Step 2: Website Identity
   const [slug, setSlug] = useState('riverside-academy')
@@ -470,15 +484,30 @@ export function Onboarding() {
               <h1>Start with the essentials.</h1>
               <p>This information creates the foundation of your website.</p>
               <div className="logo-upload large">
-                <div>{schoolName.slice(0, 2).toUpperCase() || 'SC'}</div>
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleLogoUpload}
+                />
+                <div
+                  style={{
+                    backgroundImage: logoPreview ? `url(${logoPreview})` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                >
+                  {!logoPreview && (schoolName.slice(0, 2).toUpperCase() || 'SC')}
+                </div>
                 <span>
                   <strong>Upload school logo</strong>
                   <small>PNG, JPG or SVG · Recommended 512 × 512</small>
                   <button
                     type="button"
-                    onClick={() => notify('Default logo assigned')}
+                    onClick={() => logoInputRef.current?.click()}
                   >
-                    Choose image
+                    {logoPreview ? 'Change logo' : 'Choose image'}
                   </button>
                 </span>
               </div>

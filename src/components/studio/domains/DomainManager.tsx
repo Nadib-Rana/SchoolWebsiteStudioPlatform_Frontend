@@ -186,7 +186,14 @@ export function DomainManager() {
             automatically.
           </p>
         </div>
-        <Button onClick={() => notify('DNS CNAME target copied to clipboard')}>
+        <Button
+          onClick={() => {
+            if (typeof navigator !== 'undefined' && navigator.clipboard) {
+              navigator.clipboard.writeText('cname.schoolcanvas.app')
+            }
+            notify('Copied "cname.schoolcanvas.app" to clipboard')
+          }}
+        >
           Copy DNS record
         </Button>
       </div>

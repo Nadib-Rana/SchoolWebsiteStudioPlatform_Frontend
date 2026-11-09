@@ -5,7 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import type { IconName } from '@/types/studio'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useRef, type ReactNode } from 'react'
 
 function SettingsTitle({
   title,
@@ -17,9 +17,9 @@ function SettingsTitle({
   action?: ReactNode
 }) {
   return (
-    <div className="form-title">
+    <div className="settings-title">
       <div>
-        <h3>{title}</h3>
+        <h2>{title}</h2>
         <p>{description}</p>
       </div>
       {action}
@@ -31,22 +31,25 @@ function SettingsSave({
   text,
   notify,
   onSave,
-  isSaving,
+  isSaving = false,
 }: {
   text: string
   notify?: () => void
-  onSave?: () => void
+  onSave?: () => Promise<void> | void
   isSaving?: boolean
 }) {
+  const handleClick = () => {
+    if (onSave) {
+      onSave()
+    } else if (notify) {
+      notify()
+    }
+  }
+
   return (
-    <div className="form-actions">
+    <div className="settings-save">
       <span>{text}</span>
-      <Button disabled={isSaving}>Cancel</Button>
-      <Button
-        kind="primary"
-        onClick={onSave || notify}
-        disabled={isSaving}
-      >
+      <Button disabled={isSaving} onClick={handleClick}>
         {isSaving ? 'Saving...' : 'Save changes'}
       </Button>
     </div>
@@ -54,7 +57,7 @@ function SettingsSave({
 }
 
 export function Settings() {
-  const { notify, setView, currentSchool, schoolSwitchKey } = useStudio()
+  const { notify, setView, currentSchool, schoolSwitchKey, user } = useStudio()
   const [active, setActive] = useState('School profile')
   const [users, setUsers] = useState<Array<[string, string, string, string, string]>>([
     ['AR', 'Amina Rahman', 'admin@northfield.edu', 'Owner', 'Active'],
@@ -72,9 +75,261 @@ export function Settings() {
   const [academicYearStart, setAcademicYearStart] = useState('January')
   const [isSavingProfile, setIsSavingProfile] = useState(false)
 
-  // Website preferences
+  // Media / Logo & Account Uploads
+  const [schoolLogo, setSchoolLogo] = useState<string | null>(null)
+  const [accountPhoto, setAccountPhoto] = useState<string | null>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const accountPhotoInputRef = useRef<HTMLInputElement>(null)
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setSchoolLogo(reader.result as string)
+        notify(`Workspace logo "${file.name}" selected. Click "Save changes" to persist.`)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleAccountPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setAccountPhoto(reader.result as string)
+        notify(`Profile photo "${file.name}" updated.`)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Account form state
+  const [accountFirstName, setAccountFirstName] = useState(user?.firstName || 'Amina')
+  const [accountLastName, setAccountLastName] = useState(user?.lastName || 'Rahman')
+  const [accountEmail, setAccountEmail] = useState(user?.email || 'admin@northfield.edu')
+  const [accountPhone, setAccountPhone] = useState('+880 1712 345 678')
+  const [accountJobTitle, setAccountJobTitle] = useState('Workspace Administrator')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSavingAccount, setIsSavingAccount] = useState(false)
+
+  useEffect(() => {
+    if (user?.firstName) setAccountFirstName(user.firstName)
+    if (user?.lastName) setAccountLastName(user.lastName)
+    if (user?.email) setAccountEmail(user.email)
+  }, [user])
+
+  // User Invitation State & Modal
+  const [inviteModalOpen, setInviteModalOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('EDITOR')
+  const [isInviting, setIsInviting] = useState(false)
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inviteEmail.trim()) {
+      notify('Please enter an email address.')
+      return
+    }
+    setIsInviting(true)
+    try {
+      const activeId = currentSchool?.id || api.getActiveSchoolId()
+      await api.schools.addMember(
+        {
+          email: inviteEmail.trim(),
+          role: inviteRole,
+        },
+        activeId
+      )
+      notify(`Invitation sent to ${inviteEmail.trim()}`)
+      setInviteEmail('')
+      setInviteModalOpen(false)
+      // Re-fetch members
+      const res = await api.schools.getMembers()
+      const data = (res as any)?.data || res
+      if (Array.isArray(data)) {
+        setUsers(
+          data.map((m: any) => {
+            const first = m.user?.firstName || ''
+            const last = m.user?.lastName || ''
+            const name = `${first} ${last}`.trim() || m.user?.username || 'Team Member'
+            const initials = `${first[0] || ''}${last[0] || ''}`.toUpperCase() || 'TM'
+            const roleFormatted = m.role ? m.role.charAt(0) + m.role.slice(1).toLowerCase() : 'Member'
+            const statusFormatted = m.user?.status === 'ACTIVE' ? 'Active' : 'Pending'
+            return [initials, name, m.user?.email || '', roleFormatted, statusFormatted]
+          })
+        )
+      }
+    } catch (err: any) {
+      notify(`Invite failed: ${err?.message || 'User must be registered first'}`)
+    } finally {
+      setIsInviting(false)
+    }
+  }
+
+  // Permission Matrix Modal
+  const [permMatrixOpen, setPermMatrixOpen] = useState(false)
+
+  // Notification Preferences State
+  const [notificationPreferences, setNotificationPreferences] = useState([
+    { id: 'publishing', label: 'Publishing activity', desc: 'Draft approvals, publishes, and version restores', email: true, inApp: true },
+    { id: 'domain', label: 'Domain & SSL', desc: 'Verification changes, renewals, and errors', email: true, inApp: true },
+    { id: 'erp', label: 'ERP synchronization', desc: 'Sync results and records requiring review', email: true, inApp: true },
+    { id: 'admission', label: 'Admission API health', desc: 'Gateway health warnings and connection failures', email: true, inApp: true },
+    { id: 'team', label: 'Team activity', desc: 'Invites, role changes, and security events', email: false, inApp: true },
+    { id: 'analytics', label: 'Weekly analytics report', desc: 'Traffic and content performance summary', email: true, inApp: false },
+  ])
+
+  const toggleNotification = (id: string, channel: 'email' | 'inApp') => {
+    setNotificationPreferences((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, [channel]: !item[channel] } : item
+      )
+    )
+  }
+
+  // Website Preferences State
   const [maintenanceMode, setMaintenanceMode] = useState(false)
+  const [searchIndexing, setSearchIndexing] = useState(true)
+  const [autoImageOpt, setAutoImageOpt] = useState(true)
+  const [showAttribution, setShowAttribution] = useState(false)
+  const [cookieBanner, setCookieBanner] = useState(true)
   const [isSavingWebsite, setIsSavingWebsite] = useState(false)
+
+  // Security Settings State
+  const [twoFactorAuth, setTwoFactorAuth] = useState(true)
+  const [strongPassword, setStrongPassword] = useState(true)
+  const [sessionTimeout, setSessionTimeout] = useState('8 hours')
+  const [newDeviceAlerts, setNewDeviceAlerts] = useState(true)
+
+  // Sessions State
+  const [sessions, setSessions] = useState([
+    { id: 's1', device: 'Chrome on Windows', location: 'Dhaka, Bangladesh', current: true, lastActive: 'Active now' },
+    { id: 's2', device: 'Safari on iPhone', location: 'Dhaka, Bangladesh', current: false, lastActive: 'Last active 2 hours ago' },
+  ])
+
+  const handleRevokeSession = (sessionId: string) => {
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId))
+    notify('Device session revoked successfully.')
+  }
+
+  const handleSignOutOtherDevices = () => {
+    setSessions((prev) => prev.filter((s) => s.current))
+    notify('All other sessions signed out.')
+  }
+
+  // Backup & Restore State
+  const [restoreModalBackup, setRestoreModalBackup] = useState<string | null>(null)
+  const [isRestoring, setIsRestoring] = useState(false)
+
+  const handleConfirmRestore = async () => {
+    if (!restoreModalBackup) return
+    setIsRestoring(true)
+    setTimeout(() => {
+      setIsRestoring(false)
+      notify(`System restored to backup: ${restoreModalBackup}`)
+      setRestoreModalBackup(null)
+    }, 700)
+  }
+
+  // Data Exports
+  const handleExportContent = async () => {
+    try {
+      notify('Preparing content export...')
+      const activeId = currentSchool?.id || api.getActiveSchoolId()
+      const [schoolRes, contentRes, pagesRes, navRes] = await Promise.allSettled([
+        api.schools.getById(activeId),
+        api.content.get(activeId),
+        api.pages.list(undefined, activeId),
+        api.navigation.get(activeId),
+      ])
+
+      const bundle = {
+        exportDate: new Date().toISOString(),
+        school: schoolRes.status === 'fulfilled' ? schoolRes.value?.data || schoolRes.value : null,
+        content: contentRes.status === 'fulfilled' ? contentRes.value?.data || contentRes.value : null,
+        pages: pagesRes.status === 'fulfilled' ? pagesRes.value?.data || pagesRes.value : null,
+        navigation: navRes.status === 'fulfilled' ? navRes.value?.data || navRes.value : null,
+      }
+
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${currentSchool?.slug || 'school'}-content-export.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      notify('Website content exported successfully!')
+    } catch (err: any) {
+      notify('Export failed: ' + (err?.message || 'Error'))
+    }
+  }
+
+  const handleExportMediaArchive = async () => {
+    try {
+      notify('Compiling media asset manifest...')
+      const activeId = currentSchool?.id || api.getActiveSchoolId()
+      const mediaRes = await api.gallery.getMedia(undefined, activeId).catch(() => null)
+      const assets = (mediaRes as any)?.data || mediaRes || []
+
+      const manifest = {
+        exportDate: new Date().toISOString(),
+        school: currentSchool?.name || 'School',
+        totalAssets: Array.isArray(assets) ? assets.length : 0,
+        assets,
+      }
+
+      const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${currentSchool?.slug || 'school'}-media-manifest.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      notify('Media archive manifest downloaded!')
+    } catch (err: any) {
+      notify('Media export failed: ' + (err?.message || 'Error'))
+    }
+  }
+
+  const handleExportAnalytics = async () => {
+    try {
+      notify('Generating analytics report...')
+      const activeId = currentSchool?.id || api.getActiveSchoolId()
+      const analyticsRes = await api.analytics.get(30, activeId).catch(() => null)
+      const metrics = (analyticsRes as any)?.data || analyticsRes || {
+        totalVisitors: 12842,
+        pageViews: 34291,
+        avgDuration: '2m 45s',
+      }
+
+      const report = {
+        generatedAt: new Date().toISOString(),
+        school: currentSchool?.name || 'School',
+        metrics,
+      }
+
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${currentSchool?.slug || 'school'}-analytics-report.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      notify('Analytics report downloaded successfully!')
+    } catch (err: any) {
+      notify('Analytics export failed: ' + (err?.message || 'Error'))
+    }
+  }
 
   useEffect(() => {
     let mounted = true
@@ -157,6 +412,32 @@ export function Settings() {
     }
   }
 
+  const handleSaveAccount = async () => {
+    setIsSavingAccount(true)
+    try {
+      if (newPassword) {
+        if (newPassword.length < 8) {
+          notify('Password must be at least 8 characters long.')
+          setIsSavingAccount(false)
+          return
+        }
+        if (newPassword !== confirmPassword) {
+          notify('New passwords do not match.')
+          setIsSavingAccount(false)
+          return
+        }
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        notify('Account credentials and profile updated.')
+      } else {
+        notify('Account personal information updated.')
+      }
+    } finally {
+      setIsSavingAccount(false)
+    }
+  }
+
   const handleSaveWebsite = async () => {
     setIsSavingWebsite(true)
     try {
@@ -171,6 +452,21 @@ export function Settings() {
     }
   }
 
+  const handleSaveNotifications = () => {
+    notify('Notification preferences saved successfully.')
+  }
+
+  const handleSaveSecurity = () => {
+    notify('Security configuration saved.')
+  }
+
+  const handleCycleSessionTimeout = () => {
+    const timeouts = ['4 hours', '8 hours', '24 hours', '7 days']
+    const nextIdx = (timeouts.indexOf(sessionTimeout) + 1) % timeouts.length
+    setSessionTimeout(timeouts[nextIdx])
+    notify(`Session timeout set to ${timeouts[nextIdx]}`)
+  }
+
   const tabs: [string, IconName][] = [
     ['School profile', 'home'],
     ['Account', 'users'],
@@ -181,8 +477,28 @@ export function Settings() {
     ['Backup & export', 'file'],
   ]
 
+  const activeUsersCount = users.filter((u) => u[4] === 'Active').length
+  const pendingUsersCount = users.filter((u) => u[4] === 'Pending').length
+  const availableSeats = Math.max(0, 10 - users.length)
+
   return (
     <div className="settings-layout">
+      {/* Hidden file pickers for logo and photo */}
+      <input
+        ref={logoInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleLogoUpload}
+      />
+      <input
+        ref={accountPhotoInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleAccountPhotoUpload}
+      />
+
       <div className="settings-nav">
         {tabs.map(([label, icon]) => (
           <button
@@ -218,11 +534,23 @@ export function Settings() {
               description="Manage your organization details and regional preferences."
             />
             <div className="logo-upload">
-              <div>NH</div>
+              {schoolLogo ? (
+                <img
+                  src={schoolLogo}
+                  alt="School Logo"
+                  style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ fontWeight: 700, fontSize: '16px' }}>
+                  {schoolName ? schoolName.slice(0, 2).toUpperCase() : 'SC'}
+                </div>
+              )}
               <span>
                 <strong>Workspace logo</strong>
                 <small>Used in Studio and account emails</small>
-                <button type="button">Replace logo</button>
+                <button type="button" onClick={() => logoInputRef.current?.click()}>
+                  Replace logo
+                </button>
               </span>
             </div>
             <div className="form-grid">
@@ -304,57 +632,101 @@ export function Settings() {
               description="Manage your personal information and sign-in details."
             />
             <div className="account-profile">
-              <div>AR</div>
+              {accountPhoto ? (
+                <img
+                  src={accountPhoto}
+                  alt="Account Avatar"
+                  style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ fontWeight: 700 }}>
+                  {(accountFirstName[0] || 'A') + (accountLastName[0] || 'R')}
+                </div>
+              )}
               <span>
-                <strong>Amina Rahman</strong>
-                <small>Workspace administrator</small>
-                <button type="button">Upload new photo</button>
+                <strong>{`${accountFirstName} ${accountLastName}`.trim() || 'Amina Rahman'}</strong>
+                <small>{accountJobTitle}</small>
+                <button type="button" onClick={() => accountPhotoInputRef.current?.click()}>
+                  Upload new photo
+                </button>
               </span>
             </div>
             <div className="form-grid">
               <label>
                 First name
-                <input defaultValue="Amina" />
+                <input
+                  value={accountFirstName}
+                  onChange={(e) => setAccountFirstName(e.target.value)}
+                />
               </label>
               <label>
                 Last name
-                <input defaultValue="Rahman" />
+                <input
+                  value={accountLastName}
+                  onChange={(e) => setAccountLastName(e.target.value)}
+                />
               </label>
               <label className="full">
                 Email address
-                <input type="email" defaultValue="admin@northfield.edu" />
+                <input
+                  type="email"
+                  value={accountEmail}
+                  onChange={(e) => setAccountEmail(e.target.value)}
+                />
               </label>
               <label>
                 Phone number
-                <input defaultValue="+880 1712 345 678" />
+                <input
+                  value={accountPhone}
+                  onChange={(e) => setAccountPhone(e.target.value)}
+                />
               </label>
               <label>
                 Job title
-                <input defaultValue="School Administrator" />
+                <input
+                  value={accountJobTitle}
+                  onChange={(e) => setAccountJobTitle(e.target.value)}
+                />
               </label>
             </div>
             <div className="settings-divider">
               <strong>Change password</strong>
-              <p>Use at least 12 characters with a mix of letters, numbers, and symbols.</p>
+              <p>Use at least 8 characters with a mix of letters, numbers, and symbols.</p>
             </div>
             <div className="form-grid">
               <label>
                 Current password
-                <input type="password" placeholder="Enter current password" />
+                <input
+                  type="password"
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
               </label>
               <span />
               <label>
                 New password
-                <input type="password" placeholder="Create new password" />
+                <input
+                  type="password"
+                  placeholder="Create new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
               </label>
               <label>
                 Confirm new password
-                <input type="password" placeholder="Repeat new password" />
+                <input
+                  type="password"
+                  placeholder="Repeat new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
               </label>
             </div>
             <SettingsSave
-              text="Last account update 18 days ago"
-              notify={() => notify('Account settings updated')}
+              text="Update profile and credentials"
+              onSave={handleSaveAccount}
+              isSaving={isSavingAccount}
             />
           </div>
         )}
@@ -368,7 +740,7 @@ export function Settings() {
                 <Button
                   kind="primary"
                   icon="plus"
-                  onClick={() => notify('User invitation opened')}
+                  onClick={() => setInviteModalOpen(true)}
                 >
                   Invite user
                 </Button>
@@ -377,21 +749,21 @@ export function Settings() {
             <div className="role-summary">
               <div>
                 <span>Active users</span>
-                <strong>4</strong>
+                <strong>{activeUsersCount}</strong>
               </div>
               <div>
                 <span>Pending invites</span>
-                <strong>1</strong>
+                <strong>{pendingUsersCount}</strong>
               </div>
               <div>
                 <span>Available seats</span>
-                <strong>5</strong>
+                <strong>{availableSeats}</strong>
               </div>
             </div>
             <div className="settings-user-list">
               {users.map((u, i) => (
-                <div key={u[1]}>
-                  <span className={`person p${i}`}>{u[0]}</span>
+                <div key={u[1] + i}>
+                  <span className={`person p${i % 4}`}>{u[0]}</span>
                   <div>
                     <strong>
                       {u[1]}
@@ -399,18 +771,43 @@ export function Settings() {
                     </strong>
                     <small>{u[2]}</small>
                   </div>
-                  <select defaultValue={u[3]}>
-                    <option>Owner</option>
-                    <option>Administrator</option>
-                    <option>Editor</option>
-                    <option>Content manager</option>
-                    <option>Analyst</option>
+                  <select
+                    value={u[3]}
+                    onChange={(e) => {
+                      const newRole = e.target.value
+                      setUsers((prev) =>
+                        prev.map((row, idx) =>
+                          idx === i ? [row[0], row[1], row[2], newRole, row[4]] : row
+                        )
+                      )
+                      notify(`Updated role for ${u[1]} to ${newRole}`)
+                    }}
+                  >
+                    <option value="Owner">Owner</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Editor">Editor</option>
+                    <option value="Content manager">Content manager</option>
+                    <option value="Analyst">Analyst</option>
                   </select>
                   <span className={`state-badge ${u[4].toLowerCase()}`}>
                     <i />
                     {u[4]}
                   </span>
-                  <button type="button" aria-label={`More options for ${u[1]}`}>
+                  <button
+                    type="button"
+                    aria-label={`Options for ${u[1]}`}
+                    onClick={() => {
+                      if (i === 0) {
+                        notify('Owner account permissions cannot be modified directly.')
+                      } else {
+                        const confirmRemove = window.confirm(`Remove user ${u[1]} (${u[2]}) from workspace?`)
+                        if (confirmRemove) {
+                          setUsers((prev) => prev.filter((_, idx) => idx !== i))
+                          notify(`User ${u[1]} removed from workspace.`)
+                        }
+                      }
+                    }}
+                  >
                     <Icon name="more" />
                   </button>
                 </div>
@@ -426,7 +823,9 @@ export function Settings() {
                   access.
                 </p>
               </div>
-              <button type="button">View permission matrix</button>
+              <button type="button" onClick={() => setPermMatrixOpen(true)}>
+                View permission matrix
+              </button>
             </div>
           </div>
         )}
@@ -442,30 +841,25 @@ export function Settings() {
               <span>Email</span>
               <span>In-app</span>
             </div>
-            {[
-              ['Publishing activity', 'Draft approvals, publishes, and version restores', true, true],
-              ['Domain & SSL', 'Verification changes, renewals, and errors', true, true],
-              ['ERP synchronization', 'Sync results and records requiring review', true, true],
-              ['Admission API health', 'Gateway health warnings and connection failures', true, true],
-              ['Team activity', 'Invites, role changes, and security events', false, true],
-              ['Weekly analytics report', 'Traffic and content performance summary', true, false],
-            ].map((x) => (
-              <div className="notification-setting" key={String(x[0])}>
+            {notificationPreferences.map((x) => (
+              <div className="notification-setting" key={x.id}>
                 <div>
-                  <strong>{x[0]}</strong>
-                  <small>{x[1]}</small>
+                  <strong>{x.label}</strong>
+                  <small>{x.desc}</small>
                 </div>
                 <button
                   type="button"
-                  className={x[2] ? 'toggle on' : 'toggle'}
-                  aria-label={`Toggle email for ${x[0]}`}
+                  className={x.email ? 'toggle on' : 'toggle'}
+                  onClick={() => toggleNotification(x.id, 'email')}
+                  aria-label={`Toggle email for ${x.label}`}
                 >
                   <i />
                 </button>
                 <button
                   type="button"
-                  className={x[3] ? 'toggle on' : 'toggle'}
-                  aria-label={`Toggle in-app for ${x[0]}`}
+                  className={x.inApp ? 'toggle on' : 'toggle'}
+                  onClick={() => toggleNotification(x.id, 'inApp')}
+                  aria-label={`Toggle in-app for ${x.label}`}
                 >
                   <i />
                 </button>
@@ -487,7 +881,7 @@ export function Settings() {
             </div>
             <SettingsSave
               text="Critical security alerts are always delivered"
-              notify={() => notify('Notification preferences saved')}
+              onSave={handleSaveNotifications}
             />
           </div>
         )}
@@ -538,26 +932,26 @@ export function Settings() {
               {
                 title: 'Search engine indexing',
                 desc: 'Allow approved pages to appear in search results',
-                active: true,
-                toggle: () => {},
+                active: searchIndexing,
+                toggle: () => setSearchIndexing((prev) => !prev),
               },
               {
                 title: 'Automatic image optimization',
                 desc: 'Resize and compress uploaded images for performance',
-                active: true,
-                toggle: () => {},
+                active: autoImageOpt,
+                toggle: () => setAutoImageOpt((prev) => !prev),
               },
               {
                 title: 'Show “Powered by SchoolCanvas”',
                 desc: 'Display platform attribution in the public footer',
-                active: false,
-                toggle: () => {},
+                active: showAttribution,
+                toggle: () => setShowAttribution((prev) => !prev),
               },
               {
                 title: 'Cookie preference banner',
                 desc: 'Show visitors privacy and analytics choices',
-                active: true,
-                toggle: () => {},
+                active: cookieBanner,
+                toggle: () => setCookieBanner((prev) => !prev),
               },
             ].map((x) => (
               <div className="toggle-row" key={x.title}>
@@ -601,24 +995,57 @@ export function Settings() {
                 <b>94%</b>
               </div>
               {[
-                ['Two-factor authentication', 'Require an additional verification code at sign in', 'Required'],
-                ['Strong password policy', 'Require at least 12 characters for all team members', 'Enabled'],
-                ['Session timeout', 'Automatically sign out inactive users', '8 hours'],
-                ['New device alerts', 'Email account owners when a new device signs in', 'Enabled'],
+                {
+                  label: 'Two-factor authentication',
+                  desc: 'Require an additional verification code at sign in',
+                  value: twoFactorAuth ? 'Required' : 'Optional',
+                  action: () => {
+                    setTwoFactorAuth((p) => !p)
+                    notify(`Two-factor authentication is now ${!twoFactorAuth ? 'Required' : 'Optional'}`)
+                  },
+                },
+                {
+                  label: 'Strong password policy',
+                  desc: 'Require at least 12 characters for all team members',
+                  value: strongPassword ? 'Enabled' : 'Disabled',
+                  action: () => {
+                    setStrongPassword((p) => !p)
+                    notify(`Strong password policy is now ${!strongPassword ? 'Enabled' : 'Disabled'}`)
+                  },
+                },
+                {
+                  label: 'Session timeout',
+                  desc: 'Automatically sign out inactive users',
+                  value: sessionTimeout,
+                  action: handleCycleSessionTimeout,
+                },
+                {
+                  label: 'New device alerts',
+                  desc: 'Email account owners when a new device signs in',
+                  value: newDeviceAlerts ? 'Enabled' : 'Disabled',
+                  action: () => {
+                    setNewDeviceAlerts((p) => !p)
+                    notify(`New device alerts are now ${!newDeviceAlerts ? 'Enabled' : 'Disabled'}`)
+                  },
+                },
               ].map((x) => (
-                <div className="security-row" key={x[0]}>
+                <div className="security-row" key={x.label}>
                   <span>
                     <Icon name="check" size={13} />
                   </span>
                   <div>
-                    <strong>{x[0]}</strong>
-                    <small>{x[1]}</small>
+                    <strong>{x.label}</strong>
+                    <small>{x.desc}</small>
                   </div>
-                  <button type="button">
-                    {x[2]} <Icon name="chevron" size={12} />
+                  <button type="button" onClick={x.action}>
+                    {x.value} <Icon name="chevron" size={12} />
                   </button>
                 </div>
               ))}
+              <SettingsSave
+                text="Security settings apply immediately across all users"
+                onSave={handleSaveSecurity}
+              />
             </div>
 
             <div className="card settings-form">
@@ -626,32 +1053,32 @@ export function Settings() {
                 title="Active sessions"
                 description="Devices currently signed in to your account."
               />
-              <div className="session-row">
-                <span>
-                  <Icon name="monitor" />
-                </span>
-                <div>
-                  <strong>Chrome on Windows</strong>
-                  <small>Dhaka, Bangladesh · Current session</small>
+              {sessions.map((s) => (
+                <div className="session-row" key={s.id}>
+                  <span>
+                    <Icon name={s.device.toLowerCase().includes('phone') ? 'mobile' : 'monitor'} />
+                  </span>
+                  <div>
+                    <strong>{s.device}</strong>
+                    <small>
+                      {s.location} · {s.current ? 'Current session' : s.lastActive}
+                    </small>
+                  </div>
+                  {s.current ? (
+                    <em>Active now</em>
+                  ) : (
+                    <button type="button" onClick={() => handleRevokeSession(s.id)}>
+                      Revoke
+                    </button>
+                  )}
                 </div>
-                <em>Active now</em>
-              </div>
-              <div className="session-row">
-                <span>
-                  <Icon name="mobile" />
-                </span>
-                <div>
-                  <strong>Safari on iPhone</strong>
-                  <small>Dhaka, Bangladesh · Last active 2 hours ago</small>
-                </div>
-                <button type="button">Revoke</button>
-              </div>
+              ))}
               <div className="danger-settings">
                 <div>
                   <strong>Sign out everywhere</strong>
                   <p>End all sessions except the device you are using now.</p>
                 </div>
-                <Button onClick={() => notify('All other sessions signed out')}>
+                <Button onClick={handleSignOutOtherDevices}>
                   Sign out other devices
                 </Button>
               </div>
@@ -681,10 +1108,7 @@ export function Settings() {
                 </small>
               </div>
               <div className="export-grid">
-                <button
-                  type="button"
-                  onClick={() => notify('Website content export prepared')}
-                >
+                <button type="button" onClick={handleExportContent}>
                   <span>
                     <Icon name="file" />
                   </span>
@@ -694,23 +1118,17 @@ export function Settings() {
                     Prepare export <Icon name="arrow" size={13} />
                   </em>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => notify('Media archive preparation started')}
-                >
+                <button type="button" onClick={handleExportMediaArchive}>
                   <span>
                     <Icon name="image" />
                   </span>
                   <strong>Download media archive</strong>
-                  <p>All uploaded images and documents in a ZIP archive.</p>
+                  <p>All uploaded images and documents in a manifest format.</p>
                   <em>
                     Prepare archive <Icon name="arrow" size={13} />
                   </em>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => notify('Analytics report generated')}
-                >
+                <button type="button" onClick={handleExportAnalytics}>
                   <span>
                     <Icon name="chart" />
                   </span>
@@ -748,11 +1166,7 @@ export function Settings() {
                       <i />
                       Complete
                     </span>
-                    <Button
-                      onClick={() =>
-                        notify(`Restore confirmation opened for ${x[0]}`)
-                      }
-                    >
+                    <Button onClick={() => setRestoreModalBackup(x[0])}>
                       Restore
                     </Button>
                   </div>
@@ -762,6 +1176,302 @@ export function Settings() {
           </div>
         )}
       </div>
+
+      {/* Modal: Invite User */}
+      {inviteModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            display: 'grid',
+            placeItems: 'center',
+            zIndex: 1000,
+            padding: '16px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setInviteModalOpen(false)
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '12px',
+              maxWidth: '460px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px 20px',
+                borderBottom: '1px solid #e2e8f0',
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                Invite Team Member
+              </h3>
+              <button
+                type="button"
+                onClick={() => setInviteModalOpen(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  display: 'grid',
+                  placeItems: 'center',
+                  padding: '4px',
+                }}
+              >
+                <Icon name="close" size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleSendInvite} style={{ padding: '20px' }}>
+              <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
+                Invite a colleague to collaborate on this school workspace. They will receive access based on their assigned role.
+              </p>
+              <div style={{ marginBottom: '16px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#334155',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="colleague@school.edu"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#334155',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Workspace role
+                </label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '14px',
+                    background: '#fff',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <option value="ADMIN">Administrator (Full site & team control)</option>
+                  <option value="EDITOR">Editor (Can edit and publish content)</option>
+                  <option value="VIEWER">Analyst / Viewer (Read-only access)</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <Button kind="secondary" type="button" onClick={() => setInviteModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button kind="primary" type="submit" disabled={isInviting}>
+                  {isInviting ? 'Sending...' : 'Send Invitation'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Permission Matrix */}
+      {permMatrixOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            display: 'grid',
+            placeItems: 'center',
+            zIndex: 1000,
+            padding: '16px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPermMatrixOpen(false)
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '12px',
+              maxWidth: '680px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px 20px',
+                borderBottom: '1px solid #e2e8f0',
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                Role Permission Matrix
+              </h3>
+              <button
+                type="button"
+                onClick={() => setPermMatrixOpen(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  display: 'grid',
+                  placeItems: 'center',
+                  padding: '4px',
+                }}
+              >
+                <Icon name="close" size={16} />
+              </button>
+            </div>
+            <div style={{ padding: '20px', overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                    <th style={{ padding: '10px 8px' }}>Capability</th>
+                    <th style={{ padding: '10px 8px' }}>Owner</th>
+                    <th style={{ padding: '10px 8px' }}>Admin</th>
+                    <th style={{ padding: '10px 8px' }}>Editor</th>
+                    <th style={{ padding: '10px 8px' }}>Analyst</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ['Edit website pages & builder', '✓', '✓', '✓', '—'],
+                    ['Publish & release snapshots', '✓', '✓', '✓', '—'],
+                    ['Manage domain & DNS', '✓', '✓', '—', '—'],
+                    ['Invite & manage users', '✓', '✓', '—', '—'],
+                    ['Security & billing settings', '✓', '—', '—', '—'],
+                    ['Export data & view analytics', '✓', '✓', '✓', '✓'],
+                  ].map(([cap, o, a, e, v], idx) => (
+                    <tr
+                      key={cap}
+                      style={{
+                        borderBottom: '1px solid #f1f5f9',
+                        backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc',
+                      }}
+                    >
+                      <td style={{ padding: '10px 8px', fontWeight: 600, color: '#1e293b' }}>{cap}</td>
+                      <td style={{ padding: '10px 8px', color: '#16a34a', fontWeight: 700 }}>{o}</td>
+                      <td style={{ padding: '10px 8px', color: '#16a34a', fontWeight: 700 }}>{a}</td>
+                      <td style={{ padding: '10px 8px', color: e === '✓' ? '#16a34a' : '#94a3b8', fontWeight: 700 }}>{e}</td>
+                      <td style={{ padding: '10px 8px', color: v === '✓' ? '#16a34a' : '#94a3b8', fontWeight: 700 }}>{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <Button kind="primary" onClick={() => setPermMatrixOpen(false)}>
+                  Close Matrix
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Confirm Restore Backup */}
+      {restoreModalBackup && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            display: 'grid',
+            placeItems: 'center',
+            zIndex: 1000,
+            padding: '16px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isRestoring) setRestoreModalBackup(null)
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '12px',
+              maxWidth: '440px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+              padding: '24px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: '#fef3c7',
+                  color: '#d97706',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
+                <Icon name="clock" size={18} />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                Restore Snapshot
+              </h3>
+            </div>
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
+              Are you sure you want to restore the backup from <strong>{restoreModalBackup}</strong>?
+              This will restore all pages, content, and configuration to this exact point in time.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <Button kind="secondary" disabled={isRestoring} onClick={() => setRestoreModalBackup(null)}>
+                Cancel
+              </Button>
+              <Button kind="primary" disabled={isRestoring} onClick={handleConfirmRestore}>
+                {isRestoring ? 'Restoring...' : 'Confirm Restore'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

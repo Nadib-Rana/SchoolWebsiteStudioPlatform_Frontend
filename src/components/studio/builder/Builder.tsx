@@ -228,12 +228,55 @@ const SECTION_TEMPLATES = [
 
 export function Builder() {
   const { notify, setView, previewTheme } = useStudio()
+
+  const [customHeroBg, setCustomHeroBg] = useState<string | null>(null)
+  const heroBgInputRef = useRef<HTMLInputElement>(null)
+
+  const handleHeroBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setCustomHeroBg(reader.result as string)
+        notify(`Hero photo "${file.name}" updated!`)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const [undoStack, setUndoStack] = useState<string[]>([])
+  const [redoStack, setRedoStack] = useState<string[]>([])
+
+  const handleUndo = () => {
+    if (undoStack.length === 0) {
+      notify('No earlier actions to undo')
+      return
+    }
+    const prev = undoStack[undoStack.length - 1]
+    setRedoStack((r) => [selected, ...r])
+    setUndoStack((u) => u.slice(0, -1))
+    setSelected(prev)
+    notify(`Undo: switched to ${prev}`)
+  }
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) {
+      notify('No actions to redo')
+      return
+    }
+    const next = redoStack[0]
+    setUndoStack((u) => [...u, selected])
+    setRedoStack((r) => r.slice(1))
+    setSelected(next)
+    notify(`Redo: restored to ${next}`)
+  }
   const isInitializedRef = useRef(false)
   const [device, setDevice] = useState<DeviceType>('monitor')
   const [selected, setSelected] = useState('Hero section')
   const [isSaving, setIsSaving] = useState(false)
   const [showSettings, setShowSettings] = useState(true)
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'advanced'>('content')
+  const [leftPanelTab, setLeftPanelTab] = useState<'sections' | 'components'>('sections')
 
   // Dynamic section list (supports adding & removing custom sections)
   const [sectionList, setSectionList] = useState<SectionItem[]>(INITIAL_SECTIONS)
@@ -1034,7 +1077,7 @@ export function Builder() {
             type="button"
             className="icon-button"
             aria-label="Undo last change"
-            onClick={() => notify('Undo action')}
+            onClick={handleUndo}
           >
             <Icon name="undo" />
           </button>
@@ -1042,7 +1085,7 @@ export function Builder() {
             type="button"
             className="icon-button"
             aria-label="Redo last change"
-            onClick={() => notify('Redo action')}
+            onClick={handleRedo}
           >
             <Icon name="redo" />
           </button>
@@ -1075,77 +1118,118 @@ export function Builder() {
         {/* Left Sidebar: Page Structure Navigation */}
         <aside className="builder-left">
           <div className="panel-tabs">
-            <button type="button" className="active">
+            <button
+              type="button"
+              className={leftPanelTab === 'sections' ? 'active' : ''}
+              onClick={() => setLeftPanelTab('sections')}
+            >
               Sections
             </button>
             <button
               type="button"
-              onClick={() => notify('Components library active')}
+              className={leftPanelTab === 'components' ? 'active' : ''}
+              onClick={() => setLeftPanelTab('components')}
             >
               Components
             </button>
           </div>
-          <div className="panel-heading">
-            <span>PAGE STRUCTURE</span>
-            <button
-              type="button"
-              aria-label="Add element"
-              onClick={() => setShowAddModal(true)}
-            >
-              <Icon name="plus" />
-            </button>
-          </div>
-          <div className="section-list">
-            {sectionList.map((sec) => {
-              const isHidden =
-                sec.label === 'Announcement bar' && !showAnnouncement
-              return (
+          {leftPanelTab === 'sections' ? (
+            <>
+              <div className="panel-heading">
+                <span>PAGE STRUCTURE</span>
                 <button
-                  key={sec.label}
                   type="button"
-                  onClick={() => handleSelectSection(sec.label)}
-                  className={selected === sec.label ? 'active' : ''}
-                  style={{
-                    cursor: 'pointer',
-                    transition: 'background 0.15s, border 0.15s',
-                  }}
+                  aria-label="Add element"
+                  onClick={() => setShowAddModal(true)}
                 >
-                  <i>⠿</i>
-                  <span className="section-icon">
-                    <Icon name={sec.icon as any} size={15} />
-                  </span>
-                  <strong>{sec.label}</strong>
-                  {isHidden && <small>Hidden</small>}
-                  {sec.isCustom ? (
-                    <span
-                      title="Remove section"
-                      onClick={(e) => handleDeleteSection(sec.label, e)}
+                  <Icon name="plus" />
+                </button>
+              </div>
+              <div className="section-list">
+                {sectionList.map((sec) => {
+                  const isHidden =
+                    sec.label === 'Announcement bar' && !showAnnouncement
+                  return (
+                    <button
+                      key={sec.label}
+                      type="button"
+                      onClick={() => handleSelectSection(sec.label)}
+                      className={selected === sec.label ? 'active' : ''}
                       style={{
-                        marginLeft: 'auto',
                         cursor: 'pointer',
-                        color: '#ef4444',
-                        padding: '2px 4px',
-                        borderRadius: '4px',
-                        display: 'grid',
-                        placeItems: 'center',
+                        transition: 'background 0.15s, border 0.15s',
                       }}
                     >
-                      <Icon name="close" size={13} />
-                    </span>
-                  ) : (
-                    <Icon name="more" size={15} />
-                  )}
-                </button>
-              )
-            })}
-          </div>
-          <button
-            type="button"
-            className="add-section"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Icon name="plus" /> Add section
-          </button>
+                      <i>⠿</i>
+                      <span className="section-icon">
+                        <Icon name={sec.icon as any} size={15} />
+                      </span>
+                      <strong>{sec.label}</strong>
+                      {isHidden && <small>Hidden</small>}
+                      {sec.isCustom ? (
+                        <span
+                          title="Remove section"
+                          onClick={(e) => handleDeleteSection(sec.label, e)}
+                          style={{
+                            marginLeft: 'auto',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                            padding: '2px 4px',
+                            borderRadius: '4px',
+                            display: 'grid',
+                            placeItems: 'center',
+                          }}
+                        >
+                          <Icon name="close" size={13} />
+                        </span>
+                      ) : (
+                        <Icon name="more" size={15} />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              <button
+                type="button"
+                className="add-section"
+                onClick={() => setShowAddModal(true)}
+              >
+                <Icon name="plus" /> Add section
+              </button>
+            </>
+          ) : (
+            <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '0.05em' }}>
+                AVAILABLE COMPONENTS
+              </span>
+              {SECTION_TEMPLATES.map((tpl) => (
+                <div
+                  key={tpl.type}
+                  onClick={() => handleAddSection(tpl)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid #e2e8f0',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#3b82f6')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#e2e8f0')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Icon name={tpl.icon} size={14} />
+                    <strong style={{ color: '#1e293b' }}>{tpl.label}</strong>
+                  </div>
+                  <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '11px' }}>+ Add</span>
+                </div>
+              ))}
+            </div>
+          )}
         </aside>
 
         {/* Center Canvas Area: Fully interactive preview */}
@@ -1326,7 +1410,15 @@ export function Builder() {
                   ))}
                 </h2>
                 <p>{description}</p>
-                <button type="button">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelected('Hero section')
+                    notify(`Hero button action: "${buttonLabel}" (links to ${buttonLink || '/admissions'})`)
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   {buttonLabel} <Icon name="arrow" size={13} />
                 </button>
               </div>
@@ -2092,6 +2184,11 @@ export function Builder() {
                         <div style={{ marginTop: '24px' }}>
                           <button
                             type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelected(sec.label)
+                              notify(`Section button clicked: "${data.buttonText}" (links to ${data.buttonLink || '#'})`)
+                            }}
                             style={{
                               background: '#e3ad3f',
                               color: '#0f172a',
@@ -2391,15 +2488,22 @@ export function Builder() {
                 </SettingGroup>
 
                 <SettingGroup title="Background Image">
+                  <input
+                    type="file"
+                    ref={heroBgInputRef}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleHeroBgUpload}
+                  />
                   <div
                     className="media-picker"
-                    style={{ backgroundImage: `url(${heroImage})` }}
+                    style={{ backgroundImage: `url(${customHeroBg || heroImage})` }}
                   >
                     <button
                       type="button"
-                      onClick={() => notify('Media library opened')}
+                      onClick={() => heroBgInputRef.current?.click()}
                     >
-                      Replace photo
+                      {customHeroBg ? 'Change photo' : 'Replace photo'}
                     </button>
                   </div>
                   <label>
@@ -2679,7 +2783,7 @@ export function Builder() {
                   </label>
                   <Button
                     kind="secondary"
-                    onClick={() => notify('Photo uploader opened')}
+                    onClick={() => setView('gallery')}
                     style={{ width: '100%', marginTop: '8px' }}
                   >
                     Manage album photos
@@ -3265,6 +3369,7 @@ export function Builder() {
                   <Button
                     kind="primary"
                     style={{ padding: '6px 14px', fontSize: '12px' }}
+                    onClick={() => handleAddSection(tpl)}
                   >
                     <Icon name="plus" size={13} /> Add
                   </Button>

@@ -181,6 +181,19 @@ class ApiClient {
       const id = schoolId || this.getActiveSchoolId()
       return this.request<any[]>(`/schools/${id}/members`)
     },
+    addMember: async (data: { email: string; role: string }, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/members`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    removeMember: async (userId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/members/${userId}`, {
+        method: 'DELETE',
+      })
+    },
   }
 
   // --- Content Management (8 Sections) ---

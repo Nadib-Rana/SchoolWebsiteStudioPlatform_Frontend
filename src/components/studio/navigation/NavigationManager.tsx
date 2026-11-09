@@ -501,6 +501,7 @@ export function NavigationManager({
 
             <button
               type="button"
+              onClick={() => notify('Preview: "Apply now" links to the admissions portal on the public site')}
               style={{
                 border: 'none',
                 background: '#163d72',
@@ -509,6 +510,7 @@ export function NavigationManager({
                 fontWeight: 600,
                 padding: '5px 10px',
                 borderRadius: '4px',
+                cursor: 'pointer',
               }}
             >
               Apply now

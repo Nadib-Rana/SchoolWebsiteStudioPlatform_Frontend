@@ -59,7 +59,14 @@ export function Academics() {
             <strong>{x[1]}</strong>
             <p>{x[2]}</p>
           </div>
-          <button type="button" aria-label={`View ${x[0]}`}>
+          <button
+            type="button"
+            aria-label={`View ${x[0]}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              setView('content')
+            }}
+          >
             <Icon name="arrow" />
           </button>
         </div>

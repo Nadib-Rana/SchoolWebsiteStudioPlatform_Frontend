@@ -332,9 +332,11 @@ export function ThemeCustomization() {
                 <button
                   type="button"
                   className={style.toLowerCase()}
+                  onClick={() => notify(`Preview button styled with ${style.toLowerCase()} corners & theme colors.`)}
                   style={{
                     backgroundColor: secondaryColor,
                     color: '#0f172a',
+                    cursor: 'pointer',
                     borderRadius:
                       style === 'Pill'
                         ? '9999px'

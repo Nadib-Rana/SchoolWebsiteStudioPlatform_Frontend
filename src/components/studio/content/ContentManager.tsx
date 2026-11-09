@@ -5,7 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import { StateBadge } from '@/components/common/StateBadge'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 export function ContentManager() {
   const { notify, currentSchool, schoolSwitchKey } = useStudio()
@@ -64,6 +64,20 @@ export function ContentManager() {
 
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState('Just now')
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const logoUploadRef = useRef<HTMLInputElement>(null)
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setLogoPreview(reader.result as string)
+        notify(`Logo "${file.name}" selected. Click "Save changes" to persist.`)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   useEffect(() => {
     let mounted = true
@@ -208,15 +222,30 @@ export function ContentManager() {
         {activeItem === 0 && (
           <>
             <div className="logo-upload">
-              <div>{(formData.schoolName || 'N').charAt(0)}</div>
+              <input
+                type="file"
+                ref={logoUploadRef}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleLogoUpload}
+              />
+              <div
+                style={{
+                  backgroundImage: logoPreview ? `url(${logoPreview})` : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                {!logoPreview && (formData.schoolName || 'N').charAt(0)}
+              </div>
               <span>
                 <strong>School logo</strong>
                 <small>PNG, JPG or SVG · Managed via MinIO</small>
                 <button
                   type="button"
-                  onClick={() => notify('Logo is synchronized with school profile')}
+                  onClick={() => logoUploadRef.current?.click()}
                 >
-                  Active Logo
+                  {logoPreview ? 'Change logo' : 'Upload logo'}
                 </button>
               </span>
             </div>

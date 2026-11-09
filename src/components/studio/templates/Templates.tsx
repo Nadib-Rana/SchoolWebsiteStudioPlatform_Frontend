@@ -134,7 +134,12 @@ export function Templates() {
             >
               Preview your website
             </Button>
-            <button type="button" className="text-link">
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => setView('theme')}
+              title="Open Theme & Layout customizer"
+            >
               How templates work <Icon name="arrow" size={14} />
             </button>
           </div>

@@ -115,7 +115,12 @@ export function Overview() {
               <h3>Website performance</h3>
               <p>Visitors over the last 30 days</p>
             </div>
-            <button type="button" className="select-button">
+            <button
+              type="button"
+              className="select-button"
+              onClick={() => setView('analytics')}
+              title="View full analytics"
+            >
               Last 30 days <Icon name="chevron" size={13} />
             </button>
           </div>
@@ -188,7 +193,12 @@ export function Overview() {
               <h3>Recent activity</h3>
               <p>Latest updates across your website</p>
             </div>
-            <button type="button" className="text-button">
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => setView('publishing')}
+              title="View full publishing activity"
+            >
               View all
             </button>
           </div>
@@ -223,7 +233,15 @@ export function Overview() {
                 {i === 3 ? <Icon name="clock" size={14} /> : <Icon name="check" size={14} />}
               </span>
               <span>{x}</span>
-              {i === 3 && <button type="button">Fix now</button>}
+              {i === 3 && (
+                <button
+                  type="button"
+                  onClick={() => setView('seo')}
+                  title="Configure SEO & Social sharing"
+                >
+                  Fix now
+                </button>
+              )}
             </div>
           ))}
         </div>
