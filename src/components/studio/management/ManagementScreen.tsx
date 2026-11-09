@@ -28,10 +28,13 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
   const { notify, setView } = useStudio()
   const meta = screenMeta[view] || screenMeta.pages
   const [modal, setModal] = useState(false)
+  const [navAddModal, setNavAddModal] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const doAction = () => {
-    if (['pages', 'teachers', 'notices', 'events', 'gallery', 'media'].includes(view)) {
+    if (view === 'navigation') {
+      setNavAddModal(true)
+    } else if (['pages', 'teachers', 'notices', 'events', 'gallery', 'media'].includes(view)) {
       setModal(true)
     } else {
       notify(
@@ -75,7 +78,12 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
       {view === 'academics' && <Academics />}
       {view === 'admissions' && <AdmissionsManager />}
       {view === 'gallery' && <Gallery />}
-      {view === 'navigation' && <NavigationManager />}
+      {view === 'navigation' && (
+        <NavigationManager
+          openAddModal={navAddModal}
+          onCloseAddModal={() => setNavAddModal(false)}
+        />
+      )}
       {view === 'media' && <MediaLibrary />}
       {view === 'seo' && <SEOManager />}
       {view === 'domains' && <DomainManager />}
