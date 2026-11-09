@@ -58,6 +58,23 @@ export default async function SchoolPublicLayout({
   const primaryColor = siteData.theme?.primaryColor || '#102f58'
   const accentColor = siteData.theme?.secondaryColor || '#e3ad3f'
 
+  const schemaOrg = {
+    '@context': 'https://schema.org',
+    '@type': 'EducationalOrganization',
+    name: siteData.school.name,
+    description: siteData.seo?.metaDescription || siteData.profile?.shortBio,
+    url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${schoolSlug}`,
+    logo: siteData.school.logoUrl || undefined,
+    telephone: siteData.profile?.phone || undefined,
+    email: siteData.profile?.email || undefined,
+    address: siteData.profile?.address
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: siteData.profile.address,
+        }
+      : undefined,
+  }
+
   return (
     <div
       className={`public-site ${themeName} min-h-screen flex flex-col`}
@@ -68,6 +85,10 @@ export default async function SchoolPublicLayout({
         } as React.CSSProperties
       }
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+      />
       <PublicHeader
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}

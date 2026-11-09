@@ -56,13 +56,15 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
               Preview draft
             </Button>
           )}
-          <Button
-            kind="primary"
-            icon={meta.action.includes('Save') ? 'check' : 'plus'}
-            onClick={doAction}
-          >
-            {meta.action}
-          </Button>
+          {!['analytics', 'integrations'].includes(view) && (
+            <Button
+              kind="primary"
+              icon={meta.action?.includes('Save') ? 'check' : 'plus'}
+              onClick={doAction}
+            >
+              {meta.action}
+            </Button>
+          )}
         </div>
       </div>
 
