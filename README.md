@@ -23,6 +23,21 @@ A clean, modern, scalable, and production-ready **Next.js 16 + React 19 + TypeSc
 
 ---
 
+## 🏛️ Multi-Tenant Studio & Dynamic Workflow
+
+The frontend is powered by a reactive multi-tenant management system that dynamically synchronizes user sessions, school memberships, and live public website previews.
+
+For the full architectural specification, sequence diagrams, and data-flow models:
+👉 [**Multi-Tenant Workflow Architecture (`docs/architecture/MULTI_TENANT_WORKFLOW_ARCHITECTURE.md`)**](../docs/architecture/MULTI_TENANT_WORKFLOW_ARCHITECTURE.md)
+
+### Key Frontend Features:
+- **Dynamic School Switcher**: Interactive sidebar popover displaying all owned/managed schools with active indicators.
+- **Reactive Tenant Context (`StudioContext`)**: Automatically synchronizes `currentUser`, `currentSchool`, and `userSchools` with zero page reloads.
+- **Self-Service Registration**: Dual-mode login page supporting direct administrator onboarding with custom passwords.
+- **Live Website SSR Routing**: Dynamic `/[schoolSlug]` routes rendering high-performance public school websites with instant cache invalidation on publish.
+
+---
+
 ## 📁 Project Structure
 
 ```text
