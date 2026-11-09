@@ -174,6 +174,27 @@ export function Login() {
             <b>G</b> Continue with Google
           </Button>
 
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <span style={{ fontSize: '13px', color: '#64748b' }}>
+              Want to set up a new school?{' '}
+            </span>
+            <button
+              type="button"
+              onClick={() => setView('onboarding')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#2563eb',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              Register New School
+            </button>
+          </div>
+
           <small className="legal">
             By signing in, you agree to the Terms of Service and Privacy Policy.
           </small>

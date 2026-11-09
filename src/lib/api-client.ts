@@ -56,6 +56,12 @@ class ApiClient {
     return localStorage.getItem('studio_school_slug') || 'northfield-high'
   }
 
+  public setActiveSchoolSlug(slug: string) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('studio_school_slug', slug)
+    }
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},

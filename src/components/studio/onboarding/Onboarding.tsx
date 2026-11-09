@@ -4,11 +4,39 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { heroImage, templates } from '@/config/templates'
 import { useStudio } from '@/context/StudioContext'
+import { api } from '@/lib/api-client'
 import { useState } from 'react'
 
 export function Onboarding() {
   const { setView, notify } = useStudio()
   const [step, setStep] = useState(1)
+  const [isPublishing, setIsPublishing] = useState(false)
+
+  // Step 1: School Information
+  const [schoolName, setSchoolName] = useState('Riverside Academy')
+  const [schoolType, setSchoolType] = useState('Secondary School')
+  const [schoolAddress, setSchoolAddress] = useState('27 Lakeview Avenue, Dhanmondi, Dhaka')
+  const [contactPhone, setContactPhone] = useState('+880 1712 998 877')
+  const [contactEmail, setContactEmail] = useState('info@riverside.edu')
+  const [establishedYear, setEstablishedYear] = useState('1995')
+
+  // Step 2: Website Identity
+  const [slug, setSlug] = useState('riverside-academy')
+  const [description, setDescription] = useState(
+    'A vibrant learning community where every student is known, challenged, and inspired.'
+  )
+  const [primaryColor, setPrimaryColor] = useState('#163D72')
+  const [accentColor, setAccentColor] = useState('#E3AD3F')
+
+  // Step 3: Template
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0)
+
+  // Step 4: Content
+  const [principalName, setPrincipalName] = useState('Dr. Arthur Pendelton')
+  const [principalDesignation, setPrincipalDesignation] = useState('Principal')
+  const [academicOverview, setAcademicOverview] = useState(
+    'Our connected learning journey spans Primary, Middle and Senior School.'
+  )
 
   const steps = [
     'School information',
@@ -18,13 +46,67 @@ export function Onboarding() {
     'Preview & publish',
   ]
 
+  const handleSchoolNameChange = (val: string) => {
+    setSchoolName(val)
+    const autoSlug = val
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+    if (autoSlug) {
+      setSlug(autoSlug)
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!schoolName || !slug) {
+      notify('Please provide both school name and website slug')
+      return
+    }
+
+    setIsPublishing(true)
+    try {
+      const cleanSlug = slug
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+
+      const payload = {
+        name: schoolName,
+        slug: cleanSlug,
+        templateId: templates[selectedTemplateIndex]?.name || 'Aster Academy',
+        themePreset: 'theme-classic',
+        primaryColor,
+        principalName,
+        contactEmail,
+        contactPhone,
+        selectedPages: ['home', 'about', 'academics', 'admissions', 'teachers', 'contact'],
+      }
+
+      const res = await api.schools.onboarding(payload)
+      const data = (res as any)?.data || res
+      if (data?.id) {
+        api.setActiveSchoolId(data.id)
+        api.setActiveSchoolSlug(data.slug || cleanSlug)
+      }
+      notify(`School "${schoolName}" successfully registered & published!`)
+      setView('overview')
+    } catch (err: any) {
+      console.error('[Onboarding] Error:', err)
+      notify(`Registration failed: ${err?.message || 'Please check network or duplicate slug'}`)
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
   return (
     <div className="onboarding-page">
       <div className="onboarding-head">
         <div className="brand-mark">
           <Icon name="layers" />
         </div>
-        <strong>Set up Northfield High</strong>
+        <strong>Register School: {schoolName}</strong>
         <Button kind="ghost" onClick={() => setView('overview')}>
           Save and exit
         </Button>
@@ -33,10 +115,10 @@ export function Onboarding() {
       <div className="onboarding-body">
         <aside>
           <span>SETUP PROGRESS</span>
-          <h2>Bring your school online</h2>
+          <h2>Register your school</h2>
           <p>
-            Complete these steps to create a polished foundation. You can change
-            anything later.
+            Complete these steps to provision your new public school website.
+            All settings can be customized later in Studio.
           </p>
           {steps.map((x, i) => (
             <button
@@ -72,39 +154,67 @@ export function Onboarding() {
               <h1>Start with the essentials.</h1>
               <p>This information creates the foundation of your website.</p>
               <div className="logo-upload large">
-                <div>NH</div>
+                <div>{schoolName.slice(0, 2).toUpperCase() || 'SC'}</div>
                 <span>
                   <strong>Upload school logo</strong>
                   <small>PNG, JPG or SVG · Recommended 512 × 512</small>
-                  <button type="button">Choose image</button>
+                  <button type="button" onClick={() => notify('Default logo assigned')}>
+                    Choose image
+                  </button>
                 </span>
               </div>
               <div className="form-grid">
                 <label>
                   School name
-                  <input defaultValue="Northfield High School" />
+                  <input
+                    value={schoolName}
+                    onChange={(e) => handleSchoolNameChange(e.target.value)}
+                    placeholder="e.g. Riverside Academy"
+                  />
                 </label>
                 <label>
                   School type
-                  <select defaultValue="Secondary School">
-                    <option>Secondary School</option>
+                  <select
+                    value={schoolType}
+                    onChange={(e) => setSchoolType(e.target.value)}
+                  >
+                    <option value="Secondary School">Secondary School</option>
+                    <option value="Primary & Secondary">Primary & Secondary</option>
+                    <option value="College & Academy">College & Academy</option>
                   </select>
                 </label>
                 <label className="full">
                   School address
-                  <input defaultValue="27 Lakeview Avenue, Dhanmondi, Dhaka" />
+                  <input
+                    value={schoolAddress}
+                    onChange={(e) => setSchoolAddress(e.target.value)}
+                    placeholder="e.g. 27 Lakeview Avenue, Dhaka"
+                  />
                 </label>
                 <label>
                   Contact number
-                  <input defaultValue="+880 2 555 0142" />
+                  <input
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="+880 1712 000 000"
+                  />
                 </label>
                 <label>
                   Public email
-                  <input defaultValue="hello@northfield.edu" />
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="info@school.edu"
+                  />
                 </label>
                 <label>
                   Established year
-                  <input defaultValue="1983" />
+                  <input
+                    value={establishedYear}
+                    onChange={(e) => setEstablishedYear(e.target.value)}
+                    placeholder="1995"
+                  />
                 </label>
               </div>
             </>
@@ -114,37 +224,51 @@ export function Onboarding() {
             <>
               <span className="eyebrow">CREATE YOUR IDENTITY</span>
               <h1>Make it unmistakably yours.</h1>
-              <p>Choose a name, address, and brand colors for your website.</p>
+              <p>Choose a website slug, brand colors, and mission motto.</p>
               <div className="form-grid">
                 <label className="full">
                   Website name
-                  <input defaultValue="Northfield High School" />
+                  <input
+                    value={schoolName}
+                    onChange={(e) => handleSchoolNameChange(e.target.value)}
+                  />
                 </label>
                 <label className="full">
-                  Website address
+                  Website address (Slug)
                   <div className="slug-input">
                     <span>schoolcanvas.app/</span>
-                    <input defaultValue="northfield-high" />
+                    <input
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="e.g. riverside-academy"
+                    />
                   </div>
                 </label>
                 <label className="full">
                   Short school description
                   <textarea
-                    defaultValue="A vibrant learning community where every student is known, challenged, and inspired."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </label>
                 <label>
                   Primary color
                   <div className="color-input">
-                    <i />
-                    <input defaultValue="#163D72" />
+                    <i style={{ background: primaryColor }} />
+                    <input
+                      value={primaryColor}
+                      onChange={(e) => setPrimaryColor(e.target.value)}
+                    />
                   </div>
                 </label>
                 <label>
                   Accent color
                   <div className="color-input gold">
-                    <i />
-                    <input defaultValue="#E3AD3F" />
+                    <i style={{ background: accentColor }} />
+                    <input
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                    />
                   </div>
                 </label>
               </div>
@@ -164,10 +288,11 @@ export function Onboarding() {
                   <button
                     key={x.name}
                     type="button"
-                    className={i === 0 ? 'active' : ''}
+                    className={selectedTemplateIndex === i ? 'active' : ''}
+                    onClick={() => setSelectedTemplateIndex(i)}
                   >
                     <div style={{ backgroundImage: `url(${x.image})` }}>
-                      {i === 0 && (
+                      {selectedTemplateIndex === i && (
                         <span>
                           <Icon name="check" size={13} />
                         </span>
@@ -185,26 +310,34 @@ export function Onboarding() {
             <>
               <span className="eyebrow">ADD THE BASICS</span>
               <h1>Give visitors a warm welcome.</h1>
-              <p>Draft the key content people look for first.</p>
+              <p>Draft the key leadership and academic overview.</p>
               <div className="form-grid">
                 <label className="full">
                   About your school
                   <textarea
-                    defaultValue="Northfield High School is a caring, ambitious community committed to academic excellence and personal growth."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </label>
                 <label>
                   Principal name
-                  <input defaultValue="Dr. Farhana Noor" />
+                  <input
+                    value={principalName}
+                    onChange={(e) => setPrincipalName(e.target.value)}
+                  />
                 </label>
                 <label>
                   Principal designation
-                  <input defaultValue="Principal" />
+                  <input
+                    value={principalDesignation}
+                    onChange={(e) => setPrincipalDesignation(e.target.value)}
+                  />
                 </label>
                 <label className="full">
                   Academic overview
                   <textarea
-                    defaultValue="Our connected learning journey spans Primary, Middle and Senior School."
+                    value={academicOverview}
+                    onChange={(e) => setAcademicOverview(e.target.value)}
                   />
                 </label>
               </div>
@@ -214,10 +347,10 @@ export function Onboarding() {
           {step === 5 && (
             <>
               <span className="eyebrow">READY TO SHARE</span>
-              <h1>Your website is taking shape.</h1>
+              <h1>Your website is ready to launch.</h1>
               <p>
-                Review your foundation, then save a draft or publish your first
-                version.
+                Review your foundation, then provision and publish your brand new
+                school website.
               </p>
               <div
                 className="onboard-preview"
@@ -225,20 +358,20 @@ export function Onboarding() {
                   backgroundImage: `linear-gradient(90deg,#0f274ddd,transparent),url(${heroImage})`,
                 }}
               >
-                <span>NORTHFIELD HIGH SCHOOL</span>
+                <span>{schoolName.toUpperCase()}</span>
                 <strong>
                   Shaping thinkers.
                   <br />
                   Building character.
                 </strong>
-                <small>northfield-high.schoolcanvas.app</small>
+                <small>{slug}.schoolcanvas.app</small>
               </div>
               <div className="ready-list">
                 {[
-                  'School profile completed',
-                  'Website identity configured',
-                  'Aster Academy template selected',
-                  'Initial content added',
+                  `School profile: ${schoolName}`,
+                  `Slug: ${slug}`,
+                  `Template: ${templates[selectedTemplateIndex]?.name || 'Aster Academy'}`,
+                  'Default pages (Home, About, Academics, Admissions, Teachers, Contact)',
                 ].map((x) => (
                   <span key={x}>
                     <i>
@@ -252,20 +385,28 @@ export function Onboarding() {
           )}
 
           <div className="onboard-actions">
-            <Button onClick={() => step > 1 && setStep(step - 1)}>
+            <Button
+              disabled={isPublishing}
+              onClick={() => step > 1 && setStep(step - 1)}
+            >
               {step === 1 ? 'Save draft' : 'Back'}
             </Button>
             <Button
               kind="primary"
+              disabled={isPublishing}
               onClick={() => {
-                if (step < 5) setStep(step + 1)
-                else {
-                  notify('Your website is now published')
-                  setView('overview')
+                if (step < 5) {
+                  setStep(step + 1)
+                } else {
+                  handlePublish()
                 }
               }}
             >
-              {step === 5 ? 'Publish website' : 'Continue'}
+              {step === 5
+                ? isPublishing
+                  ? 'Provisioning school...'
+                  : 'Publish website'
+                : 'Continue'}
               <Icon name="arrow" size={14} />
             </Button>
           </div>
