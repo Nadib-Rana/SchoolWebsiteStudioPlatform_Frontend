@@ -18,11 +18,11 @@ interface UsersRolesTabProps {
 }
 
 const ROLE_OPTIONS = [
-  { value: 'OWNER', label: 'Owner' },
-  { value: 'ADMIN', label: 'Administrator' },
-  { value: 'EDITOR', label: 'Editor' },
-  { value: 'CONTENT_MANAGER', label: 'Content Manager' },
-  { value: 'ANALYST', label: 'Analyst' },
+  { value: 'OWNER', label: 'Owner', badge: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { value: 'ADMIN', label: 'Administrator', badge: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'EDITOR', label: 'Editor', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'CONTENT_MANAGER', label: 'Content Manager', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+  { value: 'ANALYST', label: 'Analyst', badge: 'bg-slate-50 text-slate-700 border-slate-200' },
 ]
 
 export function UsersRolesTab({
@@ -40,8 +40,8 @@ export function UsersRolesTab({
   return (
     <div className="card settings-form users-settings">
       <SettingsTitle
-        title="Users & roles"
-        description="Control who can access the Studio and what they can change."
+        title="Users & Roles"
+        description="Manage workspace team members, permission tiers and invitations."
         action={
           <Button kind="primary" icon="plus" onClick={onInviteClick}>
             Invite user
@@ -50,7 +50,7 @@ export function UsersRolesTab({
       />
       <div className="role-summary">
         <div>
-          <span>Active users</span>
+          <span>Active team</span>
           <strong>{activeUsersCount}</strong>
         </div>
         <div>
@@ -62,10 +62,12 @@ export function UsersRolesTab({
           <strong>{availableSeats}</strong>
         </div>
       </div>
+
       <div className="settings-user-list">
         {users.map((u, i) => {
           const membershipId = u[5] || ''
           const currentRoleVal = (u[3] || 'EDITOR').toUpperCase().replace(/\s+/g, '_')
+          const roleMeta = ROLE_OPTIONS.find((r) => r.value === currentRoleVal) || ROLE_OPTIONS[2]
 
           return (
             <div key={u[1] + i}>
@@ -77,6 +79,7 @@ export function UsersRolesTab({
                 </strong>
                 <small>{u[2]}</small>
               </div>
+
               <select
                 value={currentRoleVal}
                 onChange={(e) => {
@@ -99,24 +102,24 @@ export function UsersRolesTab({
                   </option>
                 ))}
               </select>
-              <span className={`state-badge ${(u[4] || 'Active').toLowerCase()}`}>
-                <i />
-                {u[4] || 'Active'}
+
+              <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${roleMeta.badge}`}>
+                {roleMeta.label}
               </span>
+
               <button
                 type="button"
                 aria-label={`Remove ${u[1]}`}
                 title="Remove member"
                 onClick={() => {
                   if (i === 0 || currentRoleVal === 'OWNER') {
-                    notify('Owner account cannot be removed directly.')
+                    notify('Owner account cannot be removed.')
                   } else if (onRemoveMember && membershipId) {
                     onRemoveMember(membershipId, u[1])
                   } else {
-                    const confirmRemove = window.confirm(`Remove user ${u[1]} (${u[2]}) from workspace?`)
-                    if (confirmRemove) {
+                    if (window.confirm(`Remove user ${u[1]} (${u[2]}) from workspace?`)) {
                       setUsers((prev) => prev.filter((_, idx) => idx !== i))
-                      notify(`User ${u[1]} removed from workspace.`)
+                      notify(`User ${u[1]} removed.`)
                     }
                   }
                 }}
@@ -127,13 +130,13 @@ export function UsersRolesTab({
           )
         })}
       </div>
+
       <div className="permission-note">
         <Icon name="help" />
         <div>
-          <strong>Role permissions</strong>
+          <strong>Role capabilities & governance</strong>
           <p>
-            Owners manage billing and security. Administrators manage the
-            website and team. Editors publish content. Analysts have read-only access.
+            Owners manage billing and security. Administrators manage the website and team. Editors customize builder layouts. Content managers manage announcements. Analysts have read-only analytics.
           </p>
         </div>
         <button type="button" onClick={onViewPermMatrixClick}>

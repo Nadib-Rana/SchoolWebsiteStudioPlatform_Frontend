@@ -30,6 +30,10 @@ export function createContentEndpoints(session: ApiSession) {
         const id = schoolId || session.getActiveSchoolId()
         return session.request<any[]>(`/schools/${id}/members`)
       },
+      getPermissionMatrix: async (schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/roles/permissions`)
+      },
       addMember: async (data: { email: string; role: string }, schoolId?: string) => {
         const id = schoolId || session.getActiveSchoolId()
         return session.request<any>(`/schools/${id}/members`, {

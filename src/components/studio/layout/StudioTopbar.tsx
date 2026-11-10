@@ -154,8 +154,12 @@ export function StudioTopbar() {
           icon="sparkle"
           className="publish-button"
           onClick={handleGlobalPublish}
-          disabled={isPublishing}
-          title={`Publish changes for ${currentSchool?.name || 'school'}`}
+          disabled={isPublishing || currentSchool?.role === 'ANALYST'}
+          title={
+            currentSchool?.role === 'ANALYST'
+              ? 'Analysts have read-only access (Publishing disabled)'
+              : `Publish changes for ${currentSchool?.name || 'school'}`
+          }
         >
           <span className="publish-label">{isPublishing ? 'Publishing...' : 'Publish'}</span>
         </Button>

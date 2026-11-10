@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 
@@ -13,6 +14,13 @@ interface InviteUserModalProps {
   onSendInvite: (e: React.FormEvent) => void
 }
 
+const ROLES = [
+  { value: 'ADMIN', label: 'Administrator', desc: 'Full site customization, publishing and team control' },
+  { value: 'EDITOR', label: 'Editor', desc: 'Modify website pages, layouts, and active theme' },
+  { value: 'CONTENT_MANAGER', label: 'Content Manager', desc: 'Manage announcements, events, gallery and admissions' },
+  { value: 'ANALYST', label: 'Analyst', desc: 'Read-only access to traffic analytics and audit timeline' },
+]
+
 export function InviteUserModal({
   inviteEmail,
   setInviteEmail,
@@ -22,129 +30,89 @@ export function InviteUserModal({
   onClose,
   onSendInvite,
 }: InviteUserModalProps) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyLink = () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+    const link = `${origin}/login?invite=team&role=${inviteRole.toLowerCase()}`
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.55)',
-        backdropFilter: 'blur(3px)',
-        display: 'grid',
-        placeItems: 'center',
-        zIndex: 1000,
-        padding: '16px',
-      }}
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm grid place-items-center z-50 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          maxWidth: '460px',
-          width: '100%',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-          overflow: 'hidden',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e2e8f0',
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-            Invite Team Member
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#64748b',
-              display: 'grid',
-              placeItems: 'center',
-              padding: '4px',
-            }}
-          >
+      <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Invite Team Member</h3>
+            <p className="text-xs text-slate-500">Collaborate with staff based on granular permissions</p>
+          </div>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
             <Icon name="close" size={16} />
           </button>
         </div>
-        <form onSubmit={onSendInvite} style={{ padding: '20px' }}>
-          <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-            Invite a colleague to collaborate on this school workspace. They will receive access based on their assigned role.
-          </p>
-          <div style={{ marginBottom: '16px' }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#334155',
-                marginBottom: '6px',
-              }}
-            >
-              Email address
+
+        <form onSubmit={onSendInvite} className="p-6 space-y-4 text-xs">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Email Address <span className="text-rose-500">*</span>
             </label>
             <input
               type="email"
               required
-              placeholder="colleague@school.edu"
+              placeholder="teacher@school.edu"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '9px 12px',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
+              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#334155',
-                marginBottom: '6px',
-              }}
-            >
-              Workspace role
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Assigned Role
             </label>
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '9px 12px',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                fontSize: '14px',
-                background: '#fff',
-                boxSizing: 'border-box',
-              }}
+              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium mb-1.5"
             >
-              <option value="ADMIN">Administrator (Full site & team control)</option>
-              <option value="EDITOR">Editor (Can edit layout, builder, and pages)</option>
-              <option value="CONTENT_MANAGER">Content Manager (Notices, events, gallery, admissions)</option>
-              <option value="ANALYST">Analyst (Read-only analytics and audit logs)</option>
+              {ROLES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
             </select>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              {ROLES.find((r) => r.value === inviteRole)?.desc}
+            </p>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <Button kind="secondary" type="button" onClick={onClose}>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <strong className="block text-slate-800 font-semibold text-[11px]">Instant Invite Link</strong>
+              <span className="text-[10px] text-slate-500">Share with staff via Slack or WhatsApp</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="px-2.5 py-1 text-[11px] font-semibold border rounded bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              {copied ? '✓ Copied!' : 'Copy Link'}
+            </button>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button kind="secondary" type="button" onClick={onClose} disabled={isInviting}>
               Cancel
             </Button>
-            <Button kind="primary" type="submit" disabled={isInviting}>
+            <Button kind="primary" type="submit" disabled={isInviting || !inviteEmail.trim()}>
               {isInviting ? 'Sending...' : 'Send Invitation'}
             </Button>
           </div>

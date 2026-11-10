@@ -1,108 +1,115 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
+import { api } from '@/lib/api-client'
 
 interface RolePermissionModalProps {
   onClose: () => void
 }
 
+const DEFAULT_CAPABILITIES = [
+  { cap: 'Page & Visual Builder', cat: 'Design', roles: [true, true, true, true, false] },
+  { cap: 'Publish Releases & Rollbacks', cat: 'Releases', roles: [true, true, false, false, false] },
+  { cap: 'Theme Customization', cat: 'Design', roles: [true, true, true, false, false] },
+  { cap: 'Notices, Events & Gallery', cat: 'Content', roles: [true, true, true, true, false] },
+  { cap: 'Admissions CRM & Inquiries', cat: 'Operations', roles: [true, true, true, true, false] },
+  { cap: 'Custom Domains & DNS Engine', cat: 'DevOps', roles: [true, true, false, false, false] },
+  { cap: 'Invite Staff & Manage Roles', cat: 'Admin', roles: [true, true, false, false, false] },
+  { cap: 'View Analytics & Audit Logs', cat: 'Reports', roles: [true, true, true, true, true] },
+]
+
 export function RolePermissionModal({ onClose }: RolePermissionModalProps) {
-  const permissions = [
-    ['Edit website pages & builder', '✓', '✓', '✓', '—'],
-    ['Publish & release snapshots', '✓', '✓', '✓', '—'],
-    ['Manage domain & DNS', '✓', '✓', '—', '—'],
-    ['Invite & manage users', '✓', '✓', '—', '—'],
-    ['Security & billing settings', '✓', '—', '—', '—'],
-    ['Export data & view analytics', '✓', '✓', '✓', '✓'],
-  ]
+  const [capabilities, setCapabilities] = useState(DEFAULT_CAPABILITIES)
+
+  useEffect(() => {
+    let mounted = true
+    const loadMatrix = async () => {
+      try {
+        const res = await api.schools.getPermissionMatrix()
+        const data = (res as any)?.data || res
+        if (mounted && Array.isArray(data?.capabilities)) {
+          setCapabilities(
+            data.capabilities.map((c: any) => ({
+              cap: c.capability,
+              cat: c.category,
+              roles: [
+                Boolean(c.roles?.OWNER),
+                Boolean(c.roles?.ADMIN),
+                Boolean(c.roles?.EDITOR),
+                Boolean(c.roles?.CONTENT_MANAGER),
+                Boolean(c.roles?.ANALYST),
+              ],
+            }))
+          )
+        }
+      } catch {
+        // Fallback default
+      }
+    }
+    void loadMatrix()
+    return () => { mounted = false }
+  }, [])
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.55)',
-        backdropFilter: 'blur(3px)',
-        display: 'grid',
-        placeItems: 'center',
-        zIndex: 1000,
-        padding: '16px',
-      }}
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm grid place-items-center z-50 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          maxWidth: '680px',
-          width: '100%',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-          overflow: 'hidden',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e2e8f0',
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-            Role Permission Matrix
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#64748b',
-              display: 'grid',
-              placeItems: 'center',
-              padding: '4px',
-            }}
-          >
+      <div className="bg-white rounded-xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Fine-Grained Role Permissions Matrix</h3>
+            <p className="text-xs text-slate-500">Access control and capabilities by workspace role</p>
+          </div>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
             <Icon name="close" size={16} />
           </button>
         </div>
-        <div style={{ padding: '20px', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+
+        <div className="p-6 overflow-x-auto text-xs">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                <th style={{ padding: '10px 8px' }}>Capability</th>
-                <th style={{ padding: '10px 8px' }}>Owner</th>
-                <th style={{ padding: '10px 8px' }}>Admin</th>
-                <th style={{ padding: '10px 8px' }}>Editor</th>
-                <th style={{ padding: '10px 8px' }}>Analyst</th>
+              <tr className="border-b-2 border-slate-200 text-slate-600">
+                <th className="py-2.5 px-3">Capability</th>
+                <th className="py-2.5 px-2 text-center text-purple-700">Owner</th>
+                <th className="py-2.5 px-2 text-center text-blue-700">Admin</th>
+                <th className="py-2.5 px-2 text-center text-emerald-700">Editor</th>
+                <th className="py-2.5 px-2 text-center text-amber-700">Content</th>
+                <th className="py-2.5 px-2 text-center text-slate-700">Analyst</th>
               </tr>
             </thead>
             <tbody>
-              {permissions.map(([cap, o, a, e, v], idx) => (
+              {capabilities.map((row, idx) => (
                 <tr
-                  key={cap}
-                  style={{
-                    borderBottom: '1px solid #f1f5f9',
-                    backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc',
-                  }}
+                  key={row.cap}
+                  className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}`}
                 >
-                  <td style={{ padding: '10px 8px', fontWeight: 600, color: '#1e293b' }}>{cap}</td>
-                  <td style={{ padding: '10px 8px', color: '#16a34a', fontWeight: 700 }}>{o}</td>
-                  <td style={{ padding: '10px 8px', color: '#16a34a', fontWeight: 700 }}>{a}</td>
-                  <td style={{ padding: '10px 8px', color: e === '✓' ? '#16a34a' : '#94a3b8', fontWeight: 700 }}>{e}</td>
-                  <td style={{ padding: '10px 8px', color: v === '✓' ? '#16a34a' : '#94a3b8', fontWeight: 700 }}>{v}</td>
+                  <td className="py-2.5 px-3">
+                    <strong className="block text-slate-800 text-xs font-semibold">{row.cap}</strong>
+                    <span className="text-[10px] text-slate-400 font-mono">{row.cat}</span>
+                  </td>
+                  {row.roles.map((hasAccess, rIdx) => (
+                    <td key={rIdx} className="py-2.5 px-2 text-center font-bold">
+                      {hasAccess ? (
+                        <span className="inline-flex w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 items-center justify-center text-xs">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="text-slate-300 font-normal">—</span>
+                      )}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
-          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-            <Button kind="primary" onClick={onClose}>
+
+          <div className="mt-5 flex justify-end pt-3 border-t border-slate-100">
+            <Button kind="secondary" onClick={onClose}>
               Close Matrix
             </Button>
           </div>
