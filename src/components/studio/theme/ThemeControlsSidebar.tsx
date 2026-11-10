@@ -17,6 +17,17 @@ interface ThemeControlsSidebarProps {
   setHeader: (header: string) => void
 }
 
+const FONT_HEADING_OPTIONS = [
+  { label: 'Plus Jakarta Sans', value: "'Plus Jakarta Sans', sans-serif" },
+  { label: 'DM Serif Display', value: "'DM Serif Display', serif" },
+  { label: 'Inter', value: "'Inter', sans-serif" },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Playfair Display', value: "'Playfair Display', serif" },
+  { label: 'Montserrat', value: "'Montserrat', sans-serif" },
+  { label: 'Cinzel', value: "'Cinzel', serif" },
+  { label: 'Space Grotesk', value: "'Space Grotesk', sans-serif" },
+]
+
 export function ThemeControlsSidebar({
   primaryColor,
   setPrimaryColor,
@@ -73,12 +84,21 @@ export function ThemeControlsSidebar({
         <label>
           Heading font
           <select
-            value={fontHeading}
+            value={
+              FONT_HEADING_OPTIONS.some((f) => f.value === fontHeading || f.label === fontHeading)
+                ? (FONT_HEADING_OPTIONS.find((f) => f.value === fontHeading || f.label === fontHeading)?.value || fontHeading)
+                : fontHeading
+            }
             onChange={(e) => setFontHeading(e.target.value)}
           >
-            <option value="DM Serif Display">DM Serif Display</option>
-            <option value="Inter">Inter</option>
-            <option value="Georgia">Georgia</option>
+            {FONT_HEADING_OPTIONS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+            {!FONT_HEADING_OPTIONS.some((f) => f.value === fontHeading || f.label === fontHeading) && (
+              <option value={fontHeading}>{fontHeading}</option>
+            )}
           </select>
         </label>
         <label>
@@ -95,7 +115,7 @@ export function ThemeControlsSidebar({
         <div className="font-preview">
           <span>Aa</span>
           <div>
-            <strong>{fontHeading}</strong>
+            <strong>{fontHeading?.replace(/['"]/g, '').split(',')[0].trim()}</strong>
             <small>Headings and editorial moments</small>
           </div>
         </div>

@@ -71,7 +71,9 @@ export function ThemeCustomization() {
     try {
       const buttonRadius =
         style === 'Pill' ? 'rounded-full' : style === 'Square' ? 'rounded-none' : 'rounded-md'
+      const selectedTheme = typeof window !== 'undefined' ? localStorage.getItem('studio_selected_theme') : null
       await api.theme.saveDraft({
+        activeTheme: selectedTheme ? `theme-${selectedTheme}` : undefined,
         primaryColor,
         secondaryColor,
         fontHeading,
@@ -93,7 +95,9 @@ export function ThemeCustomization() {
     try {
       const buttonRadius =
         style === 'Pill' ? 'rounded-full' : style === 'Square' ? 'rounded-none' : 'rounded-md'
+      const selectedTheme = typeof window !== 'undefined' ? localStorage.getItem('studio_selected_theme') : null
       await api.theme.saveDraft({
+        activeTheme: selectedTheme ? `theme-${selectedTheme}` : undefined,
         primaryColor,
         secondaryColor,
         fontHeading,
