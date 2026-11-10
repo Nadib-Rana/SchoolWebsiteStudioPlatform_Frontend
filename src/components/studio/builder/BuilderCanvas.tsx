@@ -1,7 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import type { DeviceType, SchoolTheme } from '@/types/theme'
 import { THEME_CONFIGS } from '@/config/themes'
+import { loadCustomThemeLocally, subscribeToThemeChanges, type CustomThemeConfig } from '../theme/theme-sync-helper'
 import type { CustomSectionData, SectionItem, SectionStyle } from './builder.types'
 import { CanvasAnnouncementHeader } from './canvas/CanvasAnnouncementHeader'
 import { CanvasHeroStats } from './canvas/CanvasHeroStats'
@@ -35,6 +37,20 @@ export function BuilderCanvas({
 }: BuilderCanvasProps) {
   const currentTheme = (state.appliedTheme as SchoolTheme) || 'modern'
   const activeCfg = THEME_CONFIGS[currentTheme] || THEME_CONFIGS.modern
+  const [customTheme, setCustomTheme] = useState<CustomThemeConfig | null>(() => loadCustomThemeLocally())
+
+  useEffect(() => {
+    return subscribeToThemeChanges((cfg) => {
+      setCustomTheme((prev) => ({ ...prev, ...cfg }))
+    })
+  }, [])
+
+  const mergedCfg = {
+    ...activeCfg,
+    primaryColor: customTheme?.primaryColor || activeCfg.primaryColor,
+    secondaryColor: customTheme?.secondaryColor || activeCfg.secondaryColor,
+    fontHeading: customTheme?.fontHeading || activeCfg.fontHeading,
+  }
 
   return (
     <div className="canvas-area">
@@ -42,8 +58,9 @@ export function BuilderCanvas({
         className={`canvas ${device} theme-${currentTheme}`}
         style={
           {
-            '--navy': activeCfg.primaryColor,
-            '--accent': activeCfg.secondaryColor,
+            '--navy': mergedCfg.primaryColor,
+            '--accent': mergedCfg.secondaryColor,
+            fontFamily: customTheme?.fontBody ? `${customTheme.fontBody}, sans-serif` : undefined,
           } as React.CSSProperties
         }
       >
@@ -58,7 +75,7 @@ export function BuilderCanvas({
           logoLetter={state.logoLetter}
           schoolName={state.schoolName}
           applyButtonText={state.applyButtonText}
-          activeCfg={activeCfg}
+          activeCfg={mergedCfg}
         />
 
         <CanvasHeroStats
@@ -82,7 +99,7 @@ export function BuilderCanvas({
           stat3Label={state.stat3Label}
           stat4Val={state.stat4Val}
           stat4Label={state.stat4Label}
-          activeCfg={activeCfg}
+          activeCfg={mergedCfg}
         />
 
         <CanvasIntroPrincipal

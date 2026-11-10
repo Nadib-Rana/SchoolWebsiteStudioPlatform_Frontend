@@ -6,6 +6,7 @@ import { api } from '@/lib/api-client'
 import { useEffect, useState } from 'react'
 import { ThemeControlsSidebar } from './ThemeControlsSidebar'
 import { ThemePreviewBrowser } from './ThemePreviewBrowser'
+import { saveCustomThemeLocally } from './theme-sync-helper'
 
 export function ThemeCustomization() {
   const { notify } = useStudio()
@@ -51,6 +52,19 @@ export function ThemeCustomization() {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    const buttonRadius = style === 'Pill' ? 'rounded-full' : style === 'Square' ? 'rounded-none' : 'rounded-md'
+    saveCustomThemeLocally({
+      primaryColor,
+      secondaryColor,
+      fontHeading,
+      fontBody,
+      style,
+      buttonRadius,
+      headerLayout: header.toLowerCase(),
+    })
+  }, [primaryColor, secondaryColor, fontHeading, fontBody, style, header])
 
   const handleSaveDraft = async () => {
     setIsSaving(true)

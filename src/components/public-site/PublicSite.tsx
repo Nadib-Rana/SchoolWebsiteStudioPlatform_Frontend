@@ -10,6 +10,7 @@ import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import type { PublicSiteData } from '@/lib/public-site'
 import type { SchoolTheme } from '@/types/theme'
+import { loadCustomThemeLocally, subscribeToThemeChanges } from '@/components/studio/theme/theme-sync-helper'
 import { useState, useEffect } from 'react'
 
 export interface PublicSiteProps {
@@ -28,6 +29,11 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
       return cached ? JSON.parse(cached) : null
     } catch { return null }
   })
+  const [customTheme, setCustomTheme] = useState(() => loadCustomThemeLocally())
+
+  useEffect(() => {
+    return subscribeToThemeChanges((cfg) => setCustomTheme((prev) => ({ ...prev, ...cfg })))
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -98,8 +104,9 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
       className={`public-site theme-${theme}`}
       style={
         {
-          '--navy': activeCfg.primaryColor,
-          '--accent': activeCfg.secondaryColor,
+          '--navy': customTheme?.primaryColor || effectiveAnnouncementBg || activeCfg.primaryColor,
+          '--accent': customTheme?.secondaryColor || activeCfg.secondaryColor,
+          fontFamily: customTheme?.fontBody ? `${customTheme.fontBody}, sans-serif` : undefined,
         } as React.CSSProperties
       }
     >

@@ -1,5 +1,6 @@
 import { THEME_CONFIGS } from '@/config/themes'
 import { api } from '@/lib/api-client'
+import { saveCustomThemeLocally } from '../theme/theme-sync-helper'
 import type { SchoolTheme } from '@/types/theme'
 
 export async function applyTemplateToBuilder(templateTheme: SchoolTheme): Promise<string> {
@@ -37,6 +38,11 @@ export async function applyTemplateToBuilder(templateTheme: SchoolTheme): Promis
 
       localStorage.setItem('studio_builder_homepage_data', JSON.stringify(updated))
       localStorage.setItem('studio_selected_theme', templateTheme)
+      saveCustomThemeLocally({
+        primaryColor: cfg.primaryColor,
+        secondaryColor: cfg.secondaryColor,
+        fontHeading: cfg.fontHeading,
+      })
     } catch (e) {
       console.debug('Failed to update builder data with template:', e)
     }

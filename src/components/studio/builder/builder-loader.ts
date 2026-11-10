@@ -1,5 +1,6 @@
 import { api } from '@/lib/api-client'
 import { DEFAULT_STYLES } from './builder.types'
+import { saveCustomThemeLocally } from '../theme/theme-sync-helper'
 
 export async function loadHomepageSectionsFromBackend(
   setSectionStyles: React.Dispatch<React.SetStateAction<any>>,
@@ -94,6 +95,21 @@ export async function loadHomepageSectionsFromBackend(
         }
       }
     })
+
+    try {
+      const themeRes = await api.theme.get()
+      const tData = (themeRes as any)?.data || themeRes
+      const tCfg = tData?.draftConfig || tData
+      if (tCfg?.primaryColor) {
+        saveCustomThemeLocally({
+          primaryColor: tCfg.primaryColor,
+          secondaryColor: tCfg.secondaryColor,
+          fontHeading: tCfg.fontHeading,
+          fontBody: tCfg.fontBody,
+          buttonRadius: tCfg.buttonRadius,
+        })
+      }
+    } catch {}
   } catch (err: unknown) {
     console.debug('Loaded default studio content state:', err)
   }
