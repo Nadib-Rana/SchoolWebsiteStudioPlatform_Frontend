@@ -1,6 +1,36 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+function isPlatformHost(hostname: string): boolean {
+  const cleanHost = hostname.split(':')[0].toLowerCase()
+
+  if (cleanHost === 'localhost' || cleanHost === '127.0.0.1') return true
+
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    try {
+      const configuredHost = new URL(process.env.NEXT_PUBLIC_APP_URL).hostname.toLowerCase()
+      if (cleanHost === configuredHost || cleanHost.endsWith(`.${configuredHost}`)) {
+        return true
+      }
+    } catch {}
+  }
+
+  if (process.env.PLATFORM_DOMAIN && cleanHost.includes(process.env.PLATFORM_DOMAIN.toLowerCase())) {
+    return true
+  }
+
+  const platformPatterns = [
+    'digizonex.com',
+    'schoolstudio.site',
+    'vercel.app',
+    'railway.app',
+    'render.com',
+    'dokploy',
+    'coolify',
+  ]
+  return platformPatterns.some((pattern) => cleanHost.includes(pattern))
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
@@ -17,19 +47,24 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check if request is accessing via a custom domain (non-localhost, non-default app platform)
-  const isLocalhost =
-    hostname.includes('localhost') ||
-    hostname.includes('127.0.0.1') ||
-    hostname.includes('schoolstudio.site')
-
-  // If a school accesses via an external custom domain, rewrite internally
-  if (!isLocalhost && !pathname.startsWith('/login') && !pathname.startsWith('/preview')) {
-    const cleanHost = hostname.split(':')[0].toLowerCase()
-    return NextResponse.rewrite(new URL(`/${cleanHost}${pathname}`, request.url))
+  // Skip studio application core routes
+  if (
+    pathname === '/' ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/preview') ||
+    pathname.startsWith('/onboarding')
+  ) {
+    return NextResponse.next()
   }
 
-  return NextResponse.next()
+  // Check if request is accessing the main platform or a custom school domain
+  if (isPlatformHost(hostname)) {
+    return NextResponse.next()
+  }
+
+  // If a school accesses via an external custom domain, rewrite internally
+  const cleanHost = hostname.split(':')[0].toLowerCase()
+  return NextResponse.rewrite(new URL(`/${cleanHost}${pathname}`, request.url))
 }
 
 export const config = {
