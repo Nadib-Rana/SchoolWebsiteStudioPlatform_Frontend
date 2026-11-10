@@ -118,5 +118,12 @@ export function createSiteConfigEndpoints(session: ApiSession) {
         return session.request<any>(`/schools/${id}/analytics?days=${days}`)
       },
     },
+
+    auditLogs: {
+      list: async (limit = 50, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any[]>(`/schools/${id}/audit-logs?limit=${limit}`)
+      },
+    },
   }
 }

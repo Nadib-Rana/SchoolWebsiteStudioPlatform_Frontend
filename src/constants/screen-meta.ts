@@ -91,6 +91,12 @@ export const screenMeta: ScreenMetaMap = {
     description: 'Understand how families discover and use your website.',
     action: 'Export report',
   },
+  'audit-logs': {
+    title: 'Audit Logs & Activity Timeline',
+    eyebrow: 'SECURITY & GOVERNANCE',
+    description: 'Track changes to publishing, domains, member roles, content, and security events.',
+    action: 'Export CSV',
+  },
   settings: {
     title: 'Settings',
     eyebrow: 'WORKSPACE CONTROL',

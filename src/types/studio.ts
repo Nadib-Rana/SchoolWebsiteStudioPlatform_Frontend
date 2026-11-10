@@ -20,6 +20,7 @@ export type View =
   | 'domains'
   | 'integrations'
   | 'analytics'
+  | 'audit-logs'
   | 'settings'
   | 'publishing'
   | 'onboarding'

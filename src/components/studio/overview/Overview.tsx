@@ -124,8 +124,8 @@ export function Overview() {
             <button
               type="button"
               className="text-button"
-              onClick={() => setView('publishing')}
-              title="View full publishing activity"
+              onClick={() => setView('audit-logs')}
+              title="View full audit log activity"
             >
               View all
             </button>

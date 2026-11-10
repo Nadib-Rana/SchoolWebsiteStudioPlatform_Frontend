@@ -4,6 +4,7 @@ import { Button } from '@/components/common/Button'
 import { Academics } from '@/components/studio/academics/Academics'
 import { AdmissionsManager } from '@/components/studio/admissions/AdmissionsManager'
 import { InquiriesManager } from '@/components/studio/inquiries/InquiriesManager'
+import { AuditLogManager } from '@/components/studio/audit/AuditLogManager'
 import { Analytics } from '@/components/studio/analytics/Analytics'
 import { ContentManager } from '@/components/studio/content/ContentManager'
 import { DataManager } from '@/components/studio/data-manager/DataManager'
@@ -91,6 +92,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
       {view === 'domains' && <DomainManager />}
       {view === 'integrations' && <Integrations />}
       {view === 'analytics' && <Analytics />}
+      {view === 'audit-logs' && <AuditLogManager />}
       {view === 'settings' && <Settings />}
       {view === 'publishing' && <Publishing />}
 

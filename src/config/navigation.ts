@@ -20,6 +20,7 @@ export const studioNav: readonly NavItem[] = [
   ['domains', 'globe', 'Domain Management'],
   ['integrations', 'plug', 'Integrations'],
   ['analytics', 'chart', 'Analytics'],
+  ['audit-logs', 'clock', 'Audit Logs'],
   ['publishing', 'sparkle', 'Publishing'],
   ['design-system', 'layers', 'Design System'],
   ['settings', 'settings', 'Settings'],

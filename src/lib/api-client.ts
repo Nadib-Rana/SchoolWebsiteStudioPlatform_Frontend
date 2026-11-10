@@ -75,6 +75,7 @@ export class ApiClient {
   public settings = this.siteConfigEndpoints.settings
   public publishing = this.siteConfigEndpoints.publishing
   public analytics = this.siteConfigEndpoints.analytics
+  public auditLogs = this.siteConfigEndpoints.auditLogs
 
   public teachers = this.academicEndpoints.teachers
   public notices = this.academicEndpoints.notices
