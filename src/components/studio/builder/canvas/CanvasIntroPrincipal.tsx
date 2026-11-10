@@ -1,6 +1,7 @@
 'use client'
 
 import type { DeviceType } from '@/types/theme'
+import type { ThemeConfig } from '@/config/themes'
 import type { SectionStyle } from '../builder.types'
 
 interface CanvasIntroPrincipalProps {
@@ -15,6 +16,7 @@ interface CanvasIntroPrincipalProps {
   principalName: string
   principalQuote: string
   principalTitle: string
+  activeCfg?: ThemeConfig
 }
 
 export function CanvasIntroPrincipal({
@@ -29,13 +31,25 @@ export function CanvasIntroPrincipal({
   principalName,
   principalQuote,
   principalTitle,
+  activeCfg,
 }: CanvasIntroPrincipalProps) {
   const introStyle = sectionStyles['School introduction']
   const principalStyle = sectionStyles['Principal message']
+  const introPad =
+    introStyle?.padding === 'compact'
+      ? '18px'
+      : introStyle?.padding === 'spacious'
+      ? '65px'
+      : '36px'
+  const principalPad =
+    principalStyle?.padding === 'compact'
+      ? '16px 25px'
+      : principalStyle?.padding === 'spacious'
+      ? '55px 30px'
+      : '30px'
 
   return (
     <>
-      {/* 5. School Introduction */}
       <div
         id={introStyle?.customId || 'canvas-school-introduction'}
         onClick={() => setSelected('School introduction')}
@@ -45,28 +59,15 @@ export function CanvasIntroPrincipal({
           position: 'relative',
           background: introStyle?.bg || '#ffffff',
           textAlign: introStyle?.align || 'center',
-          paddingTop:
-            introStyle?.padding === 'compact'
-              ? '18px'
-              : introStyle?.padding === 'spacious'
-              ? '65px'
-              : '36px',
-          paddingBottom:
-            introStyle?.padding === 'compact'
-              ? '18px'
-              : introStyle?.padding === 'spacious'
-              ? '65px'
-              : '36px',
+          paddingTop: introPad,
+          paddingBottom: introPad,
           display:
             introStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'block',
           outline:
             selected === 'School introduction' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
           ...(introStyle?.border
-            ? {
-                borderTop: '2px solid #2563eb',
-                borderBottom: '2px solid #2563eb',
-              }
+            ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' }
             : {}),
           ...(introStyle?.shadow === 'subtle'
             ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
@@ -78,8 +79,8 @@ export function CanvasIntroPrincipal({
         {selected === 'School introduction' && (
           <div className="selection-label">School introduction</div>
         )}
-        <small>{introKicker}</small>
-        <h3>
+        <small style={{ color: activeCfg?.secondaryColor || '#b68c33' }}>{introKicker}</small>
+        <h3 style={{ fontFamily: activeCfg?.fontHeading }}>
           {introTitle.split('\n').map((line, idx) => (
             <span key={idx}>
               {line}
@@ -92,18 +93,12 @@ export function CanvasIntroPrincipal({
         </p>
       </div>
 
-      {/* 6. Principal Message */}
       <div
         id={principalStyle?.customId || 'canvas-principal-message'}
         onClick={() => setSelected('Principal message')}
         className={principalStyle?.customClass || ''}
         style={{
-          padding:
-            principalStyle?.padding === 'compact'
-              ? '16px 25px'
-              : principalStyle?.padding === 'spacious'
-              ? '55px 30px'
-              : '30px',
+          padding: principalPad,
           background: principalStyle?.bg || '#f8fafc',
           textAlign: principalStyle?.align || 'left',
           borderTop: '1px solid #e2e8f0',
@@ -121,10 +116,7 @@ export function CanvasIntroPrincipal({
             selected === 'Principal message' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
           ...(principalStyle?.border
-            ? {
-                borderTop: '2px solid #2563eb',
-                borderBottom: '2px solid #2563eb',
-              }
+            ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' }
             : {}),
           ...(principalStyle?.shadow === 'subtle'
             ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
@@ -153,7 +145,7 @@ export function CanvasIntroPrincipal({
               fontSize: '11px',
               fontWeight: 700,
               letterSpacing: '1.5px',
-              color: '#b45309',
+              color: activeCfg?.secondaryColor || '#b45309',
               textTransform: 'uppercase',
             }}
           >
@@ -161,7 +153,7 @@ export function CanvasIntroPrincipal({
           </span>
           <p
             style={{
-              fontFamily: 'serif',
+              fontFamily: activeCfg?.fontHeading || 'serif',
               fontSize: '15px',
               fontStyle: 'italic',
               color: '#334155',

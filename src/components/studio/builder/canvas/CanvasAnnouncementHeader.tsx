@@ -1,6 +1,7 @@
 'use client'
 
 import type { DeviceType } from '@/types/theme'
+import type { ThemeConfig } from '@/config/themes'
 import type { SectionStyle } from '../builder.types'
 
 interface CanvasAnnouncementHeaderProps {
@@ -14,6 +15,7 @@ interface CanvasAnnouncementHeaderProps {
   logoLetter: string
   schoolName: string
   applyButtonText: string
+  activeCfg?: ThemeConfig
 }
 
 export function CanvasAnnouncementHeader({
@@ -27,9 +29,22 @@ export function CanvasAnnouncementHeader({
   logoLetter,
   schoolName,
   applyButtonText,
+  activeCfg,
 }: CanvasAnnouncementHeaderProps) {
   const annoStyle = sectionStyles['Announcement bar']
   const headerStyle = sectionStyles['Header']
+  const pad =
+    annoStyle?.padding === 'compact'
+      ? '6px 20px'
+      : annoStyle?.padding === 'spacious'
+      ? '16px 20px'
+      : '10px 20px'
+  const headerPad =
+    headerStyle?.padding === 'compact'
+      ? '8px'
+      : headerStyle?.padding === 'spacious'
+      ? '24px'
+      : '14px'
 
   return (
     <>
@@ -39,14 +54,9 @@ export function CanvasAnnouncementHeader({
           onClick={() => setSelected('Announcement bar')}
           className={annoStyle?.customClass || ''}
           style={{
-            background: annoStyle?.bg || '#0e2447',
+            background: annoStyle?.bg || activeCfg?.primaryColor || '#0e2447',
             color: '#f8fafc',
-            padding:
-              annoStyle?.padding === 'compact'
-                ? '6px 20px'
-                : annoStyle?.padding === 'spacious'
-                ? '16px 20px'
-                : '10px 20px',
+            padding: pad,
             fontSize: '12px',
             display:
               annoStyle?.hideOnMobile && device === 'mobile'
@@ -96,19 +106,9 @@ export function CanvasAnnouncementHeader({
         style={{
           cursor: 'pointer',
           position: 'relative',
-          background: headerStyle?.bg || '#ffffff',
-          paddingTop:
-            headerStyle?.padding === 'compact'
-              ? '8px'
-              : headerStyle?.padding === 'spacious'
-              ? '24px'
-              : '14px',
-          paddingBottom:
-            headerStyle?.padding === 'compact'
-              ? '8px'
-              : headerStyle?.padding === 'spacious'
-              ? '24px'
-              : '14px',
+          background: headerStyle?.bg || activeCfg?.headerBg || '#ffffff',
+          paddingTop: headerPad,
+          paddingBottom: headerPad,
           display:
             headerStyle?.hideOnMobile && device === 'mobile'
               ? 'none'
@@ -126,7 +126,15 @@ export function CanvasAnnouncementHeader({
         {selected === 'Header' && (
           <div className="selection-label">Header</div>
         )}
-        <div className="mini-logo">{logoLetter}</div>
+        <div
+          className="mini-logo"
+          style={{
+            background: activeCfg?.primaryColor || '#163d72',
+            color: '#ffffff',
+          }}
+        >
+          {logoLetter}
+        </div>
         <strong>{schoolName}</strong>
         <div>
           <span>About</span>
@@ -134,7 +142,15 @@ export function CanvasAnnouncementHeader({
           <span>Faculty</span>
           <span>Notices</span>
           <span>Events</span>
-          <b style={{ cursor: 'pointer' }}>{applyButtonText}</b>
+          <b
+            style={{
+              cursor: 'pointer',
+              background: activeCfg?.secondaryColor || '#e9b949',
+              color: '#ffffff',
+            }}
+          >
+            {applyButtonText}
+          </b>
         </div>
       </div>
     </>

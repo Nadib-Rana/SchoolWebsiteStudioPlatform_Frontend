@@ -58,6 +58,7 @@ export function BuilderCanvas({
           logoLetter={state.logoLetter}
           schoolName={state.schoolName}
           applyButtonText={state.applyButtonText}
+          activeCfg={activeCfg}
         />
 
         <CanvasHeroStats
@@ -81,6 +82,7 @@ export function BuilderCanvas({
           stat3Label={state.stat3Label}
           stat4Val={state.stat4Val}
           stat4Label={state.stat4Label}
+          activeCfg={activeCfg}
         />
 
         <CanvasIntroPrincipal
@@ -95,6 +97,7 @@ export function BuilderCanvas({
           principalName={state.principalName}
           principalQuote={state.principalQuote}
           principalTitle={state.principalTitle}
+          activeCfg={activeCfg}
         />
 
         <CanvasNotices
@@ -152,6 +155,7 @@ export function BuilderCanvas({
           footerPhone={state.footerPhone}
           footerEmail={state.footerEmail}
           footerCopyright={state.footerCopyright}
+          activeCfg={activeCfg}
         />
       </div>
     </div>

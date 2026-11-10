@@ -3,6 +3,7 @@
 import { Icon } from '@/components/common/Icon'
 import { heroImage } from '@/config/templates'
 import type { DeviceType } from '@/types/theme'
+import type { ThemeConfig } from '@/config/themes'
 import type { SectionStyle } from '../builder.types'
 
 interface CanvasHeroStatsProps {
@@ -26,6 +27,7 @@ interface CanvasHeroStatsProps {
   stat3Label: string
   stat4Val: string
   stat4Label: string
+  activeCfg?: ThemeConfig
 }
 
 export function CanvasHeroStats({
@@ -49,9 +51,22 @@ export function CanvasHeroStats({
   stat3Label,
   stat4Val,
   stat4Label,
+  activeCfg,
 }: CanvasHeroStatsProps) {
   const heroStyle = sectionStyles['Hero section']
   const statsStyle = sectionStyles['Statistics']
+  const heroPad =
+    heroStyle?.padding === 'compact'
+      ? '35px'
+      : heroStyle?.padding === 'spacious'
+      ? '95px'
+      : '60px'
+  const statsPad =
+    statsStyle?.padding === 'compact'
+      ? '14px'
+      : statsStyle?.padding === 'spacious'
+      ? '45px'
+      : '26px'
 
   return (
     <>
@@ -62,18 +77,8 @@ export function CanvasHeroStats({
         style={{
           backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${heroBg || heroImage})`,
           textAlign: (heroStyle?.align as any) || 'left',
-          paddingTop:
-            heroStyle?.padding === 'compact'
-              ? '35px'
-              : heroStyle?.padding === 'spacious'
-              ? '95px'
-              : '60px',
-          paddingBottom:
-            heroStyle?.padding === 'compact'
-              ? '35px'
-              : heroStyle?.padding === 'spacious'
-              ? '95px'
-              : '60px',
+          paddingTop: heroPad,
+          paddingBottom: heroPad,
           display:
             heroStyle?.hideOnMobile && device === 'mobile'
               ? 'none'
@@ -94,8 +99,10 @@ export function CanvasHeroStats({
           <div className="selection-label">Hero section</div>
         )}
         <div>
-          <small>{eyebrow}</small>
-          <h2>
+          <small style={{ color: activeCfg?.secondaryColor || '#f4cc70', fontWeight: 700 }}>
+            {eyebrow}
+          </small>
+          <h2 style={{ fontFamily: activeCfg?.fontHeading }}>
             {heading.split('\n').map((line, idx) => (
               <span key={idx}>
                 {line}
@@ -111,7 +118,11 @@ export function CanvasHeroStats({
               setSelected('Hero section')
               notify(`Hero button action: "${buttonLabel}" (links to ${buttonLink || '/admissions'})`)
             }}
-            style={{ cursor: 'pointer' }}
+            style={{
+              cursor: 'pointer',
+              background: activeCfg?.secondaryColor || '#e7b84e',
+              color: '#ffffff',
+            }}
           >
             {buttonLabel} <Icon name="arrow" size={13} />
           </button>
@@ -125,20 +136,10 @@ export function CanvasHeroStats({
         style={{
           cursor: 'pointer',
           position: 'relative',
-          background: statsStyle?.bg || '#163d72',
+          background: statsStyle?.bg || activeCfg?.primaryColor || '#163d72',
           textAlign: (statsStyle?.align as any) || 'center',
-          paddingTop:
-            statsStyle?.padding === 'compact'
-              ? '14px'
-              : statsStyle?.padding === 'spacious'
-              ? '45px'
-              : '26px',
-          paddingBottom:
-            statsStyle?.padding === 'compact'
-              ? '14px'
-              : statsStyle?.padding === 'spacious'
-              ? '45px'
-              : '26px',
+          paddingTop: statsPad,
+          paddingBottom: statsPad,
           display:
             statsStyle?.hideOnMobile && device === 'mobile'
               ? 'none'
@@ -162,19 +163,19 @@ export function CanvasHeroStats({
           <div className="selection-label">Statistics</div>
         )}
         <div>
-          <strong>{stat1Val}</strong>
+          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat1Val}</strong>
           <span>{stat1Label}</span>
         </div>
         <div>
-          <strong>{stat2Val}</strong>
+          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat2Val}</strong>
           <span>{stat2Label}</span>
         </div>
         <div>
-          <strong>{stat3Val}</strong>
+          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat3Val}</strong>
           <span>{stat3Label}</span>
         </div>
         <div>
-          <strong>{stat4Val}</strong>
+          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat4Val}</strong>
           <span>{stat4Label}</span>
         </div>
       </div>

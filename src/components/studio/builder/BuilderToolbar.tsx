@@ -14,6 +14,7 @@ interface BuilderToolbarProps {
   handlePreview: () => void
   handleSave: () => void
   isSaving: boolean
+  templateName?: string
 }
 
 export function BuilderToolbar({
@@ -26,6 +27,7 @@ export function BuilderToolbar({
   handlePreview,
   handleSave,
   isSaving,
+  templateName,
 }: BuilderToolbarProps) {
   return (
     <div className="builder-toolbar">
@@ -33,7 +35,7 @@ export function BuilderToolbar({
         <span className="saved-dot" />
         <div>
           <strong>Homepage</strong>
-          <small>All changes saved</small>
+          <small>{templateName ? `Template: ${templateName}` : 'All changes saved'}</small>
         </div>
       </div>
 

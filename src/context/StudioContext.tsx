@@ -15,7 +15,13 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<View>('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [toast, setToast] = useState('')
-  const [previewTheme, setPreviewThemeState] = useState<SchoolTheme>('modern')
+  const [previewTheme, setPreviewThemeState] = useState<SchoolTheme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('studio_selected_theme') as SchoolTheme
+      if (saved) return saved
+    }
+    return 'modern'
+  })
   const [unreadNotifications, setUnreadNotifications] = useState(3)
 
   const [user, setUser] = useState<CurrentUser | null>(null)

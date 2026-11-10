@@ -25,6 +25,7 @@ export async function applyTemplateToBuilder(templateTheme: SchoolTheme): Promis
         announcementText: cfg.announcementText,
         heroBg: cfg.heroImage,
         appliedTheme: templateTheme,
+        introKicker: `WELCOME TO ${cfg.schoolName.toUpperCase()}`,
         sectionStyles: {
           ...(builderData.sectionStyles || {}),
           Header: { ...(builderData.sectionStyles?.Header || {}), bg: cfg.headerBg },
@@ -44,6 +45,8 @@ export async function applyTemplateToBuilder(templateTheme: SchoolTheme): Promis
   try {
     if (cfg) {
       await api.theme.saveDraft({
+        activeTheme: `theme-${templateTheme}`,
+        selectedTemplate: cfg.templateName,
         primaryColor: cfg.primaryColor,
         secondaryColor: cfg.secondaryColor,
         fontHeading: cfg.fontHeading,

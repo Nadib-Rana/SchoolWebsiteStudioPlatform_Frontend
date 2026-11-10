@@ -144,6 +144,9 @@ export function useBuilderState() {
     } else {
       loadHomepageSectionsFromBackend(setSectionStyles, setters)
     }
+    if (previewTheme) {
+      setters.setAppliedTheme?.(previewTheme)
+    }
     isInitializedRef.current = true
   }, [previewTheme])
 

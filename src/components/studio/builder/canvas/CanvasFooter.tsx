@@ -1,6 +1,7 @@
 'use client'
 
 import type { DeviceType } from '@/types/theme'
+import type { ThemeConfig } from '@/config/themes'
 import type { SectionStyle } from '../builder.types'
 
 interface CanvasFooterProps {
@@ -13,6 +14,7 @@ interface CanvasFooterProps {
   footerPhone: string
   footerEmail: string
   footerCopyright: string
+  activeCfg?: ThemeConfig
 }
 
 export function CanvasFooter({
@@ -25,8 +27,15 @@ export function CanvasFooter({
   footerPhone,
   footerEmail,
   footerCopyright,
+  activeCfg,
 }: CanvasFooterProps) {
   const footerStyle = sectionStyles['Footer']
+  const footerPad =
+    footerStyle?.padding === 'compact'
+      ? '18px 25px'
+      : footerStyle?.padding === 'spacious'
+      ? '60px 25px'
+      : '30px 25px'
 
   return (
     <div
@@ -34,13 +43,8 @@ export function CanvasFooter({
       onClick={() => setSelected('Footer')}
       className={footerStyle?.customClass || ''}
       style={{
-        padding:
-          footerStyle?.padding === 'compact'
-            ? '18px 25px'
-            : footerStyle?.padding === 'spacious'
-            ? '60px 25px'
-            : '30px 25px',
-        background: footerStyle?.bg || '#091a30',
+        padding: footerPad,
+        background: footerStyle?.bg || activeCfg?.primaryColor || '#091a30',
         color: '#d4deea',
         textAlign: footerStyle?.align || 'left',
         cursor: 'pointer',
@@ -50,10 +54,7 @@ export function CanvasFooter({
         outline: selected === 'Footer' ? '2px solid #2563eb' : 'none',
         outlineOffset: '-2px',
         ...(footerStyle?.border
-          ? {
-              borderTop: '2px solid #2563eb',
-              borderBottom: '2px solid #2563eb',
-            }
+          ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' }
           : {}),
         ...(footerStyle?.shadow === 'subtle'
           ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }

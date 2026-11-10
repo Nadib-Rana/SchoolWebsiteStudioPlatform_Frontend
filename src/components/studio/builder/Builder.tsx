@@ -1,5 +1,7 @@
 'use client'
 
+import { THEME_CONFIGS } from '@/config/themes'
+import type { SchoolTheme } from '@/types/theme'
 import { BuilderToolbar } from './BuilderToolbar'
 import { BuilderLeftSidebar } from './BuilderLeftSidebar'
 import { BuilderCanvas } from './BuilderCanvas'
@@ -52,6 +54,7 @@ export function Builder() {
         handlePreview={handlePreview}
         handleSave={handleSave}
         isSaving={isSaving}
+        templateName={THEME_CONFIGS[state.appliedTheme as SchoolTheme]?.templateName}
       />
 
       <div className="builder-body">
