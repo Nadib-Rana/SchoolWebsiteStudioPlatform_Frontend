@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
+import { ImageUploadControl } from '@/components/common/ImageUploadControl'
 import { api } from '@/lib/api-client'
 import type { View } from '@/types/studio'
 
@@ -25,6 +26,7 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
     email: '',
     phone: '',
     bio: '',
+    photoUrl: '',
     order: 1,
     status: 'ACTIVE',
   })
@@ -61,6 +63,7 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
     status: 'PUBLISHED',
     metaTitle: '',
     metaDescription: '',
+    featuredImage: '',
   })
 
   // Albums form state
@@ -123,6 +126,7 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
           status: publishNow ? 'PUBLISHED' : 'DRAFT',
           metaTitle: page.metaTitle || page.title,
           metaDescription: page.metaDescription,
+          featuredImage: page.featuredImage || undefined,
         })
       } else if (type === 'gallery') {
         if (!album.title.trim()) throw new Error('Album title is required.')
@@ -221,6 +225,17 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
                   identification are never exposed.
                 </p>
               </div>
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <ImageUploadControl
+                label="Teacher Profile Photo / Headshot"
+                value={teacher.photoUrl}
+                onChange={(url) => setTeacher({ ...teacher, photoUrl: url || '' })}
+                aspectRatio="portrait"
+                fallbackInitial={teacher.name ? teacher.name.slice(0, 2).toUpperCase() : 'TC'}
+                pickerTitle="Select Teacher Headshot Photo"
+                helperText="Professional headshot displayed in public faculty directory."
+              />
             </div>
             <div className="form-grid">
               <label>
@@ -510,6 +525,16 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
                 }
               />
             </label>
+            <div style={{ marginTop: '12px' }}>
+              <ImageUploadControl
+                label="Album Cover Photo"
+                value={album.coverUrl}
+                onChange={(url) => setAlbum({ ...album, coverUrl: url || '' })}
+                aspectRatio="video"
+                pickerTitle="Select Album Cover Photo"
+                helperText="Primary photo displayed on the gallery album card."
+              />
+            </div>
           </div>
         ) : (
           <div className="modal-form">
@@ -550,6 +575,16 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
                   }
                 />
               </label>
+            </div>
+            <div style={{ marginBottom: '14px' }}>
+              <ImageUploadControl
+                label="Page Featured Banner Image"
+                value={page.featuredImage}
+                onChange={(url) => setPage({ ...page, featuredImage: url || '' })}
+                aspectRatio="video"
+                pickerTitle="Select Page Featured Banner Image"
+                helperText="Banner image displayed at the top of this inner page."
+              />
             </div>
             <label>
               Meta Description (SEO)

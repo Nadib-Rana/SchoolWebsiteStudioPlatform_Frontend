@@ -11,6 +11,7 @@ export interface SchoolProfileData {
   principalTitle?: string
   principalBio?: string
   principalPhotoUrl?: string
+  coverUrl?: string
   visionStatement?: string
   missionStatement?: string
   address?: string

@@ -79,7 +79,7 @@ export function PublicHome({
     isCustomizedForTheme && builderData?.buttonLabel
       ? builderData.buttonLabel
       : activeCfg.buttonLabel
-  const currentHeroImage = activeCfg.heroImage || heroImage
+  const currentHeroImage = builderData?.heroBg || activeCfg.heroImage || heroImage
   const heroBtnLink = builderData?.buttonLink || '/about'
   const heroOverlay =
     builderData?.overlayOpacity !== undefined ? builderData.overlayOpacity : 65

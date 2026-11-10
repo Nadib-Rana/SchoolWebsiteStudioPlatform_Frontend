@@ -81,27 +81,33 @@ export function Settings() {
   const logoInputRef = useRef<HTMLInputElement>(null)
   const accountPhotoInputRef = useRef<HTMLInputElement>(null)
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setSchoolLogo(reader.result as string)
-        notify(`Workspace logo "${file.name}" selected. Click "Save changes" to persist.`)
+      try {
+        notify(`Uploading workspace logo "${file.name}" to storage...`)
+        const uploadRes = await api.storage.upload(file)
+        setSchoolLogo(uploadRes.publicUrl)
+        const activeId = api.getActiveSchoolId()
+        await api.schools.update(activeId, { logoUrl: uploadRes.publicUrl })
+        notify(`Workspace logo updated and saved successfully!`)
+      } catch (err: any) {
+        notify(`Logo upload failed: ${err?.message || 'Error'}`)
       }
-      reader.readAsDataURL(file)
     }
   }
 
-  const handleAccountPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAccountPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setAccountPhoto(reader.result as string)
-        notify(`Profile photo "${file.name}" updated.`)
+      try {
+        notify(`Uploading profile photo...`)
+        const uploadRes = await api.storage.upload(file)
+        setAccountPhoto(uploadRes.publicUrl)
+        notify(`Profile photo updated successfully!`)
+      } catch (err: any) {
+        notify(`Photo upload failed: ${err?.message || 'Error'}`)
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -360,6 +366,7 @@ export function Settings() {
         const school = (schoolRes as any)?.data || schoolRes
         if (mounted && school) {
           if (school.name) setSchoolName(school.name)
+          if (school.logoUrl) setSchoolLogo(school.logoUrl)
         }
       } catch (err: any) {
         console.warn('[Settings] School load warning:', err?.message)

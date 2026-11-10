@@ -173,7 +173,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
           schoolSlug={siteData?.school?.slug || 'northfield-high'}
         />
       ) : (
-        <PublicInnerPage page={page} setPage={setPage} />
+        <PublicInnerPage page={page} setPage={setPage} siteData={siteData} />
       )}
       <PublicFooter
         setPage={setPage}

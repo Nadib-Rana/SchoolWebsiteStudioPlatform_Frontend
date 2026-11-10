@@ -398,10 +398,25 @@ class ApiClient {
       const id = schoolId || this.getActiveSchoolId()
       return this.request<any>(`/schools/${id}/gallery`)
     },
+    getAlbums: async (schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any[]>(`/schools/${id}/gallery/albums`)
+    },
+    getAlbum: async (albumId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/gallery/albums/${albumId}`)
+    },
     createAlbum: async (data: any, schoolId?: string) => {
       const id = schoolId || this.getActiveSchoolId()
       return this.request<any>(`/schools/${id}/gallery/albums`, {
         method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    updateAlbum: async (albumId: string, data: any, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/gallery/albums/${albumId}`, {
+        method: 'PATCH',
         body: JSON.stringify(data),
       })
     },
@@ -424,6 +439,12 @@ class ApiClient {
           body: JSON.stringify(photo),
         },
       )
+    },
+    deletePhoto: async (albumId: string, photoId: string, schoolId?: string) => {
+      const id = schoolId || this.getActiveSchoolId()
+      return this.request<any>(`/schools/${id}/gallery/albums/${albumId}/photos/${photoId}`, {
+        method: 'DELETE',
+      })
     },
     getMedia: async (category?: string, schoolId?: string) => {
       const id = schoolId || this.getActiveSchoolId()

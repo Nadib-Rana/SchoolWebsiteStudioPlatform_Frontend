@@ -3,6 +3,7 @@
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { StateBadge } from '@/components/common/StateBadge'
+import { ImageUploadControl } from '@/components/common/ImageUploadControl'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import { useEffect, useState, useRef } from 'react'
@@ -31,6 +32,8 @@ export function ContentManager() {
     establishedYear: '1983',
     schoolCode: 'NHS-1042',
     officeHours: 'Monday - Friday: 8:00 AM - 4:30 PM',
+    logoUrl: '',
+    coverUrl: '',
 
     // Tab 1: About School
     motto: 'Excellence in Education, Leadership in Character',
@@ -64,20 +67,6 @@ export function ContentManager() {
 
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState('Just now')
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const logoUploadRef = useRef<HTMLInputElement>(null)
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setLogoPreview(reader.result as string)
-        notify(`Logo "${file.name}" selected. Click "Save changes" to persist.`)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   useEffect(() => {
     let mounted = true
@@ -97,6 +86,8 @@ export function ContentManager() {
             setFormData((prev) => ({
               ...prev,
               schoolName: data.school?.name || prev.schoolName,
+              logoUrl: data.school?.logoUrl || prev.logoUrl,
+              coverUrl: p.coverUrl || prev.coverUrl,
               address: p.address || prev.address,
               phone: p.phone || prev.phone,
               email: p.email || prev.email,
@@ -137,6 +128,8 @@ export function ContentManager() {
       await api.content.update({
         schoolName: formData.schoolName,
         schoolType: formData.schoolType,
+        logoUrl: formData.logoUrl || undefined,
+        coverUrl: formData.coverUrl || undefined,
         address: formData.address,
         phone: formData.phone,
         email: formData.email,
@@ -221,33 +214,35 @@ export function ContentManager() {
         {/* Tab 0: School Information */}
         {activeItem === 0 && (
           <>
-            <div className="logo-upload">
-              <input
-                type="file"
-                ref={logoUploadRef}
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={handleLogoUpload}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(140px, 1fr) minmax(240px, 2fr)',
+                gap: '20px',
+                marginBottom: '24px',
+                padding: '16px',
+                background: '#f8fafc',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <ImageUploadControl
+                label="School Logo"
+                value={formData.logoUrl}
+                onChange={(url) => setFormData({ ...formData, logoUrl: url || '' })}
+                aspectRatio="square"
+                fallbackInitial={(formData.schoolName || 'N').charAt(0)}
+                pickerTitle="Select School Logo"
+                helperText="PNG, JPG or SVG. Displayed in public navbar and header."
               />
-              <div
-                style={{
-                  backgroundImage: logoPreview ? `url(${logoPreview})` : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                {!logoPreview && (formData.schoolName || 'N').charAt(0)}
-              </div>
-              <span>
-                <strong>School logo</strong>
-                <small>PNG, JPG or SVG · Managed via MinIO</small>
-                <button
-                  type="button"
-                  onClick={() => logoUploadRef.current?.click()}
-                >
-                  {logoPreview ? 'Change logo' : 'Upload logo'}
-                </button>
-              </span>
+              <ImageUploadControl
+                label="Campus Cover Banner"
+                value={formData.coverUrl}
+                onChange={(url) => setFormData({ ...formData, coverUrl: url || '' })}
+                aspectRatio="video"
+                pickerTitle="Select Campus Cover Banner"
+                helperText="Wide cover photo for profile header and live campus banner."
+              />
             </div>
 
             <div className="form-grid">
@@ -401,16 +396,16 @@ export function ContentManager() {
                 }
               />
             </label>
-            <label className="full">
-              Principal Portrait URL
-              <input
-                placeholder="https://images.unsplash.com/..."
+            <div className="full" style={{ marginBottom: '16px' }}>
+              <ImageUploadControl
+                label="Principal Portrait Headshot"
                 value={formData.principalPhotoUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, principalPhotoUrl: e.target.value })
-                }
+                onChange={(url) => setFormData({ ...formData, principalPhotoUrl: url || '' })}
+                aspectRatio="portrait"
+                pickerTitle="Select Principal Portrait Photo"
+                helperText="Official school administrator portrait displayed on homepage and principal message page."
               />
-            </label>
+            </div>
             <label className="full">
               Welcome Message & Biography
               <textarea

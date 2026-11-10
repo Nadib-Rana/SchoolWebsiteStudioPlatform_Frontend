@@ -4,18 +4,18 @@ import { Icon } from '@/components/common/Icon'
 import { campusImage, heroImage, interiorImage } from '@/config/templates'
 import { publicPagesContent } from '@/config/public-pages'
 import { useState } from 'react'
-
+import type { PublicSiteData } from '@/lib/public-site'
 import { api } from '@/lib/api-client'
 
 export interface PublicInnerPageProps {
   page: string
   setPage: (p: string) => void
+  siteData?: PublicSiteData | null
 }
 
-export function PublicInnerPage({ page, setPage }: PublicInnerPageProps) {
+export function PublicInnerPage({ page, setPage, siteData }: PublicInnerPageProps) {
   const [contactSent, setContactSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
 
   if (page === '404 Page') {
     return (
@@ -37,9 +37,32 @@ export function PublicInnerPage({ page, setPage }: PublicInnerPageProps) {
   const isPeople = page.includes('Teacher')
   const isList = ['Notices', 'Events', 'Search Results'].includes(page)
 
+  const matchingPage = siteData?.pages?.find(
+    (p: any) =>
+      p.title?.toLowerCase() === page.toLowerCase() ||
+      p.slug?.toLowerCase() === page.toLowerCase().replace(/\s+/g, '-'),
+  ) as any
+  const featuredBanner =
+    matchingPage?.featuredImage ||
+    (page.includes('About') || page.includes('Principal')
+      ? siteData?.profile?.coverUrl
+      : undefined)
+
   return (
     <main className="inner-page">
-      <section className="inner-hero">
+      <section
+        className="inner-hero"
+        style={
+          featuredBanner
+            ? {
+                backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.72)), url(${featuredBanner})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                color: '#ffffff',
+              }
+            : undefined
+        }
+      >
         <span>{d.kicker}</span>
         <h1>{d.title}</h1>
         <p>{d.intro}</p>
@@ -178,44 +201,69 @@ export function PublicInnerPage({ page, setPage }: PublicInnerPageProps) {
         </section>
       ) : isGallery ? (
         <section className="gallery-wall">
-          {[
-            heroImage,
-            campusImage,
-            interiorImage,
-            'https://images.unsplash.com/photo-1787401963343-d81b68a5a059?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=800',
-            'https://images.unsplash.com/photo-1769209435699-9cc1fd8e7f57?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=800',
-          ].map((x, i) => (
-            <img src={x} alt={`Northfield school moment ${i + 1}`} key={x} />
-          ))}
+          {(() => {
+            const dbPhotos =
+              siteData?.albums?.flatMap((album) =>
+                (album.photos || []).map((p) => p.url),
+              ) || []
+            const photos =
+              dbPhotos.length > 0
+                ? dbPhotos
+                : [
+                    heroImage,
+                    campusImage,
+                    interiorImage,
+                    'https://images.unsplash.com/photo-1787401963343-d81b68a5a059?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=800',
+                    'https://images.unsplash.com/photo-1769209435699-9cc1fd8e7f57?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=80&w=800',
+                  ]
+            return photos.map((x, i) => (
+              <img src={x} alt={`School gallery photo ${i + 1}`} key={`${x}-${i}`} />
+            ))
+          })()}
         </section>
       ) : isPeople ? (
         <section className="faculty-grid">
-          {[
-            'Mahmud Karim',
-            'Sara Jahan',
-            'Nabil Chowdhury',
-            'Nusrat Ahmed',
-            'Tanvir Islam',
-            'Lamia Haque',
-          ].map((x, i) => (
-            <article key={x}>
-              <div className={`faculty-photo fp${i}`}>
-                {x
-                  .split(' ')
-                  .map((v) => v[0])
-                  .join('')}
-              </div>
+          {(siteData?.teachers && siteData.teachers.length > 0
+            ? siteData.teachers
+            : [
+                { id: '1', name: 'Mahmud Karim', designation: 'HEAD OF SCIENCE', photoUrl: null, bio: null },
+                { id: '2', name: 'Sara Jahan', designation: 'SENIOR ENGLISH TEACHER', photoUrl: null, bio: null },
+                { id: '3', name: 'Nabil Chowdhury', designation: 'FACULTY MEMBER', photoUrl: null, bio: null },
+                { id: '4', name: 'Nusrat Ahmed', designation: 'FACULTY MEMBER', photoUrl: null, bio: null },
+                { id: '5', name: 'Tanvir Islam', designation: 'FACULTY MEMBER', photoUrl: null, bio: null },
+                { id: '6', name: 'Lamia Haque', designation: 'FACULTY MEMBER', photoUrl: null, bio: null },
+              ]
+          ).map((x, i) => (
+            <article key={x.id || x.name}>
+              {x.photoUrl ? (
+                <div
+                  className="faculty-photo"
+                  style={{
+                    backgroundImage: `url(${x.photoUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'top center',
+                  }}
+                />
+              ) : (
+                <div className={`faculty-photo fp${i % 6}`}>
+                  {x.name
+                    .split(' ')
+                    .map((v) => v[0])
+                    .join('')}
+                </div>
+              )}
               <small>
-                {i === 0
-                  ? 'HEAD OF SCIENCE'
-                  : i === 1
-                  ? 'SENIOR ENGLISH TEACHER'
-                  : 'FACULTY MEMBER'}
+                {x.designation ||
+                  (i === 0
+                    ? 'HEAD OF SCIENCE'
+                    : i === 1
+                    ? 'SENIOR ENGLISH TEACHER'
+                    : 'FACULTY MEMBER')}
               </small>
-              <h3>{x}</h3>
+              <h3>{x.name}</h3>
               <p>
-                Committed to thoughtful teaching, meaningful relationships, and
-                confident learners.
+                {x.bio ||
+                  'Committed to thoughtful teaching, meaningful relationships, and confident learners.'}
               </p>
               <button
                 type="button"
@@ -294,8 +342,12 @@ export function PublicInnerPage({ page, setPage }: PublicInnerPageProps) {
             </blockquote>
           </div>
           <img
-            src={page === 'Principal’s Message' ? interiorImage : campusImage}
-            alt="Northfield learning community"
+            src={
+              page === 'Principal’s Message'
+                ? siteData?.profile?.principalPhotoUrl || interiorImage
+                : siteData?.profile?.coverUrl || campusImage
+            }
+            alt="School community"
           />
         </section>
       )}

@@ -30,17 +30,25 @@ export function Onboarding() {
   const [contactEmail, setContactEmail] = useState('info@riverside.edu')
   const [establishedYear, setEstablishedYear] = useState('1995')
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [uploadedLogoUrl, setUploadedLogoUrl] = useState<string | null>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = () => {
         setLogoPreview(reader.result as string)
-        notify(`Logo "${file.name}" selected`)
       }
       reader.readAsDataURL(file)
+
+      try {
+        const uploadRes = await api.storage.upload(file)
+        setUploadedLogoUrl(uploadRes.publicUrl)
+        notify(`Logo "${file.name}" uploaded to storage`)
+      } catch {
+        notify(`Logo preview active`)
+      }
     }
   }
 
@@ -168,6 +176,7 @@ export function Onboarding() {
         contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim(),
         selectedPages: ['home', 'about', 'academics', 'admissions', 'teachers', 'contact'],
+        ...(uploadedLogoUrl ? { logoUrl: uploadedLogoUrl } : {}),
       }
 
       const res = await api.schools.onboarding(payload)
@@ -176,6 +185,11 @@ export function Onboarding() {
       const newSchoolSlug = data?.slug || cleanSlug
 
       if (newSchoolId) {
+        if (uploadedLogoUrl) {
+          try {
+            await api.schools.update(newSchoolId, { logoUrl: uploadedLogoUrl })
+          } catch {}
+        }
         api.setActiveSchoolId(newSchoolId)
         api.setActiveSchoolSlug(newSchoolSlug)
         await refreshSchools(newSchoolId)

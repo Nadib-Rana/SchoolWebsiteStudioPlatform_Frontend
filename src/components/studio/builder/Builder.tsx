@@ -4,6 +4,7 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { SettingGroup } from '@/components/common/SettingGroup'
 import { campusImage, heroImage, interiorImage } from '@/config/templates'
+import { ImageUploadControl } from '@/components/common/ImageUploadControl'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import type { IconName } from '@/types/studio'
@@ -229,20 +230,7 @@ const SECTION_TEMPLATES = [
 export function Builder() {
   const { notify, setView, previewTheme } = useStudio()
 
-  const [customHeroBg, setCustomHeroBg] = useState<string | null>(null)
-  const heroBgInputRef = useRef<HTMLInputElement>(null)
-
-  const handleHeroBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setCustomHeroBg(reader.result as string)
-        notify(`Hero photo "${file.name}" updated!`)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+  const [heroBg, setHeroBg] = useState<string | null>(null)
 
   const [undoStack, setUndoStack] = useState<string[]>([])
   const [redoStack, setRedoStack] = useState<string[]>([])
@@ -650,6 +638,7 @@ export function Builder() {
           if (d.description) setDescription(d.description)
           if (d.buttonLabel) setButtonLabel(d.buttonLabel)
           if (d.buttonLink) setButtonLink(d.buttonLink)
+          if (d.heroBg) setHeroBg(d.heroBg)
           if (d.overlayOpacity !== undefined) setOverlayOpacity(d.overlayOpacity)
           if (d.introKicker) setIntroKicker(d.introKicker)
           if (d.introTitle) setIntroTitle(d.introTitle)
@@ -760,6 +749,7 @@ export function Builder() {
                   if (c.description) setDescription(c.description)
                   if (c.buttonLabel) setButtonLabel(c.buttonLabel)
                   if (c.buttonLink) setButtonLink(c.buttonLink)
+                  if (c.heroBg) setHeroBg(c.heroBg)
                   if (c.overlayOpacity) setOverlayOpacity(c.overlayOpacity)
                 } else if (sec.type === 'intro' || sec.type === 'programs') {
                   if (c.kicker) setIntroKicker(c.kicker)
@@ -891,6 +881,7 @@ export function Builder() {
               buttonLabel,
               buttonLink,
               overlayOpacity,
+              heroBg: heroBg || undefined,
             },
             settings:
               sectionStyles['Hero section'] || DEFAULT_STYLES['Hero section'],
@@ -1362,7 +1353,7 @@ export function Builder() {
               onClick={() => setSelected('Hero section')}
               className={`mini-hero ${selected === 'Hero section' ? 'selected' : ''} ${sectionStyles['Hero section']?.customClass || ''}`}
               style={{
-                backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${heroImage})`,
+                backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${heroBg || heroImage})`,
                 textAlign: sectionStyles['Hero section']?.align || 'left',
                 paddingTop:
                   sectionStyles['Hero section']?.padding === 'compact'
@@ -2488,25 +2479,14 @@ export function Builder() {
                 </SettingGroup>
 
                 <SettingGroup title="Background Image">
-                  <input
-                    type="file"
-                    ref={heroBgInputRef}
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={handleHeroBgUpload}
+                  <ImageUploadControl
+                    value={heroBg || heroImage}
+                    onChange={(url) => setHeroBg(url)}
+                    aspectRatio="video"
+                    pickerTitle="Select Hero Background Image"
+                    helperText="Recommended: 1600 × 900 px. Replaces live canvas hero & persists to database."
                   />
-                  <div
-                    className="media-picker"
-                    style={{ backgroundImage: `url(${customHeroBg || heroImage})` }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => heroBgInputRef.current?.click()}
-                    >
-                      {customHeroBg ? 'Change photo' : 'Replace photo'}
-                    </button>
-                  </div>
-                  <label>
+                  <label style={{ marginTop: '12px' }}>
                     Dark overlay ({overlayOpacity}%)
                     <div className="range">
                       <input
@@ -2581,13 +2561,16 @@ export function Builder() {
                       onChange={(e) => setPrincipalQuote(e.target.value)}
                     />
                   </label>
-                  <label>
-                    Photo URL
-                    <input
+                  <div style={{ marginTop: '12px' }}>
+                    <ImageUploadControl
+                      label="Principal Portrait Photo"
                       value={principalPhoto}
-                      onChange={(e) => setPrincipalPhoto(e.target.value)}
+                      onChange={(url) => setPrincipalPhoto(url || '')}
+                      aspectRatio="portrait"
+                      pickerTitle="Select Principal Portrait Photo"
+                      helperText="Professional headshot recommended (400 × 500 px)."
                     />
-                  </label>
+                  </div>
                 </SettingGroup>
               </>
             )}
