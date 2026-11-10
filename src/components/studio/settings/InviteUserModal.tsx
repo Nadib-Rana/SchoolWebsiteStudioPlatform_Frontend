@@ -135,8 +135,9 @@ export function InviteUserModal({
               }}
             >
               <option value="ADMIN">Administrator (Full site & team control)</option>
-              <option value="EDITOR">Editor (Can edit and publish content)</option>
-              <option value="VIEWER">Analyst / Viewer (Read-only access)</option>
+              <option value="EDITOR">Editor (Can edit layout, builder, and pages)</option>
+              <option value="CONTENT_MANAGER">Content Manager (Notices, events, gallery, admissions)</option>
+              <option value="ANALYST">Analyst (Read-only analytics and audit logs)</option>
             </select>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>

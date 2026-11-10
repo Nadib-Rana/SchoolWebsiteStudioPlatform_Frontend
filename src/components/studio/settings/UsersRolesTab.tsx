@@ -5,15 +5,25 @@ import { Icon } from '@/components/common/Icon'
 import { SettingsTitle } from './SettingsHeaderSave'
 
 interface UsersRolesTabProps {
-  users: Array<[string, string, string, string, string]>
-  setUsers: React.Dispatch<React.SetStateAction<Array<[string, string, string, string, string]>>>
+  users: Array<[string, string, string, string, string, string?]>
+  setUsers: React.Dispatch<React.SetStateAction<Array<any>>>
   activeUsersCount: number
   pendingUsersCount: number
   availableSeats: number
   onInviteClick: () => void
   onViewPermMatrixClick: () => void
+  onUpdateRole?: (membershipId: string, role: string) => void
+  onRemoveMember?: (membershipId: string, name: string) => void
   notify: (msg: string) => void
 }
+
+const ROLE_OPTIONS = [
+  { value: 'OWNER', label: 'Owner' },
+  { value: 'ADMIN', label: 'Administrator' },
+  { value: 'EDITOR', label: 'Editor' },
+  { value: 'CONTENT_MANAGER', label: 'Content Manager' },
+  { value: 'ANALYST', label: 'Analyst' },
+]
 
 export function UsersRolesTab({
   users,
@@ -23,6 +33,8 @@ export function UsersRolesTab({
   availableSeats,
   onInviteClick,
   onViewPermMatrixClick,
+  onUpdateRole,
+  onRemoveMember,
   notify,
 }: UsersRolesTabProps) {
   return (
@@ -51,57 +63,69 @@ export function UsersRolesTab({
         </div>
       </div>
       <div className="settings-user-list">
-        {users.map((u, i) => (
-          <div key={u[1] + i}>
-            <span className={`person p${i % 4}`}>{u[0]}</span>
-            <div>
-              <strong>
-                {u[1]}
-                {i === 0 && <em>You</em>}
-              </strong>
-              <small>{u[2]}</small>
-            </div>
-            <select
-              value={u[3]}
-              onChange={(e) => {
-                const newRole = e.target.value
-                setUsers((prev) =>
-                  prev.map((row, idx) =>
-                    idx === i ? [row[0], row[1], row[2], newRole, row[4]] : row
-                  )
-                )
-                notify(`Updated role for ${u[1]} to ${newRole}`)
-              }}
-            >
-              <option value="Owner">Owner</option>
-              <option value="Administrator">Administrator</option>
-              <option value="Editor">Editor</option>
-              <option value="Content manager">Content manager</option>
-              <option value="Analyst">Analyst</option>
-            </select>
-            <span className={`state-badge ${u[4].toLowerCase()}`}>
-              <i />
-              {u[4]}
-            </span>
-            <button
-              type="button"
-              aria-label={`Options for ${u[1]}`}
-              onClick={() => {
-                if (i === 0) {
-                  notify('Owner account permissions cannot be modified directly.')
-                } else {
-                  const confirmRemove = window.confirm(`Remove user ${u[1]} (${u[2]}) from workspace?`)
-                  if (confirmRemove) {
-                    setUsers((prev) => prev.filter((_, idx) => idx !== i))
-                    notify(`User ${u[1]} removed from workspace.`)
+        {users.map((u, i) => {
+          const membershipId = u[5] || ''
+          const currentRoleVal = (u[3] || 'EDITOR').toUpperCase().replace(/\s+/g, '_')
+
+          return (
+            <div key={u[1] + i}>
+              <span className={`person p${i % 4}`}>{u[0]}</span>
+              <div>
+                <strong>
+                  {u[1]}
+                  {i === 0 && <em>You</em>}
+                </strong>
+                <small>{u[2]}</small>
+              </div>
+              <select
+                value={currentRoleVal}
+                onChange={(e) => {
+                  const newRole = e.target.value
+                  if (onUpdateRole && membershipId) {
+                    onUpdateRole(membershipId, newRole)
+                  } else {
+                    setUsers((prev) =>
+                      prev.map((row, idx) =>
+                        idx === i ? [row[0], row[1], row[2], newRole, row[4], row[5]] : row
+                      )
+                    )
+                    notify(`Updated role for ${u[1]} to ${newRole}`)
                   }
-                }
-              }}
-            >
-              <Icon name="more" />
-            </button>
-          </div>
-        ))}
+                }}
+              >
+                {ROLE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <span className={`state-badge ${(u[4] || 'Active').toLowerCase()}`}>
+                <i />
+                {u[4] || 'Active'}
+              </span>
+              <button
+                type="button"
+                aria-label={`Remove ${u[1]}`}
+                title="Remove member"
+                onClick={() => {
+                  if (i === 0 || currentRoleVal === 'OWNER') {
+                    notify('Owner account cannot be removed directly.')
+                  } else if (onRemoveMember && membershipId) {
+                    onRemoveMember(membershipId, u[1])
+                  } else {
+                    const confirmRemove = window.confirm(`Remove user ${u[1]} (${u[2]}) from workspace?`)
+                    if (confirmRemove) {
+                      setUsers((prev) => prev.filter((_, idx) => idx !== i))
+                      notify(`User ${u[1]} removed from workspace.`)
+                    }
+                  }
+                }}
+              >
+                <Icon name="close" size={14} />
+              </button>
+            </div>
+          )
+        })}
       </div>
       <div className="permission-note">
         <Icon name="help" />

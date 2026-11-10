@@ -109,6 +109,8 @@ export function Settings() {
             availableSeats={availableSeats}
             onInviteClick={() => s.setInviteModalOpen(true)}
             onViewPermMatrixClick={() => s.setPermMatrixOpen(true)}
+            onUpdateRole={s.handleUpdateRole}
+            onRemoveMember={s.handleRemoveMember}
             notify={s.notify}
           />
         )}

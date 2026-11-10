@@ -37,6 +37,13 @@ export function createContentEndpoints(session: ApiSession) {
           body: JSON.stringify(data),
         })
       },
+      updateMemberRole: async (memberId: string, role: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/members/${memberId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ role }),
+        })
+      },
       removeMember: async (userId: string, schoolId?: string) => {
         const id = schoolId || session.getActiveSchoolId()
         return session.request<any>(`/schools/${id}/members/${userId}`, {

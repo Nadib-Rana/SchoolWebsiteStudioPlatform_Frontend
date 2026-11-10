@@ -162,6 +162,7 @@ export function useSettingsState() {
     inviteEmail: members.inviteEmail, setInviteEmail: members.setInviteEmail,
     inviteRole: members.inviteRole, setInviteRole: members.setInviteRole,
     isInviting: members.isInviting, handleSendInvite: members.handleSendInvite,
+    handleUpdateRole: members.handleUpdateRole, handleRemoveMember: members.handleRemoveMember,
     schoolName, setSchoolName, schoolType, setSchoolType, timezone, setTimezone,
     language, setLanguage, dateFormat, setDateFormat, academicYearStart, setAcademicYearStart,
     isSavingProfile, schoolLogo, logoInputRef, handleLogoUpload,
