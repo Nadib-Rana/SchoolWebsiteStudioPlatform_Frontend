@@ -49,7 +49,7 @@ export function PublicFooter({
     <footer
       className={`public-footer ${footerStyle?.customClass || ''}`}
       style={{
-        background: footerStyle?.bg || '#102f58',
+        background: footerStyle?.bg || 'var(--navy, #102f58)',
         paddingTop:
           footerStyle?.padding === 'compact'
             ? '35px'

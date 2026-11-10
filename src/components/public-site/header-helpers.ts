@@ -45,3 +45,28 @@ export const DEFAULT_HEADER_NAV = [
   { label: 'Gallery', path: '/gallery', page: 'Photo Gallery' },
   { label: 'Contact', path: '/contact', page: 'Contact Us' },
 ]
+
+export function getHeaderInlineStyle(
+  headerStyle?: PublicHeaderProps['headerStyle'],
+  isDark?: boolean,
+): React.CSSProperties {
+  const isCompact = headerStyle?.padding === 'compact'
+  const isSpacious = headerStyle?.padding === 'spacious'
+  const paddingY = isCompact ? '8px' : isSpacious ? '24px' : '14px'
+
+  return {
+    background: headerStyle?.bg || 'var(--header-bg, #ffffff)',
+    paddingTop: paddingY,
+    paddingBottom: paddingY,
+    borderBottom: headerStyle?.border
+      ? '2px solid #2563eb'
+      : isDark
+      ? '1px solid rgba(255,255,255,0.1)'
+      : '1px solid #e6e9ee',
+    ...(headerStyle?.shadow === 'subtle'
+      ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
+      : headerStyle?.shadow === 'card'
+      ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
+      : {}),
+  }
+}

@@ -4,6 +4,8 @@ import { PublicHeader } from '@/components/public-site/PublicHeader'
 import { PublicFooter } from '@/components/public-site/PublicFooter'
 import { PublicAnalyticsTracker } from '@/components/public-site/PublicAnalyticsTracker'
 import { getPublicSiteData } from '@/lib/public-site'
+import { THEME_CONFIGS } from '@/config/themes'
+import type { SchoolTheme } from '@/types/theme'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -66,9 +68,18 @@ export default async function SchoolPublicLayout({
     notFound()
   }
 
-  const themeName = siteData.theme?.activeTheme || 'theme-classic'
-  const primaryColor = siteData.theme?.primaryColor || '#102f58'
-  const accentColor = siteData.theme?.secondaryColor || '#e3ad3f'
+  const rawTheme = siteData.theme?.activeTheme || 'classic'
+  const cleanTheme = (
+    rawTheme.startsWith('theme-') ? rawTheme.replace(/^theme-/, '') : rawTheme
+  ) as SchoolTheme
+  const themeClass = `theme-${cleanTheme}`
+  const themeCfg = THEME_CONFIGS[cleanTheme] || THEME_CONFIGS.modern
+
+  const primaryColor = siteData.theme?.primaryColor || themeCfg.primaryColor || '#102f58'
+  const accentColor = siteData.theme?.secondaryColor || themeCfg.secondaryColor || '#e3ad3f'
+  const fontHeading = siteData.theme?.fontHeading || themeCfg.fontHeading || "'DM Serif Display', serif"
+  const fontBody = siteData.theme?.fontBody || 'Inter'
+  const headerBg = themeCfg.headerBg || primaryColor
 
   const schemaOrg = {
     '@context': 'https://schema.org',
@@ -89,11 +100,14 @@ export default async function SchoolPublicLayout({
 
   return (
     <div
-      className={`public-site ${themeName} min-h-screen flex flex-col`}
+      className={`public-site ${themeClass} min-h-screen flex flex-col`}
       style={
         {
           '--navy': primaryColor,
           '--accent': accentColor,
+          '--font-heading': fontHeading,
+          '--header-bg': headerBg,
+          fontFamily: `${fontBody}, sans-serif`,
         } as React.CSSProperties
       }
     >
@@ -105,18 +119,24 @@ export default async function SchoolPublicLayout({
       <PublicHeader
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
-        motto={siteData.profile?.motto}
+        motto={siteData.profile?.motto || themeCfg.eyebrow}
         logoUrl={siteData.school.logoUrl || undefined}
         navigation={siteData.navigation}
+        headerStyle={{
+          bg: headerBg,
+        }}
       />
       <div className="flex-1">{children}</div>
       <PublicFooter
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
-        motto={siteData.profile?.motto}
+        motto={siteData.profile?.motto || themeCfg.eyebrow}
         address={siteData.profile?.address}
         phone={siteData.profile?.phone}
         email={siteData.profile?.email}
+        footerStyle={{
+          bg: primaryColor,
+        }}
       />
     </div>
   )

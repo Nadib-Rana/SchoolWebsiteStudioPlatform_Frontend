@@ -62,10 +62,9 @@ export function NoticesDirectory({
           <button
             type="button"
             onClick={() => setSelectedCategory('ALL')}
+            style={{ background: selectedCategory === 'ALL' ? 'var(--navy, #1e3a8a)' : undefined }}
             className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors ${
-              selectedCategory === 'ALL'
-                ? 'bg-blue-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              selectedCategory === 'ALL' ? 'text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             All Notices ({notices.length})
@@ -75,10 +74,9 @@ export function NoticesDirectory({
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
+              style={{ background: selectedCategory === cat ? 'var(--navy, #1e3a8a)' : undefined }}
               className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-blue-900 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                selectedCategory === cat ? 'text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               {cat}
@@ -149,7 +147,8 @@ export function NoticesDirectory({
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <Link
                   href={`/${schoolSlug}/notices/${n.slug || n.id}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 hover:underline"
+                  style={{ color: 'var(--navy, #1e3a8a)' }}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold hover:underline"
                 >
                   Read full notice <Icon name="arrow" size={12} />
                 </Link>

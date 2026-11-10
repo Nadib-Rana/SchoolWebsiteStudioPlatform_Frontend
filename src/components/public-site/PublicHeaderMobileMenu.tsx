@@ -43,23 +43,7 @@ export function PublicHeaderMobileMenu({
       }}
     >
       {navItems.map((n) =>
-        schoolSlug ? (
-          <Link
-            key={n.path}
-            href={n.path === '/' ? `/${schoolSlug}` : `/${schoolSlug}${n.path}`}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: 600,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-            onClick={onClose}
-          >
-            {n.label}
-          </Link>
-        ) : (
+        setPage ? (
           <button
             key={n.label}
             type="button"
@@ -75,12 +59,34 @@ export function PublicHeaderMobileMenu({
               cursor: 'pointer',
             }}
             onClick={() => {
-              setPage && setPage(n.page)
+              setPage(n.page)
               onClose()
             }}
           >
             {n.label}
           </button>
+        ) : (
+          <Link
+            key={n.path}
+            href={
+              schoolSlug
+                ? n.path === '/'
+                  ? `/${schoolSlug}`
+                  : `/${schoolSlug}${n.path}`
+                : n.path
+            }
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+            onClick={onClose}
+          >
+            {n.label}
+          </Link>
         )
       )}
     </div>

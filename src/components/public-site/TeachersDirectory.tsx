@@ -50,9 +50,10 @@ export function TeachersDirectory({
           <button
             type="button"
             onClick={() => setSelectedDept('ALL')}
+            style={{ background: selectedDept === 'ALL' ? 'var(--navy, #1e3a8a)' : undefined }}
             className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors ${
               selectedDept === 'ALL'
-                ? 'bg-blue-900 text-white shadow-sm'
+                ? 'text-white shadow-sm'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
@@ -63,9 +64,10 @@ export function TeachersDirectory({
               key={dept}
               type="button"
               onClick={() => setSelectedDept(dept)}
+              style={{ background: selectedDept === dept ? 'var(--navy, #1e3a8a)' : undefined }}
               className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors ${
                 selectedDept === dept
-                  ? 'bg-blue-900 text-white shadow-sm'
+                  ? 'text-white shadow-sm'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -127,7 +129,8 @@ export function TeachersDirectory({
               )}
               <Link
                 href={`/${schoolSlug}/teachers/${t.id}`}
-                className="faculty-link inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 mt-4 hover:underline"
+                style={{ color: 'var(--navy, #1e3a8a)' }}
+                className="faculty-link inline-flex items-center gap-1.5 text-xs font-bold mt-4 hover:underline"
               >
                 View profile <Icon name="arrow" size={12} />
               </Link>

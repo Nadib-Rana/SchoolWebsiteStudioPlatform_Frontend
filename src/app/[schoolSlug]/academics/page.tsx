@@ -80,7 +80,10 @@ export default async function SchoolAcademicsPage({ params }: PageProps) {
               key={tier.level}
               className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition"
             >
-              <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-4">
+              <div
+                className="w-10 h-10 rounded-xl text-white flex items-center justify-center mb-4"
+                style={{ background: 'var(--navy, #0f172a)' }}
+              >
                 <Icon name={tier.icon as any} size={20} />
               </div>
               <h3 className="text-lg font-bold text-slate-900 mb-2">{tier.level}</h3>

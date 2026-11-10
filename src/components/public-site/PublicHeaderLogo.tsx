@@ -80,6 +80,24 @@ export function PublicHeaderLogo({
     </div>
   )
 
+  if (setPage) {
+    return (
+      <button
+        type="button"
+        onClick={() => setPage('Home')}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        {logoMarkup}
+      </button>
+    )
+  }
+
   if (schoolSlug) {
     return (
       <Link href={`/${schoolSlug}`} style={{ textDecoration: 'none' }}>
@@ -89,18 +107,8 @@ export function PublicHeaderLogo({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => setPage && setPage('Home')}
-      style={{
-        background: 'none',
-        border: 'none',
-        padding: 0,
-        cursor: 'pointer',
-        textAlign: 'left',
-      }}
-    >
+    <div style={{ textAlign: 'left' }}>
       {logoMarkup}
-    </button>
+    </div>
   )
 }

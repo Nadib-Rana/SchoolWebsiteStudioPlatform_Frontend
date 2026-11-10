@@ -7,11 +7,12 @@ import {
   type PublicHeaderProps,
   isDarkColor,
   DEFAULT_HEADER_NAV,
+  getHeaderInlineStyle,
 } from './header-helpers'
 import { PublicHeaderLogo } from './PublicHeaderLogo'
 import { PublicHeaderMobileMenu } from './PublicHeaderMobileMenu'
 import { PublicLanguageSelector } from './PublicLanguageSelector'
-import { usePublicTranslation } from '@/lib/i18n/usePublicTranslation'
+import { PublicApplyButton } from './PublicApplyButton'
 
 export type { PublicHeaderProps }
 
@@ -27,7 +28,6 @@ export function PublicHeader({
   headerStyle,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { t } = usePublicTranslation()
 
   const navItems =
     navigation && navigation.length > 0
@@ -38,36 +38,13 @@ export function PublicHeader({
         }))
       : DEFAULT_HEADER_NAV
 
-  const isDark = isDarkColor(headerStyle?.bg)
+  const bg = headerStyle?.bg || 'var(--header-bg, #ffffff)'
+  const isDark = isDarkColor(bg)
 
   return (
     <header
       className={`public-header ${headerStyle?.customClass || ''}`}
-      style={{
-        background: headerStyle?.bg || '#ffffff',
-        paddingTop:
-          headerStyle?.padding === 'compact'
-            ? '8px'
-            : headerStyle?.padding === 'spacious'
-            ? '24px'
-            : '14px',
-        paddingBottom:
-          headerStyle?.padding === 'compact'
-            ? '8px'
-            : headerStyle?.padding === 'spacious'
-            ? '24px'
-            : '14px',
-        borderBottom: headerStyle?.border
-          ? '2px solid #2563eb'
-          : isDark
-          ? '1px solid rgba(255,255,255,0.1)'
-          : '1px solid #e6e9ee',
-        ...(headerStyle?.shadow === 'subtle'
-          ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
-          : headerStyle?.shadow === 'card'
-          ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
-          : {}),
-      }}
+      style={getHeaderInlineStyle(headerStyle, isDark)}
     >
       <PublicHeaderLogo
         schoolSlug={schoolSlug}
@@ -90,24 +67,11 @@ export function PublicHeader({
         }}
       >
         {navItems.map((item) =>
-          schoolSlug ? (
-            <Link
-              key={item.label}
-              href={`/${schoolSlug}${item.path === '/' ? '' : item.path}`}
-              className="public-nav-link"
-              style={{
-                color: isDark ? '#f8fafc' : '#1e293b',
-                textDecoration: 'none',
-                transition: 'opacity 0.15s',
-              }}
-            >
-              {item.label}
-            </Link>
-          ) : (
+          setPage ? (
             <button
               key={item.label}
               type="button"
-              onClick={() => setPage && setPage(item.page)}
+              onClick={() => setPage(item.page)}
               style={{
                 background: 'none',
                 border: 'none',
@@ -119,44 +83,33 @@ export function PublicHeader({
             >
               {item.label}
             </button>
+          ) : (
+            <Link
+              key={item.label}
+              href={
+                schoolSlug
+                  ? `/${schoolSlug}${item.path === '/' ? '' : item.path}`
+                  : item.path
+              }
+              className="public-nav-link"
+              style={{
+                color: isDark ? '#f8fafc' : '#1e293b',
+                textDecoration: 'none',
+                transition: 'opacity 0.15s',
+              }}
+            >
+              {item.label}
+            </Link>
           )
         )}
       </nav>
 
-      {schoolSlug ? (
-        <Link
-          href={`/${schoolSlug}/admissions`}
-          className="admission-button"
-          style={{
-            background: isDark ? '#e3ad3f' : '#102f58',
-            color: isDark ? '#0f172a' : '#ffffff',
-            textDecoration: 'none',
-            borderRadius: '6px',
-            padding: '8px 18px',
-            fontWeight: 700,
-            fontSize: '13px',
-          }}
-        >
-          {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
-        </Link>
-      ) : (
-        <button
-          type="button"
-          className="admission-button"
-          style={{
-            background: isDark ? '#e3ad3f' : '#102f58',
-            color: isDark ? '#0f172a' : '#ffffff',
-            borderRadius: '6px',
-            padding: '8px 18px',
-            fontWeight: 700,
-            fontSize: '13px',
-            cursor: 'pointer',
-          }}
-          onClick={() => setPage && setPage('Admission Information')}
-        >
-          {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
-        </button>
-      )}
+      <PublicApplyButton
+        schoolSlug={schoolSlug}
+        isDark={isDark}
+        setPage={setPage}
+        applyButtonText={applyButtonText}
+      />
 
       <PublicLanguageSelector isDark={isDark} />
 
