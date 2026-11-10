@@ -38,6 +38,22 @@ export function NotificationsPopover({ onClose }: NotificationsPopoverProps) {
         <button
           type="button"
           className="unread"
+          onClick={() => handleItemClick('inquiries')}
+        >
+          <span className="notice-symbol sync">
+            <Icon name="help" size={15} />
+          </span>
+          <div>
+            <strong>New contact inquiry received</strong>
+            <p>A prospective family inquired about admissions and campus tour.</p>
+            <small>Just now</small>
+          </div>
+          <i />
+        </button>
+
+        <button
+          type="button"
+          className="unread"
           onClick={() => handleItemClick('publishing')}
         >
           <span className="notice-symbol publish">

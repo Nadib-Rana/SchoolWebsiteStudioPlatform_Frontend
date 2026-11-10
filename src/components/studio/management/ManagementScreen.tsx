@@ -3,6 +3,7 @@
 import { Button } from '@/components/common/Button'
 import { Academics } from '@/components/studio/academics/Academics'
 import { AdmissionsManager } from '@/components/studio/admissions/AdmissionsManager'
+import { InquiriesManager } from '@/components/studio/inquiries/InquiriesManager'
 import { Analytics } from '@/components/studio/analytics/Analytics'
 import { ContentManager } from '@/components/studio/content/ContentManager'
 import { DataManager } from '@/components/studio/data-manager/DataManager'
@@ -77,6 +78,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
       {view === 'content' && <ContentManager />}
       {view === 'academics' && <Academics />}
       {view === 'admissions' && <AdmissionsManager />}
+      {view === 'inquiries' && <InquiriesManager />}
       {view === 'gallery' && <Gallery />}
       {view === 'navigation' && (
         <NavigationManager

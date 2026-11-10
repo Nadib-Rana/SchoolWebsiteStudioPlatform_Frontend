@@ -118,5 +118,34 @@ export function createAuthAndStorageEndpoints(session: ApiSession) {
         })
       },
     },
+
+    inquiries: {
+      list: async (schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/inquiries`)
+      },
+      update: async (
+        inquiryId: string,
+        data: {
+          status: string
+          responseNotes?: string
+          replyMessage?: string
+          sendEmailReply?: boolean
+        },
+        schoolId?: string,
+      ) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/inquiries/${inquiryId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(data),
+        })
+      },
+      delete: async (inquiryId: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/inquiries/${inquiryId}`, {
+          method: 'DELETE',
+        })
+      },
+    },
   }
 }

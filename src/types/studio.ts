@@ -10,6 +10,7 @@ export type View =
   | 'teachers'
   | 'academics'
   | 'admissions'
+  | 'inquiries'
   | 'notices'
   | 'events'
   | 'gallery'

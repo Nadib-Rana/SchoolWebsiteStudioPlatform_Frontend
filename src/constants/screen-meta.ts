@@ -31,6 +31,12 @@ export const screenMeta: ScreenMetaMap = {
     description: 'Review student applications, schedule interviews, and manage enrollment decisions.',
     action: 'Refresh registry',
   },
+  inquiries: {
+    title: 'Lead & Contact Inquiries',
+    eyebrow: 'COMMUNICATION CRM',
+    description: 'Track prospective student families, questions, and replies from your public website.',
+    action: 'Refresh inbox',
+  },
   notices: {
     title: 'Notices',
     eyebrow: 'SCHOOL UPDATES',

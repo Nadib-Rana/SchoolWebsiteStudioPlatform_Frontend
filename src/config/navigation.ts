@@ -10,6 +10,7 @@ export const studioNav: readonly NavItem[] = [
   ['teachers', 'users', 'Teachers'],
   ['academics', 'file', 'Academics'],
   ['admissions', 'check', 'Admissions'],
+  ['inquiries', 'help', 'Inquiries'],
   ['notices', 'bell', 'Notices'],
   ['events', 'calendar', 'Events'],
   ['gallery', 'image', 'Gallery'],
@@ -25,8 +26,8 @@ export const studioNav: readonly NavItem[] = [
 ] as const
 
 export const workspaceNav = studioNav.slice(0, 4)
-export const manageNav = studioNav.slice(4, 14)
-export const optimizeNav = studioNav.slice(14)
+export const manageNav = studioNav.slice(4, 15)
+export const optimizeNav = studioNav.slice(15)
 
 export const publicPages = [
   'Home',

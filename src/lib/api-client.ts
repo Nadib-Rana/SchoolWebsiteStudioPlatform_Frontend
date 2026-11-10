@@ -60,6 +60,7 @@ export class ApiClient {
   public auth = this.authAndStorage.auth
   public storage = this.authAndStorage.storage
   public publicSite = this.authAndStorage.publicSite
+  public inquiries = this.authAndStorage.inquiries
 
   public schools = this.contentEndpoints.schools
   public content = this.contentEndpoints.content
