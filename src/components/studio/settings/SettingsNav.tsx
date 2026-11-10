@@ -16,7 +16,6 @@ const TABS: [string, IconName][] = [
   ['Account', 'users'],
   ['Users & roles', 'users'],
   ['Notifications', 'bell'],
-  ['Language & i18n', 'globe'],
   ['Website', 'globe'],
   ['Security', 'settings'],
   ['Backup & export', 'file'],

@@ -11,7 +11,6 @@ import {
 } from './header-helpers'
 import { PublicHeaderLogo } from './PublicHeaderLogo'
 import { PublicHeaderMobileMenu } from './PublicHeaderMobileMenu'
-import { PublicLanguageSelector } from './PublicLanguageSelector'
 import { PublicApplyButton } from './PublicApplyButton'
 
 export type { PublicHeaderProps }
@@ -110,8 +109,6 @@ export function PublicHeader({
         setPage={setPage}
         applyButtonText={applyButtonText}
       />
-
-      <PublicLanguageSelector isDark={isDark} />
 
       <button
         type="button"

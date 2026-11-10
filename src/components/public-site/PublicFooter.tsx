@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { usePublicTranslation } from '@/lib/i18n/usePublicTranslation'
 
 export interface PublicFooterProps {
   schoolSlug?: string
@@ -34,15 +33,14 @@ export function PublicFooter({
   footerStyle,
   setPage,
 }: PublicFooterProps) {
-  const { t } = usePublicTranslation()
   const initial = (schoolName || 'N').charAt(0).toUpperCase()
 
   const links = [
-    { label: t('nav_about', 'About'), path: '/about', page: 'About School' },
-    { label: t('nav_academics', 'Academics'), path: '/academics', page: 'Academic Programs' },
-    { label: t('nav_admissions', 'Admissions'), path: '/admissions', page: 'Admission Information' },
-    { label: t('nav_notices', 'Notices'), path: '/notices', page: 'Notices' },
-    { label: t('nav_contact', 'Contact'), path: '/contact', page: 'Contact Us' },
+    { label: 'About', path: '/about', page: 'About School' },
+    { label: 'Academics', path: '/academics', page: 'Academic Programs' },
+    { label: 'Admissions', path: '/admissions', page: 'Admission Information' },
+    { label: 'Notices', path: '/notices', page: 'Notices' },
+    { label: 'Contact', path: '/contact', page: 'Contact Us' },
   ]
 
   return (

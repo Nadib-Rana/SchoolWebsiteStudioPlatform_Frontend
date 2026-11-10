@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Icon } from '@/components/common/Icon'
-import { usePublicTranslation } from '@/lib/i18n/usePublicTranslation'
 
 interface PublicApplyButtonProps {
   schoolSlug?: string
@@ -17,7 +16,7 @@ export function PublicApplyButton({
   setPage,
   applyButtonText,
 }: PublicApplyButtonProps) {
-  const { t } = usePublicTranslation()
+  const label = applyButtonText || 'Apply now'
   const btnStyle = {
     background: isDark ? '#e3ad3f' : '#102f58',
     color: isDark ? '#0f172a' : '#ffffff',
@@ -41,7 +40,7 @@ export function PublicApplyButton({
         style={btnStyle}
         onClick={() => setPage('Admission Information')}
       >
-        {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
+        {label} <Icon name="arrow" size={15} />
       </button>
     )
   }
@@ -53,7 +52,7 @@ export function PublicApplyButton({
         className="admission-button"
         style={btnStyle}
       >
-        {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
+        {label} <Icon name="arrow" size={15} />
       </Link>
     )
   }
@@ -64,7 +63,7 @@ export function PublicApplyButton({
       className="admission-button"
       style={btnStyle}
     >
-      {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
+      {label} <Icon name="arrow" size={15} />
     </button>
   )
 }

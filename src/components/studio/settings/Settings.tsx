@@ -6,7 +6,6 @@ import { SchoolProfileTab } from './SchoolProfileTab'
 import { AccountSettingsTab } from './AccountSettingsTab'
 import { UsersRolesTab } from './UsersRolesTab'
 import { NotificationsTab } from './NotificationsTab'
-import { I18nSettingsTab } from './I18nSettingsTab'
 import { WebsiteSettingsTab } from './WebsiteSettingsTab'
 import { SecuritySettingsTab } from './SecuritySettingsTab'
 import { BackupExportTab } from './BackupExportTab'
@@ -110,10 +109,6 @@ export function Settings() {
             toggleNotification={s.toggleNotification}
             onSaveNotifications={() => s.notify('Notification preferences saved successfully.')}
           />
-        )}
-
-        {s.active === 'Language & i18n' && (
-          <I18nSettingsTab notify={s.notify} />
         )}
 
         {s.active === 'Website' && (
