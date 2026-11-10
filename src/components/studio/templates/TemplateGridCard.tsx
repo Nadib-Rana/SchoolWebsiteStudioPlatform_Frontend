@@ -38,7 +38,10 @@ export function TemplateGridCard({
         style={{ backgroundImage: `url(${template.image})` }}
       >
         {template.tag && <span>{template.tag}</span>}
-        <div className="template-devices">
+        <div
+          className="template-devices"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
             className={device === 'monitor' ? 'active' : ''}
@@ -56,11 +59,17 @@ export function TemplateGridCard({
             <Icon name="mobile" size={14} />
           </button>
         </div>
-        <div className="template-overlay">
+        <div
+          className="template-overlay"
+          onClick={() => onPreview(template.theme, template.name)}
+        >
           <Button
             kind="secondary"
             icon="eye"
-            onClick={() => onPreview(template.theme, template.name)}
+            onClick={(e) => {
+              e?.stopPropagation?.()
+              onPreview(template.theme, template.name)
+            }}
           >
             Live preview
           </Button>

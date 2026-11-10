@@ -45,11 +45,8 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         }
 
         const slug = api.getActiveSchoolSlug() || 'northfield-high'
-        const base =
-          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
-        const res = await fetch(
-          `${base}/public/site?slug=${encodeURIComponent(slug)}`,
-        )
+        const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+        const res = await fetch(`${base}/public/site?slug=${encodeURIComponent(slug)}`)
         if (res.ok) {
           const json = await res.json()
           if (json.data && isMounted) {
@@ -100,11 +97,13 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
       : activeCfg.announcementText
   const announcementLink = builderData?.announcementLink || 'Apply now'
   const effectiveAnnouncementBg =
-    builderData?.sectionStyles?.['Announcement bar']?.bg ||
-    activeCfg.primaryColor
+    isCustomizedForTheme && builderData?.sectionStyles?.['Announcement bar']?.bg
+      ? builderData.sectionStyles['Announcement bar'].bg
+      : activeCfg.primaryColor
   const effectiveHeaderBg =
-    builderData?.sectionStyles?.['Header']?.bg ||
-    activeCfg.headerBg
+    isCustomizedForTheme && builderData?.sectionStyles?.['Header']?.bg
+      ? builderData.sectionStyles['Header'].bg
+      : activeCfg.headerBg
 
   return (
     <div
@@ -186,7 +185,10 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         copyright={builderData?.footerCopyright}
         footerStyle={{
           ...(isCustomizedForTheme ? builderData?.sectionStyles?.['Footer'] : {}),
-          bg: activeCfg.primaryColor,
+          bg:
+            isCustomizedForTheme && builderData?.sectionStyles?.['Footer']?.bg
+              ? builderData.sectionStyles['Footer'].bg
+              : activeCfg.primaryColor,
         }}
       />
     </div>

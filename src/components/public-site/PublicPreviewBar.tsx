@@ -2,8 +2,9 @@
 
 import { Button } from '@/components/common/Button'
 import { publicPages } from '@/config/navigation'
-import { themeLabels } from '@/config/themes'
+import { themeLabels, THEME_CONFIGS } from '@/config/themes'
 import { useStudio } from '@/context/StudioContext'
+import { applyTemplateToBuilder } from '@/components/studio/templates/template-apply-helper'
 import type { SchoolTheme } from '@/types/theme'
 
 export interface PublicPreviewBarProps {
@@ -19,17 +20,33 @@ export function PublicPreviewBar({
   theme,
   setTheme,
 }: PublicPreviewBarProps) {
-  const { setView } = useStudio()
+  const { setView, notify, setPreviewTheme } = useStudio()
+
+  const handleApplyCurrentTheme = async () => {
+    setPreviewTheme(theme)
+    const appliedName = await applyTemplateToBuilder(theme)
+    notify(`"${appliedName}" template applied to Website Builder!`)
+    setView('builder')
+  }
 
   return (
     <div className="preview-bar">
-      <div>
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         <Button
           kind="ghost"
           icon="arrow"
-          onClick={() => setView('builder')}
+          onClick={() => setView('templates')}
+          title="Back to Template Gallery"
         >
-          Back to Studio
+          Templates
+        </Button>
+        <Button
+          kind="ghost"
+          icon="layout"
+          onClick={() => setView('builder')}
+          title="Open Website Builder"
+        >
+          Builder
         </Button>
         <label className="page-preview-select">
           Page{' '}
@@ -63,8 +80,8 @@ export function PublicPreviewBar({
         >
           Open in new tab ↗
         </Button>
-        <Button kind="primary" onClick={() => setView('builder')}>
-          Edit this page
+        <Button kind="primary" onClick={handleApplyCurrentTheme}>
+          Use this template →
         </Button>
       </div>
     </div>

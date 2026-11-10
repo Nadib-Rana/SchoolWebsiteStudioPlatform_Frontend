@@ -54,15 +54,12 @@ export function PublicHome({
   const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
   const isCustomizedForTheme = !builderData?.appliedTheme || builderData?.appliedTheme === theme
 
-  const schoolName =
-    schoolData?.school?.name ||
+  const schoolName = schoolData?.school?.name ||
     (isCustomizedForTheme && builderData?.schoolName ? builderData.schoolName : activeCfg.schoolName)
-  const motto =
-    schoolData?.profile?.motto ||
+  const motto = schoolData?.profile?.motto ||
     (isCustomizedForTheme && builderData?.eyebrow ? builderData.eyebrow : activeCfg.eyebrow)
   const establishedYear = schoolData?.profile?.established || 1983
-  const address =
-    schoolData?.profile?.address || builderData?.footerAddress || '27 Lakeview Avenue, Riverdale, NY 10471'
+  const address = schoolData?.profile?.address || builderData?.footerAddress || '27 Lakeview Avenue, Riverdale, NY 10471'
 
   const heroHeading =
     isCustomizedForTheme && builderData?.heading ? builderData.heading : activeCfg.headline
@@ -70,7 +67,10 @@ export function PublicHome({
     isCustomizedForTheme && builderData?.description ? builderData.description : activeCfg.description
   const heroBtnLabel =
     isCustomizedForTheme && builderData?.buttonLabel ? builderData.buttonLabel : activeCfg.buttonLabel
-  const currentHeroImage = builderData?.heroBg || activeCfg.heroImage || heroImage
+  const currentHeroImage =
+    isCustomizedForTheme && builderData?.heroBg
+      ? builderData.heroBg
+      : activeCfg.heroImage || heroImage
   const heroBtnLink = builderData?.buttonLink || '/about'
   const heroOverlay = builderData?.overlayOpacity !== undefined ? builderData.overlayOpacity : 65
 
@@ -112,7 +112,7 @@ export function PublicHome({
         { value: '16:1', label: 'Student–teacher ratio' },
       ]
 
-  const sectionStyles = builderData?.sectionStyles || {}
+  const sectionStyles = isCustomizedForTheme ? (builderData?.sectionStyles || {}) : {}
   const customSections = builderData?.customSectionsData ? Object.values(builderData.customSectionsData) : []
 
   return (
