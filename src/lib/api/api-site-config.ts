@@ -89,6 +89,17 @@ export function createSiteConfigEndpoints(session: ApiSession) {
           body: JSON.stringify(data),
         })
       },
+      getI18n: async (schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/settings/i18n`)
+      },
+      updateI18n: async (data: any, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/settings/i18n`, {
+          method: 'PATCH',
+          body: JSON.stringify(data),
+        })
+      },
     },
 
     publishing: {

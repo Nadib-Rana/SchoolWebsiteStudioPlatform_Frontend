@@ -10,6 +10,8 @@ import {
 } from './header-helpers'
 import { PublicHeaderLogo } from './PublicHeaderLogo'
 import { PublicHeaderMobileMenu } from './PublicHeaderMobileMenu'
+import { PublicLanguageSelector } from './PublicLanguageSelector'
+import { usePublicTranslation } from '@/lib/i18n/usePublicTranslation'
 
 export type { PublicHeaderProps }
 
@@ -25,6 +27,7 @@ export function PublicHeader({
   headerStyle,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { t } = usePublicTranslation()
 
   const navItems =
     navigation && navigation.length > 0
@@ -134,7 +137,7 @@ export function PublicHeader({
             fontSize: '13px',
           }}
         >
-          {applyButtonText || 'Apply now'} <Icon name="arrow" size={15} />
+          {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
         </Link>
       ) : (
         <button
@@ -151,9 +154,11 @@ export function PublicHeader({
           }}
           onClick={() => setPage && setPage('Admission Information')}
         >
-          {applyButtonText || 'Apply now'} <Icon name="arrow" size={15} />
+          {t('btn_apply', applyButtonText || 'Apply now')} <Icon name="arrow" size={15} />
         </button>
       )}
+
+      <PublicLanguageSelector isDark={isDark} />
 
       <button
         type="button"

@@ -6,12 +6,14 @@ import { SchoolProfileTab } from './SchoolProfileTab'
 import { AccountSettingsTab } from './AccountSettingsTab'
 import { UsersRolesTab } from './UsersRolesTab'
 import { NotificationsTab } from './NotificationsTab'
+import { I18nSettingsTab } from './I18nSettingsTab'
 import { WebsiteSettingsTab } from './WebsiteSettingsTab'
 import { SecuritySettingsTab } from './SecuritySettingsTab'
 import { BackupExportTab } from './BackupExportTab'
 import { InviteUserModal } from './InviteUserModal'
 import { RolePermissionModal } from './RolePermissionModal'
 import { RestoreBackupModal } from './RestoreBackupModal'
+import { SettingsHiddenInputs } from './SettingsHiddenInputs'
 
 export function Settings() {
   const s = useSettingsState()
@@ -22,26 +24,13 @@ export function Settings() {
 
   return (
     <div className="settings-layout">
-      <input
-        ref={s.logoInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={s.handleLogoUpload}
-      />
-      <input
-        ref={s.faviconInputRef}
-        type="file"
-        accept="image/*,.ico"
-        style={{ display: 'none' }}
-        onChange={s.handleFaviconUpload}
-      />
-      <input
-        ref={s.accountPhotoInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={s.handleAccountPhotoUpload}
+      <SettingsHiddenInputs
+        logoInputRef={s.logoInputRef}
+        faviconInputRef={s.faviconInputRef}
+        accountPhotoInputRef={s.accountPhotoInputRef}
+        onLogoUpload={s.handleLogoUpload}
+        onFaviconUpload={s.handleFaviconUpload}
+        onAccountPhotoUpload={s.handleAccountPhotoUpload}
       />
 
       <SettingsNav
@@ -121,6 +110,10 @@ export function Settings() {
             toggleNotification={s.toggleNotification}
             onSaveNotifications={() => s.notify('Notification preferences saved successfully.')}
           />
+        )}
+
+        {s.active === 'Language & i18n' && (
+          <I18nSettingsTab notify={s.notify} />
         )}
 
         {s.active === 'Website' && (
