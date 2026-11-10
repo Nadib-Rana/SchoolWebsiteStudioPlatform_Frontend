@@ -110,6 +110,41 @@ export function createSiteConfigEndpoints(session: ApiSession) {
           body: JSON.stringify({ isPublished }),
         })
       },
+      createBackup: async (
+        data: { label?: string; notes?: string; versionTag?: string },
+        schoolId?: string
+      ) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/publishing/backups`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        })
+      },
+      restoreVersion: async (
+        versionId: string,
+        data?: { reason?: string },
+        schoolId?: string
+      ) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(
+          `/schools/${id}/publishing/versions/${versionId}/restore`,
+          {
+            method: 'POST',
+            body: JSON.stringify(data || {}),
+          }
+        )
+      },
+      getVersion: async (versionId: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/publishing/versions/${versionId}`)
+      },
+      deleteVersion: async (versionId: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(
+          `/schools/${id}/publishing/versions/${versionId}`,
+          { method: 'DELETE' }
+        )
+      },
     },
 
     analytics: {

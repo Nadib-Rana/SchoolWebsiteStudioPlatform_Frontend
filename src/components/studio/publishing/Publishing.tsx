@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/common/Button'
-import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-import type { StagedChange, VersionRecord } from './publishing.types'
+import type { CreateBackupParams, StagedChange, VersionRecord } from './publishing.types'
+import { PublishReleaseCard } from './PublishReleaseCard'
 import { PublishVersionModal } from './PublishVersionModal'
 import { VersionHistoryList } from './VersionHistoryList'
 import { PublishDangerZone } from './PublishDangerZone'
+import { CreateBackupModal } from './CreateBackupModal'
+import { RestoreConfirmModal } from './RestoreConfirmModal'
 
 export function Publishing() {
   const { notify, setView } = useStudio()
@@ -20,6 +21,8 @@ export function Publishing() {
   const [stagedChanges, setStagedChanges] = useState<StagedChange[]>([])
   const [versions, setVersions] = useState<VersionRecord[]>([])
   const [inspectVersion, setInspectVersion] = useState<VersionRecord | null>(null)
+  const [restoreTarget, setRestoreTarget] = useState<VersionRecord | null>(null)
+  const [isBackupOpen, setIsBackupOpen] = useState(false)
 
   const loadStatus = async () => {
     try {
@@ -63,14 +66,43 @@ export function Publishing() {
       await loadStatus()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Publishing release failed'
-      if (msg.includes('Unauthorized') || msg.includes('401')) {
-        notify('⚠️ Your session has expired. Please sign in to publish.')
-        setView('login')
-      } else {
-        notify(`Error: ${msg}`)
-      }
+      notify(`Error: ${msg}`)
     } finally {
       setPublishing(false)
+    }
+  }
+
+  const handleCreateBackup = async (params: CreateBackupParams) => {
+    try {
+      await api.publishing.createBackup(params)
+      notify(`Site snapshot '${params.label}' captured successfully!`)
+      await loadStatus()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create backup'
+      notify(`Error: ${msg}`)
+    }
+  }
+
+  const handleConfirmRestore = async (versionId: string, reason?: string) => {
+    try {
+      await api.publishing.restoreVersion(versionId, { reason })
+      notify('Website revision successfully restored!')
+      await loadStatus()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Rollback failed'
+      notify(`Error: ${msg}`)
+    }
+  }
+
+  const handleDeleteVersion = async (v: VersionRecord) => {
+    if (!window.confirm(`Delete snapshot ${v.versionTag}? This cannot be undone.`)) return
+    try {
+      await api.publishing.deleteVersion(v.id)
+      notify(`Snapshot ${v.versionTag} deleted.`)
+      await loadStatus()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Delete failed'
+      notify(`Error: ${msg}`)
     }
   }
 
@@ -81,19 +113,13 @@ export function Publishing() {
       return
     }
     const nextState = !isPublished
-    if (
-      !nextState &&
-      typeof window !== 'undefined' &&
-      !window.confirm('Are you sure you want to take your school website offline? Public visitors will receive an HTTP 404 page.')
-    ) {
-      return
-    }
+    if (!nextState && !window.confirm('Take your school website offline? Public visitors will receive an HTTP 404 page.')) return
 
     setToggling(true)
     try {
       await api.publishing.toggleStatus(nextState)
       setIsPublished(nextState)
-      notify(nextState ? 'Website is now live and accessible to the public!' : 'Website unpublished.')
+      notify(nextState ? 'Website is now live to the public!' : 'Website unpublished.')
       await loadStatus()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Toggle publication status failed'
@@ -114,54 +140,49 @@ export function Publishing() {
 
   return (
     <div className="publishing-layout">
-      <div className="card release-card">
-        <div className="release-top">
-          <span className="release-icon"><Icon name="sparkle" /></span>
-          <div>
-            <span className={`state-badge ${stagedChanges.length > 0 ? 'draft' : 'published'}`}>
-              <i />
-              {stagedChanges.length > 0 ? 'Draft ready' : 'All changes live'}
-            </span>
-            <h2>
-              {stagedChanges.length > 0
-                ? `${stagedChanges.length} ${stagedChanges.length === 1 ? 'change is' : 'changes are'} ready to publish`
-                : 'Your live website is currently up to date'}
-            </h2>
-            <p>
-              {stagedChanges.length > 0
-                ? 'Your published public website remains unchanged until you create a new version release.'
-                : 'All pages, notices, events, and customizations are currently synchronized with the public profile.'}
-            </p>
-          </div>
-          <Button kind="primary" onClick={handlePublishRelease} disabled={publishing || loading}>
-            {publishing ? 'Publishing...' : `Publish version ${computeNextVersion(currentVersionTag)}`}
-          </Button>
-        </div>
+      <PublishReleaseCard
+        stagedChanges={stagedChanges}
+        publishing={publishing}
+        loading={loading}
+        nextVersionTag={computeNextVersion(currentVersionTag)}
+        onPublish={handlePublishRelease}
+        formatTimeAgo={formatTimeAgo}
+      />
 
-        {stagedChanges.length > 0 ? (
-          <div className="change-list">
-            {stagedChanges.map((x, i) => (
-              <div key={x.title + i}>
-                <span><Icon name="check" size={13} /></span>
-                <div>
-                  <strong>{x.title}</strong>
-                  <p>{x.detail}</p>
-                </div>
-                <small>{formatTimeAgo(x.updatedAt)}</small>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-            <Icon name="check" size={20} className="text-emerald-600 mb-1 inline-block mr-1" />
-            No pending drafts awaiting release.
-          </div>
-        )}
-      </div>
+      <VersionHistoryList
+        versions={versions}
+        onInspect={setInspectVersion}
+        onRestore={setRestoreTarget}
+        onDelete={handleDeleteVersion}
+        onCreateBackup={() => setIsBackupOpen(true)}
+        formatTimeAgo={formatTimeAgo}
+      />
 
-      <VersionHistoryList versions={versions} onInspect={setInspectVersion} formatTimeAgo={formatTimeAgo} />
-      <PublishDangerZone isPublished={isPublished} toggling={toggling} loading={loading} onTogglePublish={handleTogglePublish} />
-      <PublishVersionModal version={inspectVersion} onClose={() => setInspectVersion(null)} formatTimeAgo={formatTimeAgo} />
+      <PublishDangerZone
+        isPublished={isPublished}
+        toggling={toggling}
+        loading={loading}
+        onTogglePublish={handleTogglePublish}
+      />
+
+      <PublishVersionModal
+        version={inspectVersion}
+        onClose={() => setInspectVersion(null)}
+        onRestore={setRestoreTarget}
+        formatTimeAgo={formatTimeAgo}
+      />
+
+      <CreateBackupModal
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+        onSubmit={handleCreateBackup}
+      />
+
+      <RestoreConfirmModal
+        version={restoreTarget}
+        onClose={() => setRestoreTarget(null)}
+        onConfirm={handleConfirmRestore}
+      />
     </div>
   )
 }
