@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PublicHeader } from '@/components/public-site/PublicHeader'
 import { PublicFooter } from '@/components/public-site/PublicFooter'
+import { PublicAnalyticsTracker } from '@/components/public-site/PublicAnalyticsTracker'
 import { getPublicSiteData } from '@/lib/public-site'
 
 interface LayoutProps {
@@ -100,6 +101,7 @@ export default async function SchoolPublicLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
       />
+      <PublicAnalyticsTracker schoolSlug={schoolSlug} />
       <PublicHeader
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
