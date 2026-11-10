@@ -1,10 +1,14 @@
 'use client'
 
-import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import { useState } from 'react'
+import { AuthAside } from './AuthAside'
+import { AuthModeSwitcher } from './AuthModeSwitcher'
+import { SignInForm } from './SignInForm'
+import { SignUpForm } from './SignUpForm'
+import { AuthFooter } from './AuthFooter'
 
 export function Login() {
   const { setView, notify, refreshSchools } = useStudio()
@@ -67,11 +71,9 @@ export function Login() {
         lastName: regLastName.trim() || undefined,
       })
 
-      // Auto login immediately
       const loginRes = await api.auth.login(regEmail.trim(), regPassword)
       notify(`Account created! Welcome, ${loginRes.data?.user?.firstName || 'Admin'}!`)
       await refreshSchools()
-      // Direct them to onboarding to create their first school
       setView('onboarding')
     } catch (err: any) {
       const msg = err?.message || 'Registration failed'
@@ -82,35 +84,14 @@ export function Login() {
     }
   }
 
+  const handleModeChange = (newMode: 'login' | 'register') => {
+    setMode(newMode)
+    setError('')
+  }
+
   return (
     <div className="auth-page">
-      <div className="auth-aside">
-        <div className="brand auth-brand">
-          <div className="brand-mark">
-            <Icon name="layers" size={20} />
-          </div>
-          <div>
-            <strong>SchoolCanvas</strong>
-            <small>Website Studio</small>
-          </div>
-        </div>
-        <div>
-          <span>WEBSITES THAT INSPIRE TRUST</span>
-          <h1>Build a school website your community is proud of.</h1>
-          <p>
-            Create, manage, and publish an exceptional digital home for your
-            school—without writing code.
-          </p>
-          <div className="auth-quote">
-            <p>
-              “Our new website finally reflects the quality and warmth of our
-              school.”
-            </p>
-            <span>Farhana Noor · Principal, Northfield High</span>
-          </div>
-        </div>
-        <small>Trusted by growing school communities</small>
-      </div>
+      <AuthAside />
 
       <div className="auth-form">
         <div>
@@ -118,62 +99,7 @@ export function Login() {
             <Icon name="layers" /> SchoolCanvas
           </span>
 
-          {/* Mode Switcher Tabs */}
-          <div
-            style={{
-              display: 'flex',
-              background: '#f1f5f9',
-              borderRadius: '8px',
-              padding: '4px',
-              marginBottom: '20px',
-              gap: '4px',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setMode('login')
-                setError('')
-              }}
-              style={{
-                flex: 1,
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                background: mode === 'login' ? '#fff' : 'transparent',
-                color: mode === 'login' ? '#1e293b' : '#64748b',
-                boxShadow: mode === 'login' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s',
-              }}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('register')
-                setError('')
-              }}
-              style={{
-                flex: 1,
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                background: mode === 'register' ? '#fff' : 'transparent',
-                color: mode === 'register' ? '#1e293b' : '#64748b',
-                boxShadow: mode === 'register' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s',
-              }}
-            >
-              Create Account
-            </button>
-          </div>
+          <AuthModeSwitcher mode={mode} onModeChange={handleModeChange} />
 
           <small>
             {mode === 'login' ? 'WELCOME BACK' : 'START YOUR FREE WORKSPACE'}
@@ -210,206 +136,34 @@ export function Login() {
           )}
 
           {mode === 'login' ? (
-            <form onSubmit={handleLogin}>
-              <label>
-                Email address
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </label>
-
-              <label>
-                Password
-                <div className="password">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      display: 'grid',
-                      placeItems: 'center',
-                      padding: '4px',
-                    }}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    <Icon name="eye" size={16} />
-                  </button>
-                </div>
-              </label>
-
-              <div className="remember">
-                <label>
-                  <input type="checkbox" defaultChecked /> Remember me
-                </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    notify(
-                      'Password reset OTP service is available on the backend.'
-                    )
-                  }
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              <Button kind="primary" type="submit" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign in to Studio'}{' '}
-                <Icon name="arrow" size={15} />
-              </Button>
-            </form>
+            <SignInForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              loading={loading}
+              onSubmit={handleLogin}
+            />
           ) : (
-            <form onSubmit={handleRegister}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <label>
-                  First name
-                  <input
-                    type="text"
-                    placeholder="e.g. Nadib"
-                    value={regFirstName}
-                    onChange={(e) => setRegFirstName(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Last name
-                  <input
-                    type="text"
-                    placeholder="e.g. Rana"
-                    value={regLastName}
-                    onChange={(e) => setRegLastName(e.target.value)}
-                  />
-                </label>
-              </div>
-
-              <label>
-                Your login email address <span style={{ color: '#ef4444' }}>*</span>
-                <input
-                  type="email"
-                  required
-                  placeholder="name@school.edu"
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
-                />
-              </label>
-
-              <label>
-                Create your login password <span style={{ color: '#ef4444' }}>*</span>
-                <div className="password">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="At least 6 characters"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      display: 'grid',
-                      placeItems: 'center',
-                      padding: '4px',
-                    }}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    <Icon name="eye" size={16} />
-                  </button>
-                </div>
-                <small style={{ color: '#64748b', fontSize: '11px', marginTop: '4px', display: 'block' }}>
-                  This is the password you will use whenever you sign in to your Studio.
-                </small>
-              </label>
-
-              <Button kind="primary" type="submit" disabled={loading} style={{ marginTop: '16px' }}>
-                {loading ? 'Creating account...' : 'Create Account & Continue'}{' '}
-                <Icon name="arrow" size={15} />
-              </Button>
-            </form>
+            <SignUpForm
+              firstName={regFirstName}
+              setFirstName={setRegFirstName}
+              lastName={regLastName}
+              setLastName={setRegLastName}
+              email={regEmail}
+              setEmail={setRegEmail}
+              password={regPassword}
+              setPassword={setRegPassword}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              loading={loading}
+              onSubmit={handleRegister}
+            />
           )}
 
-          <div className="or">
-            <span />
-            or continue with
-            <span />
-          </div>
-
-          <Button
-            type="button"
-            onClick={() =>
-              notify(
-                'Google OAuth is not configured. Please use your email and password.'
-              )
-            }
-          >
-            <b>G</b> Continue with Google
-          </Button>
-
-          <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            {mode === 'login' ? (
-              <>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>
-                  Don’t have an account yet?{' '}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMode('register')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#2563eb',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Create an account
-                </button>
-              </>
-            ) : (
-              <>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>
-                  Already have an account?{' '}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMode('login')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#2563eb',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
-
-          <small className="legal">
-            By signing in or registering, you agree to the Terms of Service and
-            Privacy Policy.
-          </small>
+          <AuthFooter mode={mode} onModeChange={handleModeChange} />
         </div>
       </div>
     </div>

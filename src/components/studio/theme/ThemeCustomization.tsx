@@ -1,15 +1,14 @@
 'use client'
 
 import { Button } from '@/components/common/Button'
-import { Icon } from '@/components/common/Icon'
-import { SettingGroup } from '@/components/common/SettingGroup'
-import { heroImage } from '@/config/templates'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import { useEffect, useState } from 'react'
+import { ThemeControlsSidebar } from './ThemeControlsSidebar'
+import { ThemePreviewBrowser } from './ThemePreviewBrowser'
 
 export function ThemeCustomization() {
-  const { notify, setPreviewTheme } = useStudio()
+  const { notify } = useStudio()
   const [style, setStyle] = useState('Rounded')
   const [header, setHeader] = useState('Centered')
   const [previewDevice, setPreviewDevice] = useState<'monitor' | 'tablet' | 'mobile'>('monitor')
@@ -80,7 +79,6 @@ export function ThemeCustomization() {
     try {
       const buttonRadius =
         style === 'Pill' ? 'rounded-full' : style === 'Square' ? 'rounded-none' : 'rounded-md'
-      // First save current values as draft
       await api.theme.saveDraft({
         primaryColor,
         secondaryColor,
@@ -89,7 +87,6 @@ export function ThemeCustomization() {
         buttonRadius,
         headerLayout: header.toLowerCase(),
       })
-      // Then publish
       await api.theme.publish()
       notify('Theme successfully published to live website!')
     } catch (err: unknown) {
@@ -134,237 +131,30 @@ export function ThemeCustomization() {
       </div>
 
       <div className="theme-body">
-        <aside className="theme-controls">
-          <SettingGroup title="Brand colors">
-            <div className="theme-colors">
-              <label>
-                <span>Primary Color</span>
-                <div>
-                  <input
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="w-8 h-8 rounded border-0 cursor-pointer p-0"
-                  />
-                  <input
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                  />
-                </div>
-              </label>
+        <ThemeControlsSidebar
+          primaryColor={primaryColor}
+          setPrimaryColor={setPrimaryColor}
+          secondaryColor={secondaryColor}
+          setSecondaryColor={setSecondaryColor}
+          fontHeading={fontHeading}
+          setFontHeading={setFontHeading}
+          fontBody={fontBody}
+          setFontBody={setFontBody}
+          style={style}
+          setStyle={setStyle}
+          header={header}
+          setHeader={setHeader}
+        />
 
-              <label>
-                <span>Accent Color</span>
-                <div>
-                  <input
-                    type="color"
-                    value={secondaryColor}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="w-8 h-8 rounded border-0 cursor-pointer p-0"
-                  />
-                  <input
-                    value={secondaryColor}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                  />
-                </div>
-              </label>
-            </div>
-          </SettingGroup>
-
-          <SettingGroup title="Typography">
-            <label>
-              Heading font
-              <select
-                value={fontHeading}
-                onChange={(e) => setFontHeading(e.target.value)}
-              >
-                <option value="DM Serif Display">DM Serif Display</option>
-                <option value="Inter">Inter</option>
-                <option value="Georgia">Georgia</option>
-              </select>
-            </label>
-            <label>
-              Body font
-              <select
-                value={fontBody}
-                onChange={(e) => setFontBody(e.target.value)}
-              >
-                <option value="Inter">Inter</option>
-                <option value="Arial">Arial</option>
-                <option value="system-ui">System Default</option>
-              </select>
-            </label>
-            <div className="font-preview">
-              <span>Aa</span>
-              <div>
-                <strong>{fontHeading}</strong>
-                <small>Headings and editorial moments</small>
-              </div>
-            </div>
-          </SettingGroup>
-
-          <SettingGroup title="Buttons & corners">
-            <label>
-              Button style
-              <div className="choice-row">
-                {['Square', 'Rounded', 'Pill'].map((x) => (
-                  <button
-                    key={x}
-                    type="button"
-                    className={style === x ? 'active' : ''}
-                    onClick={() => setStyle(x)}
-                  >
-                    {x}
-                  </button>
-                ))}
-              </div>
-            </label>
-          </SettingGroup>
-
-          <SettingGroup title="Header & navigation">
-            <label>
-              Header layout
-              <div className="choice-row">
-                {['Compact', 'Centered', 'Overlay'].map((x) => (
-                  <button
-                    key={x}
-                    type="button"
-                    className={header === x ? 'active' : ''}
-                    onClick={() => setHeader(x)}
-                  >
-                    {x}
-                  </button>
-                ))}
-              </div>
-            </label>
-          </SettingGroup>
-        </aside>
-
-        <div className="theme-preview-area">
-          <div className="theme-preview-label">
-            <span>
-              <i />
-              Live preview
-            </span>
-            <div className="device-switch">
-              {(['monitor', 'tablet', 'mobile'] as const).map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  className={previewDevice === d ? 'active' : ''}
-                  onClick={() => setPreviewDevice(d)}
-                  aria-label={`${d} preview`}
-                >
-                  <Icon name={d} />
-                </button>
-              ))}
-            </div>
-            <span>Homepage</span>
-          </div>
-
-          <div
-            className={`theme-browser ${previewDevice}`}
-            style={
-              {
-                '--navy': primaryColor,
-                '--accent': secondaryColor,
-                fontFamily: fontBody,
-                width:
-                  previewDevice === 'mobile'
-                    ? '320px'
-                    : previewDevice === 'tablet'
-                    ? '560px'
-                    : '100%',
-                margin: '0 auto',
-                transition: 'width 0.25s ease',
-              } as React.CSSProperties
-            }
-          >
-            <div className="site-mini-nav">
-              <div
-                className="mini-logo"
-                style={{ backgroundColor: primaryColor }}
-              >
-                N
-              </div>
-              <strong>Northfield High</strong>
-              <div>
-                <span>About</span>
-                <span>Academics</span>
-                <span>Faculty</span>
-                <span>Notices</span>
-                <b
-                  className={style.toLowerCase()}
-                  style={{
-                    backgroundColor: primaryColor,
-                    borderRadius:
-                      style === 'Pill'
-                        ? '9999px'
-                        : style === 'Square'
-                        ? '0px'
-                        : '6px',
-                  }}
-                >
-                  Apply now
-                </b>
-              </div>
-            </div>
-
-            <div
-              className="theme-hero"
-              style={{
-                backgroundImage: `linear-gradient(90deg,rgba(9,27,53,.9),rgba(9,27,53,.12)),url(${heroImage})`,
-              }}
-            >
-              <div>
-                <small style={{ color: secondaryColor }}>
-                  LEARN · LEAD · MAKE A DIFFERENCE
-                </small>
-                <h2 style={{ fontFamily: fontHeading }}>
-                  Shaping thinkers.
-                  <br />
-                  Building character.
-                </h2>
-                <p style={{ fontFamily: fontBody }}>
-                  A vibrant learning community where every student is known,
-                  challenged, and inspired.
-                </p>
-                <button
-                  type="button"
-                  className={style.toLowerCase()}
-                  onClick={() => notify(`Preview button styled with ${style.toLowerCase()} corners & theme colors.`)}
-                  style={{
-                    backgroundColor: secondaryColor,
-                    color: '#0f172a',
-                    cursor: 'pointer',
-                    borderRadius:
-                      style === 'Pill'
-                        ? '9999px'
-                        : style === 'Square'
-                        ? '0px'
-                        : '6px',
-                  }}
-                >
-                  Discover Northfield <Icon name="arrow" size={13} />
-                </button>
-              </div>
-            </div>
-
-            <div className="theme-preview-content">
-              <span style={{ color: secondaryColor }}>
-                WELCOME TO NORTHFIELD
-              </span>
-              <h3 style={{ fontFamily: fontHeading }}>
-                Learning with purpose.
-                <br />
-                Growing with confidence.
-              </h3>
-              <p style={{ fontFamily: fontBody }}>
-                Education at Northfield goes beyond strong results.
-              </p>
-            </div>
-          </div>
-        </div>
+        <ThemePreviewBrowser
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          fontHeading={fontHeading}
+          fontBody={fontBody}
+          style={style}
+          previewDevice={previewDevice}
+          setPreviewDevice={setPreviewDevice}
+        />
       </div>
     </div>
   )

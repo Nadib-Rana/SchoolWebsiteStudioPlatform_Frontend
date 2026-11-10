@@ -1,12 +1,18 @@
 'use client'
 
 import { Button } from '@/components/common/Button'
-import { Icon } from '@/components/common/Icon'
 import { StateBadge } from '@/components/common/StateBadge'
-import { ImageUploadControl } from '@/components/common/ImageUploadControl'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  type ContentFormData,
+  INITIAL_CONTENT_FORM_DATA,
+} from './content-manager.types'
+import { ContentSchoolInfoTab } from './ContentSchoolInfoTab'
+import { ContentAboutPrincipalTabs } from './ContentAboutPrincipalTabs'
+import { ContentAcademicsTabs } from './ContentAcademicsTabs'
+import { ContentSidebarNav } from './ContentSidebarNav'
 
 export function ContentManager() {
   const { notify, currentSchool, schoolSwitchKey } = useStudio()
@@ -22,49 +28,7 @@ export function ContentManager() {
     ['Achievements', 'Awards, distinctions and school milestones', '80%'],
   ])
 
-  const [formData, setFormData] = useState({
-    // Tab 0: School Information
-    schoolName: 'Northfield High School',
-    schoolType: 'Secondary school',
-    address: '27 Lakeview Avenue, Dhanmondi, Dhaka 1209',
-    phone: '+880 2 555 0142',
-    email: 'hello@northfield.edu',
-    establishedYear: '1983',
-    schoolCode: 'NHS-1042',
-    officeHours: 'Monday - Friday: 8:00 AM - 4:30 PM',
-    logoUrl: '',
-    coverUrl: '',
-
-    // Tab 1: About School
-    motto: 'Excellence in Education, Leadership in Character',
-    shortBio: 'Northfield High School has provided excellence in secondary education for over four decades.',
-    missionStatement: 'To provide an inclusive, inspiring environment where curiosity is celebrated and students are prepared for purposeful lives.',
-    visionStatement: 'To cultivate empathetic, forward-thinking scholars and leaders who contribute meaningfully to society.',
-
-    // Tab 2: Principal Message
-    principalName: 'Dr. Farhana Noor',
-    principalTitle: 'Principal & Head Administrator',
-    principalBio: 'At Northfield, we pair high expectations with genuine care. Our students learn to think deeply, act with integrity, and use their gifts in service of others.',
-    principalPhotoUrl: '',
-
-    // Tab 3: Academics
-    curriculum: 'National Curriculum & Cambridge International',
-    academicLevels: 'Primary (Grades 1-5), Middle (Grades 6-8), Senior (Grades 9-12)',
-
-    // Tab 4: Classes & Grades
-    gradesOffered: 'Grades 1 through 12',
-    classSize: '24-28 students per section',
-
-    // Tab 5: Subjects
-    subjectsSummary: 'Core: Mathematics, Sciences, English Literature, History, ICT. Electives: Robotics, Studio Art, Music, French.',
-
-    // Tab 6: Facilities
-    facilitiesOverview: 'Modern Science Laboratories, Digital Media Library, Sports Complex, Auditorium, Visual Arts Wing.',
-
-    // Tab 7: Achievements
-    achievementsText: 'Top 1% National STEM Competition, Regional Debate Champions 2025, Eco-School Green Flag Award.',
-  })
-
+  const [formData, setFormData] = useState<ContentFormData>(INITIAL_CONTENT_FORM_DATA)
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState('Just now')
 
@@ -173,35 +137,12 @@ export function ContentManager() {
 
   return (
     <div className="content-layout">
-      {/* Sidebar Section Selectors */}
-      <div className="content-list">
-        {items.map((x, i) => (
-          <button
-            type="button"
-            className={activeItem === i ? 'active' : ''}
-            onClick={() => setActiveItem(i)}
-            key={x[0]}
-          >
-            <span className={`content-icon c${i}`}>
-              <Icon
-                name={i > 5 ? 'sparkle' : i > 2 ? 'file' : 'home'}
-                size={17}
-              />
-            </span>
-            <div>
-              <strong>{x[0]}</strong>
-              <small>{x[1]}</small>
-              <em>
-                <i style={{ width: x[2] }} />
-                {x[2]} complete
-              </em>
-            </div>
-            <Icon name="chevron" size={15} />
-          </button>
-        ))}
-      </div>
+      <ContentSidebarNav
+        items={items}
+        activeItem={activeItem}
+        onSelectItem={setActiveItem}
+      />
 
-      {/* Dynamic Content Form */}
       <div className="card content-form">
         <div className="form-title">
           <div>
@@ -211,309 +152,27 @@ export function ContentManager() {
           <StateBadge status="published">Database Connected</StateBadge>
         </div>
 
-        {/* Tab 0: School Information */}
         {activeItem === 0 && (
-          <>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(140px, 1fr) minmax(240px, 2fr)',
-                gap: '20px',
-                marginBottom: '24px',
-                padding: '16px',
-                background: '#f8fafc',
-                borderRadius: '10px',
-                border: '1px solid #e2e8f0',
-              }}
-            >
-              <ImageUploadControl
-                label="School Logo"
-                value={formData.logoUrl}
-                onChange={(url) => setFormData({ ...formData, logoUrl: url || '' })}
-                aspectRatio="square"
-                fallbackInitial={(formData.schoolName || 'N').charAt(0)}
-                pickerTitle="Select School Logo"
-                helperText="PNG, JPG or SVG. Displayed in public navbar and header."
-              />
-              <ImageUploadControl
-                label="Campus Cover Banner"
-                value={formData.coverUrl}
-                onChange={(url) => setFormData({ ...formData, coverUrl: url || '' })}
-                aspectRatio="video"
-                pickerTitle="Select Campus Cover Banner"
-                helperText="Wide cover photo for profile header and live campus banner."
-              />
-            </div>
-
-            <div className="form-grid">
-              <label>
-                School name *
-                <input
-                  value={formData.schoolName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, schoolName: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                School type
-                <select
-                  value={formData.schoolType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, schoolType: e.target.value })
-                  }
-                >
-                  <option>Secondary school</option>
-                  <option>Primary school</option>
-                  <option>Higher Secondary</option>
-                  <option>K-12 Academy</option>
-                </select>
-              </label>
-              <label className="full">
-                School campus address *
-                <input
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                Contact telephone
-                <input
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                Official email
-                <input
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                Established year
-                <input
-                  value={formData.establishedYear}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      establishedYear: e.target.value,
-                    })
-                  }
-                />
-              </label>
-              <label>
-                School registry code
-                <input
-                  value={formData.schoolCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, schoolCode: e.target.value })
-                  }
-                />
-              </label>
-              <label className="full">
-                Operating office hours
-                <input
-                  value={formData.officeHours}
-                  onChange={(e) =>
-                    setFormData({ ...formData, officeHours: e.target.value })
-                  }
-                />
-              </label>
-            </div>
-          </>
+          <ContentSchoolInfoTab
+            formData={formData}
+            setFormData={setFormData}
+          />
         )}
 
-        {/* Tab 1: About School */}
-        {activeItem === 1 && (
-          <div className="form-grid">
-            <label className="full">
-              School Motto / Tagline
-              <input
-                value={formData.motto}
-                onChange={(e) =>
-                  setFormData({ ...formData, motto: e.target.value })
-                }
-              />
-            </label>
-            <label className="full">
-              Short School Biography
-              <textarea
-                rows={3}
-                value={formData.shortBio}
-                onChange={(e) =>
-                  setFormData({ ...formData, shortBio: e.target.value })
-                }
-              />
-            </label>
-            <label className="full">
-              Mission Statement
-              <textarea
-                rows={3}
-                value={formData.missionStatement}
-                onChange={(e) =>
-                  setFormData({ ...formData, missionStatement: e.target.value })
-                }
-              />
-            </label>
-            <label className="full">
-              Vision Statement
-              <textarea
-                rows={3}
-                value={formData.visionStatement}
-                onChange={(e) =>
-                  setFormData({ ...formData, visionStatement: e.target.value })
-                }
-              />
-            </label>
-          </div>
+        {(activeItem === 1 || activeItem === 2) && (
+          <ContentAboutPrincipalTabs
+            activeItem={activeItem}
+            formData={formData}
+            setFormData={setFormData}
+          />
         )}
 
-        {/* Tab 2: Principal Message */}
-        {activeItem === 2 && (
-          <div className="form-grid">
-            <label>
-              Principal Name
-              <input
-                value={formData.principalName}
-                onChange={(e) =>
-                  setFormData({ ...formData, principalName: e.target.value })
-                }
-              />
-            </label>
-            <label>
-              Official Title
-              <input
-                value={formData.principalTitle}
-                onChange={(e) =>
-                  setFormData({ ...formData, principalTitle: e.target.value })
-                }
-              />
-            </label>
-            <div className="full" style={{ marginBottom: '16px' }}>
-              <ImageUploadControl
-                label="Principal Portrait Headshot"
-                value={formData.principalPhotoUrl}
-                onChange={(url) => setFormData({ ...formData, principalPhotoUrl: url || '' })}
-                aspectRatio="portrait"
-                pickerTitle="Select Principal Portrait Photo"
-                helperText="Official school administrator portrait displayed on homepage and principal message page."
-              />
-            </div>
-            <label className="full">
-              Welcome Message & Biography
-              <textarea
-                rows={5}
-                value={formData.principalBio}
-                onChange={(e) =>
-                  setFormData({ ...formData, principalBio: e.target.value })
-                }
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Tab 3: Academic Information */}
-        {activeItem === 3 && (
-          <div className="form-grid">
-            <label className="full">
-              Approved Curriculums
-              <input
-                value={formData.curriculum}
-                onChange={(e) =>
-                  setFormData({ ...formData, curriculum: e.target.value })
-                }
-              />
-            </label>
-            <label className="full">
-              Academic Divisions & Levels
-              <textarea
-                rows={4}
-                value={formData.academicLevels}
-                onChange={(e) =>
-                  setFormData({ ...formData, academicLevels: e.target.value })
-                }
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Tab 4: Classes and Grades */}
-        {activeItem === 4 && (
-          <div className="form-grid">
-            <label className="full">
-              Grade Levels Offered
-              <input
-                value={formData.gradesOffered}
-                onChange={(e) =>
-                  setFormData({ ...formData, gradesOffered: e.target.value })
-                }
-              />
-            </label>
-            <label className="full">
-              Average Class & Cohort Size
-              <input
-                value={formData.classSize}
-                onChange={(e) =>
-                  setFormData({ ...formData, classSize: e.target.value })
-                }
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Tab 5: Subjects */}
-        {activeItem === 5 && (
-          <div className="form-grid">
-            <label className="full">
-              Curriculum Subjects & Electives Summary
-              <textarea
-                rows={5}
-                value={formData.subjectsSummary}
-                onChange={(e) =>
-                  setFormData({ ...formData, subjectsSummary: e.target.value })
-                }
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Tab 6: Facilities */}
-        {activeItem === 6 && (
-          <div className="form-grid">
-            <label className="full">
-              Campus Facilities & Infrastructure Highlights
-              <textarea
-                rows={5}
-                value={formData.facilitiesOverview}
-                onChange={(e) =>
-                  setFormData({ ...formData, facilitiesOverview: e.target.value })
-                }
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Tab 7: Achievements */}
-        {activeItem === 7 && (
-          <div className="form-grid">
-            <label className="full">
-              School Accreditations, Awards & Notable Distinctions
-              <textarea
-                rows={5}
-                value={formData.achievementsText}
-                onChange={(e) =>
-                  setFormData({ ...formData, achievementsText: e.target.value })
-                }
-              />
-            </label>
-          </div>
+        {activeItem >= 3 && (
+          <ContentAcademicsTabs
+            activeItem={activeItem}
+            formData={formData}
+            setFormData={setFormData}
+          />
         )}
 
         <div className="form-actions">
