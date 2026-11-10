@@ -55,18 +55,14 @@ export function CanvasHeroStats({
 }: CanvasHeroStatsProps) {
   const heroStyle = sectionStyles['Hero section']
   const statsStyle = sectionStyles['Statistics']
-  const heroPad =
-    heroStyle?.padding === 'compact'
-      ? '35px'
-      : heroStyle?.padding === 'spacious'
-      ? '95px'
-      : '60px'
-  const statsPad =
-    statsStyle?.padding === 'compact'
-      ? '14px'
-      : statsStyle?.padding === 'spacious'
-      ? '45px'
-      : '26px'
+  const heroPad = heroStyle?.padding === 'compact' ? '35px' : heroStyle?.padding === 'spacious' ? '95px' : '60px'
+  const statsPad = statsStyle?.padding === 'compact' ? '14px' : statsStyle?.padding === 'spacious' ? '45px' : '26px'
+  const stats = [
+    { v: stat1Val, l: stat1Label },
+    { v: stat2Val, l: stat2Label },
+    { v: stat3Val, l: stat3Label },
+    { v: stat4Val, l: stat4Label },
+  ]
 
   return (
     <>
@@ -79,25 +75,16 @@ export function CanvasHeroStats({
           textAlign: (heroStyle?.align as any) || 'left',
           paddingTop: heroPad,
           paddingBottom: heroPad,
-          display:
-            heroStyle?.hideOnMobile && device === 'mobile'
-              ? 'none'
-              : 'flex',
+          display: heroStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'flex',
           cursor: 'pointer',
           position: 'relative',
           outline: selected === 'Hero section' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
           ...(heroStyle?.border ? { borderBottom: '2px solid #2563eb' } : {}),
-          ...(heroStyle?.shadow === 'subtle'
-            ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
-            : heroStyle?.shadow === 'card'
-            ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
-            : {}),
+          ...(heroStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : heroStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
         }}
       >
-        {selected === 'Hero section' && (
-          <div className="selection-label">Hero section</div>
-        )}
+        {selected === 'Hero section' && <div className="selection-label">Hero section</div>}
         <div>
           <small style={{ color: activeCfg?.secondaryColor || '#f4cc70', fontWeight: 700 }}>
             {eyebrow}
@@ -111,21 +98,51 @@ export function CanvasHeroStats({
             ))}
           </h2>
           <p>{description}</p>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setSelected('Hero section')
-              notify(`Hero button action: "${buttonLabel}" (links to ${buttonLink || '/admissions'})`)
-            }}
-            style={{
-              cursor: 'pointer',
-              background: activeCfg?.secondaryColor || '#e7b84e',
-              color: '#ffffff',
-            }}
-          >
-            {buttonLabel} <Icon name="arrow" size={13} />
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '14px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="hero-primary"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSelected('Hero section')
+                notify(`Hero button action: "${buttonLabel}" (links to ${buttonLink || '/admissions'})`)
+              }}
+              style={{
+                cursor: 'pointer',
+                background: activeCfg?.secondaryColor || '#e7b84e',
+                color: '#132641',
+                border: 0,
+                padding: '8px 14px',
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+            >
+              {buttonLabel} <Icon name="arrow" size={13} />
+            </button>
+            <button
+              type="button"
+              className="hero-secondary"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSelected('Hero section')
+                notify('Secondary button: links to admissions page')
+              }}
+              style={{
+                cursor: 'pointer',
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.7)',
+                color: '#ffffff',
+                padding: '7px 13px',
+                fontSize: '12px',
+                fontWeight: 600,
+              }}
+            >
+              Apply for admission
+            </button>
+          </div>
         </div>
       </div>
 
@@ -140,44 +157,20 @@ export function CanvasHeroStats({
           textAlign: (statsStyle?.align as any) || 'center',
           paddingTop: statsPad,
           paddingBottom: statsPad,
-          display:
-            statsStyle?.hideOnMobile && device === 'mobile'
-              ? 'none'
-              : 'grid',
+          display: statsStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'grid',
           outline: selected === 'Statistics' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
-          ...(statsStyle?.border
-            ? {
-                borderTop: '2px solid #2563eb',
-                borderBottom: '2px solid #2563eb',
-              }
-            : {}),
-          ...(statsStyle?.shadow === 'subtle'
-            ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }
-            : statsStyle?.shadow === 'card'
-            ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }
-            : {}),
+          ...(statsStyle?.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),
+          ...(statsStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : statsStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
         }}
       >
-        {selected === 'Statistics' && (
-          <div className="selection-label">Statistics</div>
-        )}
-        <div>
-          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat1Val}</strong>
-          <span>{stat1Label}</span>
-        </div>
-        <div>
-          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat2Val}</strong>
-          <span>{stat2Label}</span>
-        </div>
-        <div>
-          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat3Val}</strong>
-          <span>{stat3Label}</span>
-        </div>
-        <div>
-          <strong style={{ fontFamily: activeCfg?.fontHeading }}>{stat4Val}</strong>
-          <span>{stat4Label}</span>
-        </div>
+        {selected === 'Statistics' && <div className="selection-label">Statistics</div>}
+        {stats.map((s, idx) => (
+          <div key={idx}>
+            <strong style={{ fontFamily: activeCfg?.fontHeading }}>{s.v}</strong>
+            <span>{s.l}</span>
+          </div>
+        ))}
       </div>
     </>
   )

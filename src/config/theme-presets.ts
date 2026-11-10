@@ -113,9 +113,9 @@ export const THEME_CONFIGS: Record<SchoolTheme, ThemeConfig> = {
     headline: 'Big wonder\nstarts here.',
     description:
       'Nurturing boundless curiosity, joyful learning, and kind hearts in a playful, supportive elementary environment.',
-    primaryColor: '#166534',
-    secondaryColor: '#f59e0b',
-    headerBg: '#166534',
+    primaryColor: '#047857',
+    secondaryColor: '#fbbf24',
+    headerBg: '#ffffff',
     heroImage:
       'https://images.unsplash.com/photo-1580582932707-520aed937b7b?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600',
     announcementText:

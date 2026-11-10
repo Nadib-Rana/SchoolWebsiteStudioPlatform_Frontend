@@ -146,7 +146,7 @@ export function CanvasAnnouncementHeader({
             style={{
               cursor: 'pointer',
               background: activeCfg?.secondaryColor || '#e9b949',
-              color: '#ffffff',
+              color: '#16243a',
             }}
           >
             {applyButtonText}
