@@ -43,6 +43,25 @@ export function createSiteConfigEndpoints(session: ApiSession) {
           body: JSON.stringify({ domain }),
         })
       },
+      verify: async (domainId: string, simulate = false, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/domains/${domainId}/verify`, {
+          method: 'POST',
+          body: JSON.stringify({ simulate }),
+        })
+      },
+      setPrimary: async (domainId: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/domains/${domainId}/set-primary`, {
+          method: 'POST',
+        })
+      },
+      remove: async (domainId: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/domains/${domainId}`, {
+          method: 'DELETE',
+        })
+      },
     },
 
     integrations: {
