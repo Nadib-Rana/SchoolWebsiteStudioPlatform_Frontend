@@ -30,6 +30,13 @@ export function Settings() {
         onChange={s.handleLogoUpload}
       />
       <input
+        ref={s.faviconInputRef}
+        type="file"
+        accept="image/*,.ico"
+        style={{ display: 'none' }}
+        onChange={s.handleFaviconUpload}
+      />
+      <input
         ref={s.accountPhotoInputRef}
         type="file"
         accept="image/*"
@@ -61,6 +68,8 @@ export function Settings() {
             academicYearStart={s.academicYearStart}
             setAcademicYearStart={s.setAcademicYearStart}
             onReplaceLogoClick={() => s.logoInputRef.current?.click()}
+            schoolFavicon={s.schoolFavicon}
+            onReplaceFaviconClick={() => s.faviconInputRef.current?.click()}
             onSaveProfile={s.handleSaveProfile}
             isSavingProfile={s.isSavingProfile}
           />

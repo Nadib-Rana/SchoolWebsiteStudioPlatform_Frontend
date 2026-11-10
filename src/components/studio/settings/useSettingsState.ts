@@ -28,20 +28,34 @@ export function useSettingsState() {
 
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const [schoolFavicon, setSchoolFavicon] = useState<string | null>(null)
+  const faviconInputRef = useRef<HTMLInputElement>(null)
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      try {
-        notify(`Uploading workspace logo "${file.name}" to storage...`)
-        const uploadRes = await api.storage.upload(file)
-        setSchoolLogo(uploadRes.publicUrl)
-        const activeId = api.getActiveSchoolId()
-        await api.schools.update(activeId, { logoUrl: uploadRes.publicUrl })
-        notify('Workspace logo updated and saved successfully!')
-      } catch (err: any) {
-        notify(`Logo upload failed: ${err?.message || 'Error'}`)
-      }
+    if (!file) return
+    try {
+      notify(`Uploading workspace logo "${file.name}" to storage...`)
+      const uploadRes = await api.storage.upload(file)
+      setSchoolLogo(uploadRes.publicUrl)
+      await api.schools.update(api.getActiveSchoolId(), { logoUrl: uploadRes.publicUrl })
+      notify('Workspace logo updated and saved successfully!')
+    } catch (err: any) {
+      notify(`Logo upload failed: ${err?.message || 'Error'}`)
+    }
+  }
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      notify(`Uploading website favicon "${file.name}" to storage...`)
+      const uploadRes = await api.storage.upload(file)
+      setSchoolFavicon(uploadRes.publicUrl)
+      await api.schools.update(api.getActiveSchoolId(), { faviconUrl: uploadRes.publicUrl })
+      notify('Website favicon updated and saved successfully!')
+    } catch (err: any) {
+      notify(`Favicon upload failed: ${err?.message || 'Error'}`)
     }
   }
 
@@ -75,11 +89,7 @@ export function useSettingsState() {
   const handleConfirmRestore = async () => {
     if (!restoreModalBackup) return
     setIsRestoring(true)
-    setTimeout(() => {
-      setIsRestoring(false)
-      notify(`System restored to backup: ${restoreModalBackup}`)
-      setRestoreModalBackup(null)
-    }, 700)
+    setTimeout(() => { setIsRestoring(false); notify(`System restored to backup: ${restoreModalBackup}`); setRestoreModalBackup(null) }, 700)
   }
 
   useEffect(() => {
@@ -91,6 +101,7 @@ export function useSettingsState() {
         if (mounted && school) {
           if (school.name) setSchoolName(school.name)
           if (school.logoUrl) setSchoolLogo(school.logoUrl)
+          if (school.faviconUrl) setSchoolFavicon(school.faviconUrl)
         }
       } catch (err: any) {
         console.warn('[Settings] School load warning:', err?.message)
@@ -154,6 +165,7 @@ export function useSettingsState() {
     schoolName, setSchoolName, schoolType, setSchoolType, timezone, setTimezone,
     language, setLanguage, dateFormat, setDateFormat, academicYearStart, setAcademicYearStart,
     isSavingProfile, schoolLogo, logoInputRef, handleLogoUpload,
+    schoolFavicon, faviconInputRef, handleFaviconUpload,
     accountPhoto: account.accountPhoto, accountPhotoInputRef: account.accountPhotoInputRef,
     handleAccountPhotoUpload: account.handleAccountPhotoUpload,
     accountFirstName: account.accountFirstName, setAccountFirstName: account.setAccountFirstName,

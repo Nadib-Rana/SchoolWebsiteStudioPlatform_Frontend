@@ -17,8 +17,8 @@ export function ContentSchoolInfoTab({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(140px, 1fr) minmax(240px, 2fr)',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '16px',
           marginBottom: '24px',
           padding: '16px',
           background: '#f8fafc',
@@ -33,7 +33,16 @@ export function ContentSchoolInfoTab({
           aspectRatio="square"
           fallbackInitial={(formData.schoolName || 'N').charAt(0)}
           pickerTitle="Select School Logo"
-          helperText="PNG, JPG or SVG. Displayed in public navbar and header."
+          helperText="PNG, JPG or SVG for public navbar."
+        />
+        <ImageUploadControl
+          label="Website Favicon"
+          value={formData.faviconUrl}
+          onChange={(url) => setFormData((prev) => ({ ...prev, faviconUrl: url || '' }))}
+          aspectRatio="square"
+          fallbackInitial={(formData.schoolName || 'N').charAt(0)}
+          pickerTitle="Select Website Favicon"
+          helperText="32×32 or 64×64 px for browser tab & bookmarks."
         />
         <ImageUploadControl
           label="Campus Cover Banner"
@@ -41,7 +50,7 @@ export function ContentSchoolInfoTab({
           onChange={(url) => setFormData((prev) => ({ ...prev, coverUrl: url || '' }))}
           aspectRatio="video"
           pickerTitle="Select Campus Cover Banner"
-          helperText="Wide cover photo for profile header and live campus banner."
+          helperText="Wide cover photo for profile header and live banner."
         />
       </div>
 

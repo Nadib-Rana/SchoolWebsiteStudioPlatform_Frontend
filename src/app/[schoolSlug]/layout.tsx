@@ -32,9 +32,16 @@ export async function generateMetadata({
     siteData.profile?.motto ||
     'Welcome to our school portal'
 
+  const iconUrl = siteData.school.faviconUrl || siteData.school.logoUrl || '/icon.svg'
+
   return {
     title,
     description,
+    icons: {
+      icon: iconUrl,
+      shortcut: iconUrl,
+      apple: iconUrl,
+    },
     openGraph: {
       title,
       description,

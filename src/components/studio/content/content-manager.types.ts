@@ -9,6 +9,7 @@ export interface ContentFormData {
   schoolCode: string
   officeHours: string
   logoUrl: string
+  faviconUrl: string
   coverUrl: string
 
   // Tab 1: About School
@@ -51,6 +52,7 @@ export const INITIAL_CONTENT_FORM_DATA: ContentFormData = {
   schoolCode: 'NHS-1042',
   officeHours: 'Monday - Friday: 8:00 AM - 4:30 PM',
   logoUrl: '',
+  faviconUrl: '',
   coverUrl: '',
 
   motto: 'Excellence in Education, Leadership in Character',

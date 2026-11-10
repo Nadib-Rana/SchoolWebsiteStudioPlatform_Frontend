@@ -22,15 +22,11 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
   const [page, setPage] = useState('Home')
   const [siteData, setSiteData] = useState<PublicSiteData | null>(null)
   const [builderData, setBuilderData] = useState<any>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('studio_builder_homepage_data')
-        return cached ? JSON.parse(cached) : null
-      } catch {
-        return null
-      }
-    }
-    return null
+    if (typeof window === 'undefined') return null
+    try {
+      const cached = localStorage.getItem('studio_builder_homepage_data')
+      return cached ? JSON.parse(cached) : null
+    } catch { return null }
   })
 
   useEffect(() => {
@@ -69,41 +65,33 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
     }
   }, [previewTheme])
 
+  useEffect(() => {
+    const fav = siteData?.school?.faviconUrl || siteData?.school?.logoUrl
+    if (fav && typeof document !== 'undefined') {
+      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null
+      if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        document.head.appendChild(link)
+      }
+      link.href = fav
+    }
+  }, [siteData?.school?.faviconUrl, siteData?.school?.logoUrl])
+
   const handleThemeChange = (newTheme: SchoolTheme) => {
     setTheme(newTheme)
     setPreviewTheme(newTheme)
   }
 
   const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
-  const isCustomizedForTheme =
-    !builderData?.appliedTheme || builderData?.appliedTheme === theme
-
-  const effectiveSchoolName =
-    isCustomizedForTheme && builderData?.schoolName
-      ? builderData.schoolName
-      : activeCfg.schoolName
-  const effectiveMotto =
-    isCustomizedForTheme && builderData?.eyebrow
-      ? builderData.eyebrow
-      : activeCfg.eyebrow
-
-  const showAnnouncement =
-    builderData?.showAnnouncement !== undefined
-      ? builderData.showAnnouncement
-      : true
-  const announcementText =
-    isCustomizedForTheme && builderData?.announcementText
-      ? builderData.announcementText
-      : activeCfg.announcementText
+  const isCustomizedForTheme = !builderData?.appliedTheme || builderData?.appliedTheme === theme
+  const effectiveSchoolName = (isCustomizedForTheme && builderData?.schoolName) || activeCfg.schoolName
+  const effectiveMotto = (isCustomizedForTheme && builderData?.eyebrow) || activeCfg.eyebrow
+  const showAnnouncement = builderData?.showAnnouncement !== undefined ? builderData.showAnnouncement : true
+  const announcementText = (isCustomizedForTheme && builderData?.announcementText) || activeCfg.announcementText
   const announcementLink = builderData?.announcementLink || 'Apply now'
-  const effectiveAnnouncementBg =
-    isCustomizedForTheme && builderData?.sectionStyles?.['Announcement bar']?.bg
-      ? builderData.sectionStyles['Announcement bar'].bg
-      : activeCfg.primaryColor
-  const effectiveHeaderBg =
-    isCustomizedForTheme && builderData?.sectionStyles?.['Header']?.bg
-      ? builderData.sectionStyles['Header'].bg
-      : activeCfg.headerBg
+  const effectiveAnnouncementBg = (isCustomizedForTheme && builderData?.sectionStyles?.['Announcement bar']?.bg) || activeCfg.primaryColor
+  const effectiveHeaderBg = (isCustomizedForTheme && builderData?.sectionStyles?.['Header']?.bg) || activeCfg.headerBg
 
   return (
     <div
