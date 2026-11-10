@@ -1,6 +1,7 @@
 'use client'
 
-import type { DeviceType } from '@/types/theme'
+import type { DeviceType, SchoolTheme } from '@/types/theme'
+import { THEME_CONFIGS } from '@/config/themes'
 import type { CustomSectionData, SectionItem, SectionStyle } from './builder.types'
 import { CanvasAnnouncementHeader } from './canvas/CanvasAnnouncementHeader'
 import { CanvasHeroStats } from './canvas/CanvasHeroStats'
@@ -32,9 +33,20 @@ export function BuilderCanvas({
   notify,
   state,
 }: BuilderCanvasProps) {
+  const currentTheme = (state.appliedTheme as SchoolTheme) || 'modern'
+  const activeCfg = THEME_CONFIGS[currentTheme] || THEME_CONFIGS.modern
+
   return (
     <div className="canvas-area">
-      <div className={`canvas ${device}`}>
+      <div
+        className={`canvas ${device} theme-${currentTheme}`}
+        style={
+          {
+            '--navy': activeCfg.primaryColor,
+            '--accent': activeCfg.secondaryColor,
+          } as React.CSSProperties
+        }
+      >
         <CanvasAnnouncementHeader
           showAnnouncement={state.showAnnouncement}
           sectionStyles={sectionStyles}

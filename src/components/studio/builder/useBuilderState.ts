@@ -145,7 +145,7 @@ export function useBuilderState() {
       loadHomepageSectionsFromBackend(setSectionStyles, setters)
     }
     isInitializedRef.current = true
-  }, [])
+  }, [previewTheme])
 
   const handleSave = async () => {
     setIsSaving(true)

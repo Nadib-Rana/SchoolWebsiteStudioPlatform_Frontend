@@ -18,16 +18,8 @@ export function Templates() {
   const [query, setQuery] = useState('')
 
   const categories = [
-    'All templates',
-    'Modern',
-    'Traditional',
-    'International',
-    'College',
-    'High School',
-    'Primary',
-    'Religious',
-    'Minimal',
-    'Premium',
+    'All templates', 'Modern', 'Traditional', 'International', 'College',
+    'High School', 'Primary', 'Religious', 'Minimal', 'Premium',
   ]
 
   const handleApplyTemplate = async (templateTheme: SchoolTheme, templateName: string) => {
@@ -38,9 +30,7 @@ export function Templates() {
         let builderData: any = {}
         const saved = localStorage.getItem('studio_builder_homepage_data')
         if (saved) {
-          try {
-            builderData = JSON.parse(saved)
-          } catch {}
+          try { builderData = JSON.parse(saved) } catch {}
         }
 
         const updated = {
@@ -52,17 +42,14 @@ export function Templates() {
           description: cfg.description,
           buttonLabel: cfg.buttonLabel,
           announcementText: cfg.announcementText,
+          heroBg: cfg.heroImage,
           appliedTheme: templateTheme,
           sectionStyles: {
             ...(builderData.sectionStyles || {}),
-            Header: {
-              ...(builderData.sectionStyles?.Header || {}),
-              bg: cfg.headerBg,
-            },
-            'Announcement bar': {
-              ...(builderData.sectionStyles?.['Announcement bar'] || {}),
-              bg: cfg.primaryColor,
-            },
+            Header: { ...(builderData.sectionStyles?.Header || {}), bg: cfg.headerBg },
+            'Announcement bar': { ...(builderData.sectionStyles?.['Announcement bar'] || {}), bg: cfg.primaryColor },
+            Statistics: { ...(builderData.sectionStyles?.Statistics || {}), bg: cfg.primaryColor },
+            Footer: { ...(builderData.sectionStyles?.Footer || {}), bg: cfg.primaryColor },
           },
         }
 
@@ -86,7 +73,8 @@ export function Templates() {
       console.debug('Backend theme sync notice:', e)
     }
 
-    notify(`"${templateName}" template applied! Builder & Preview now match ${templateName}.`)
+    notify(`"${templateName}" template applied to Website Builder!`)
+    setView('builder')
   }
 
   const handlePreviewTemplate = (theme: SchoolTheme, name: string) => {
@@ -97,9 +85,7 @@ export function Templates() {
   const visibleTemplates = templates.filter(
     (t) =>
       (filter === 'All templates' || t.category.includes(filter)) &&
-      (t.name + ' ' + t.category + ' ' + t.desc)
-        .toLowerCase()
-        .includes(query.toLowerCase())
+      (t.name + ' ' + t.category + ' ' + t.desc).toLowerCase().includes(query.toLowerCase())
   )
 
   return (
@@ -110,11 +96,7 @@ export function Templates() {
           <h1>Find your school’s perfect look</h1>
           <p>Switch designs anytime. Your content always stays safely in place.</p>
         </div>
-        <Button
-          kind="secondary"
-          icon="layout"
-          onClick={() => setView('builder')}
-        >
+        <Button kind="secondary" icon="layout" onClick={() => setView('builder')}>
           Customize current template
         </Button>
       </div>
@@ -136,11 +118,7 @@ export function Templates() {
         </div>
         <div className="search-field">
           <Icon name="search" size={16} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search templates"
-          />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search templates" />
         </div>
       </div>
 
@@ -160,17 +138,10 @@ export function Templates() {
         </div>
       ) : (
         <div className="empty-state template-empty">
-          <span>
-            <Icon name="search" />
-          </span>
+          <span><Icon name="search" /></span>
           <strong>No matching templates</strong>
           <p>Try another name or clear the selected category.</p>
-          <Button
-            onClick={() => {
-              setQuery('')
-              setFilter('All templates')
-            }}
-          >
+          <Button onClick={() => { setQuery(''); setFilter('All templates') }}>
             Clear filters
           </Button>
         </div>
