@@ -23,6 +23,9 @@ export function createAuthAndStorageEndpoints(session: ApiSession) {
         })
         if (res.data?.accessToken) {
           session.setAuthToken(res.data.accessToken)
+          if (res.data.refreshToken) {
+            session.setRefreshToken(res.data.refreshToken)
+          }
           const currentStored = session.getActiveSchoolId()
           const defaultSchool = res.data.user?.activeSchool
           if (defaultSchool?.id) {
@@ -41,7 +44,15 @@ export function createAuthAndStorageEndpoints(session: ApiSession) {
       },
       logout: async () => {
         try {
-          await session.request('/auth/logout', { method: 'POST' })
+          const refreshToken = session.getRefreshToken()
+          if (refreshToken) {
+            await session.request('/auth/logout', {
+              method: 'POST',
+              body: JSON.stringify({ refreshToken }),
+            })
+          }
+        } catch {
+          // ignore logout network errors
         } finally {
           session.clearAuthToken()
         }

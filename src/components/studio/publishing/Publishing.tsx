@@ -11,7 +11,7 @@ import { VersionHistoryList } from './VersionHistoryList'
 import { PublishDangerZone } from './PublishDangerZone'
 
 export function Publishing() {
-  const { notify } = useStudio()
+  const { notify, setView } = useStudio()
   const [loading, setLoading] = useState(true)
   const [publishing, setPublishing] = useState(false)
   const [toggling, setToggling] = useState(false)
@@ -39,21 +39,19 @@ export function Publishing() {
     }
   }
 
-  useEffect(() => {
-    void loadStatus()
-  }, [])
+  useEffect(() => { void loadStatus() }, [])
 
   const computeNextVersion = (current: string) => {
     const match = current.match(/^v?(\d+)\.(\d+)(?:\.(\d+))?$/)
-    if (match) {
-      const major = parseInt(match[1], 10)
-      const minor = parseInt(match[2], 10) + 1
-      return `v${major}.${minor}`
-    }
-    return 'v1.1'
+    return match ? `v${parseInt(match[1], 10)}.${parseInt(match[2], 10) + 1}` : 'v1.1'
   }
 
   const handlePublishRelease = async () => {
+    if (!api.getAuthToken()) {
+      notify('⚠️ Please sign in as an administrator to publish.')
+      setView('login')
+      return
+    }
     setPublishing(true)
     const nextTag = computeNextVersion(currentVersionTag)
     try {
@@ -65,20 +63,28 @@ export function Publishing() {
       await loadStatus()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Publishing release failed'
-      notify(`Error: ${msg}`)
+      if (msg.includes('Unauthorized') || msg.includes('401')) {
+        notify('⚠️ Your session has expired. Please sign in to publish.')
+        setView('login')
+      } else {
+        notify(`Error: ${msg}`)
+      }
     } finally {
       setPublishing(false)
     }
   }
 
   const handleTogglePublish = async () => {
+    if (!api.getAuthToken()) {
+      notify('⚠️ Please sign in as an administrator.')
+      setView('login')
+      return
+    }
     const nextState = !isPublished
     if (
       !nextState &&
       typeof window !== 'undefined' &&
-      !window.confirm(
-        'Are you sure you want to take your school website offline? Public visitors will receive an HTTP 404 page.',
-      )
+      !window.confirm('Are you sure you want to take your school website offline? Public visitors will receive an HTTP 404 page.')
     ) {
       return
     }
@@ -87,11 +93,7 @@ export function Publishing() {
     try {
       await api.publishing.toggleStatus(nextState)
       setIsPublished(nextState)
-      notify(
-        nextState
-          ? 'Website is now live and accessible to the public!'
-          : 'Website unpublished. It is now hidden from public visitors.',
-      )
+      notify(nextState ? 'Website is now live and accessible to the public!' : 'Website unpublished.')
       await loadStatus()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Toggle publication status failed'
@@ -104,12 +106,7 @@ export function Publishing() {
   const formatTimeAgo = (dateStr?: string) => {
     if (!dateStr) return 'Recently'
     try {
-      const d = new Date(dateStr)
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     } catch {
       return dateStr
     }
@@ -117,12 +114,9 @@ export function Publishing() {
 
   return (
     <div className="publishing-layout">
-      {/* Top Release Card */}
       <div className="card release-card">
         <div className="release-top">
-          <span className="release-icon">
-            <Icon name="sparkle" />
-          </span>
+          <span className="release-icon"><Icon name="sparkle" /></span>
           <div>
             <span className={`state-badge ${stagedChanges.length > 0 ? 'draft' : 'published'}`}>
               <i />
@@ -130,9 +124,7 @@ export function Publishing() {
             </span>
             <h2>
               {stagedChanges.length > 0
-                ? `${stagedChanges.length} ${
-                    stagedChanges.length === 1 ? 'change is' : 'changes are'
-                  } ready to publish`
+                ? `${stagedChanges.length} ${stagedChanges.length === 1 ? 'change is' : 'changes are'} ready to publish`
                 : 'Your live website is currently up to date'}
             </h2>
             <p>
@@ -141,14 +133,8 @@ export function Publishing() {
                 : 'All pages, notices, events, and customizations are currently synchronized with the public profile.'}
             </p>
           </div>
-          <Button
-            kind="primary"
-            onClick={handlePublishRelease}
-            disabled={publishing || loading}
-          >
-            {publishing
-              ? 'Publishing...'
-              : `Publish version ${computeNextVersion(currentVersionTag)}`}
+          <Button kind="primary" onClick={handlePublishRelease} disabled={publishing || loading}>
+            {publishing ? 'Publishing...' : `Publish version ${computeNextVersion(currentVersionTag)}`}
           </Button>
         </div>
 
@@ -156,9 +142,7 @@ export function Publishing() {
           <div className="change-list">
             {stagedChanges.map((x, i) => (
               <div key={x.title + i}>
-                <span>
-                  <Icon name="check" size={13} />
-                </span>
+                <span><Icon name="check" size={13} /></span>
                 <div>
                   <strong>{x.title}</strong>
                   <p>{x.detail}</p>
@@ -175,24 +159,9 @@ export function Publishing() {
         )}
       </div>
 
-      <VersionHistoryList
-        versions={versions}
-        onInspect={setInspectVersion}
-        formatTimeAgo={formatTimeAgo}
-      />
-
-      <PublishDangerZone
-        isPublished={isPublished}
-        toggling={toggling}
-        loading={loading}
-        onTogglePublish={handleTogglePublish}
-      />
-
-      <PublishVersionModal
-        version={inspectVersion}
-        onClose={() => setInspectVersion(null)}
-        formatTimeAgo={formatTimeAgo}
-      />
+      <VersionHistoryList versions={versions} onInspect={setInspectVersion} formatTimeAgo={formatTimeAgo} />
+      <PublishDangerZone isPublished={isPublished} toggling={toggling} loading={loading} onTogglePublish={handleTogglePublish} />
+      <PublishVersionModal version={inspectVersion} onClose={() => setInspectVersion(null)} formatTimeAgo={formatTimeAgo} />
     </div>
   )
 }

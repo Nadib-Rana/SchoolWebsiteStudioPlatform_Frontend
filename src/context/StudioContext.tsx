@@ -3,19 +3,8 @@
 import type { SchoolTheme } from '@/types/theme'
 import type { View } from '@/types/studio'
 import { api } from '@/lib/api-client'
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react'
-import type {
-  CurrentUser,
-  CurrentSchool,
-  StudioContextType,
-} from './studio-context-types'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import type { CurrentUser, CurrentSchool, StudioContextType } from './studio-context-types'
 import { autoApplyButtonAriaLabels } from './studio-accessibility'
 
 export type { CurrentUser, CurrentSchool, StudioContextType }
@@ -29,7 +18,6 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const [previewTheme, setPreviewThemeState] = useState<SchoolTheme>('modern')
   const [unreadNotifications, setUnreadNotifications] = useState(3)
 
-  // Dynamic User & Multi-Tenant State
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [currentSchool, setCurrentSchool] = useState<CurrentSchool | null>(null)
   const [userSchools, setUserSchools] = useState<CurrentSchool[]>([])
@@ -38,32 +26,34 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('studio_selected_theme') as SchoolTheme
-        if (saved) {
-          setPreviewThemeState(saved)
-        }
-      } catch (e) {
-        console.debug('Failed to load selected theme:', e)
-      }
+      const saved = localStorage.getItem('studio_selected_theme') as SchoolTheme
+      if (saved) setPreviewThemeState(saved)
     }
   }, [])
 
   const setPreviewTheme = useCallback((theme: SchoolTheme) => {
     setPreviewThemeState(theme)
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('studio_selected_theme', theme)
-      } catch (e) {
-        console.debug('Failed to save selected theme:', e)
-      }
-    }
+    if (typeof window !== 'undefined') localStorage.setItem('studio_selected_theme', theme)
   }, [])
 
   const notify = useCallback((message: string) => {
     setToast(message)
     window.setTimeout(() => setToast(''), 2800)
   }, [])
+
+  useEffect(() => {
+    const handleExpired = () => {
+      notify('⚠️ Your session has expired. Please sign in to continue.')
+      setUser(null)
+      setCurrentSchool(null)
+      setUserSchools([])
+      setView('login')
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('studio:session_expired', handleExpired)
+      return () => window.removeEventListener('studio:session_expired', handleExpired)
+    }
+  }, [notify])
 
   const refreshSchools = useCallback(async (preferredSchoolId?: string) => {
     try {
@@ -83,6 +73,17 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
       if (profileRes.status === 'fulfilled' && profileRes.value?.data) {
         setUser(profileRes.value.data)
+      } else if (profileRes.status === 'rejected') {
+        const err = (profileRes as PromiseRejectedResult).reason
+        const errMsg = err?.message || ''
+        if (errMsg.includes('Unauthorized') || errMsg.includes('401')) {
+          api.clearAuthToken()
+          setUser(null)
+          setCurrentSchool(null)
+          setUserSchools([])
+          setView('login')
+          return
+        }
       }
 
       if (schoolsRes.status === 'fulfilled' && Array.isArray(schoolsRes.value?.data)) {
@@ -98,12 +99,10 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         }))
 
         setUserSchools(schools)
-
         if (schools.length > 0) {
           const storedId = preferredSchoolId || api.getActiveSchoolId()
           const matched = schools.find((s) => s.id === storedId || s.slug === storedId)
           const active = matched || schools[0]
-
           setCurrentSchool(active)
           api.setActiveSchoolId(active.id)
           api.setActiveSchoolSlug(active.slug)
@@ -118,19 +117,16 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const switchSchool = useCallback(
-    async (schoolId: string) => {
-      const target = userSchools.find((s) => s.id === schoolId)
-      if (target) {
-        setCurrentSchool(target)
-        api.setActiveSchoolId(target.id)
-        api.setActiveSchoolSlug(target.slug)
-        setSchoolSwitchKey((prev) => prev + 1)
-        notify(`Switched to ${target.name}`)
-      }
-    },
-    [userSchools, notify]
-  )
+  const switchSchool = useCallback(async (schoolId: string) => {
+    const target = userSchools.find((s) => s.id === schoolId)
+    if (target) {
+      setCurrentSchool(target)
+      api.setActiveSchoolId(target.id)
+      api.setActiveSchoolSlug(target.slug)
+      setSchoolSwitchKey((prev) => prev + 1)
+      notify(`Switched to ${target.name}`)
+    }
+  }, [userSchools, notify])
 
   const logout = useCallback(() => {
     api.auth.logout()
@@ -141,35 +137,16 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     setView('login')
   }, [notify])
 
-  useEffect(() => {
-    refreshSchools()
-  }, [refreshSchools])
-
-  useEffect(() => {
-    autoApplyButtonAriaLabels()
-  })
+  useEffect(() => { refreshSchools() }, [refreshSchools])
+  useEffect(() => { autoApplyButtonAriaLabels() })
 
   return (
     <StudioContext.Provider
       value={{
-        view,
-        setView,
-        sidebarOpen,
-        setSidebarOpen,
-        toast,
-        notify,
-        previewTheme,
-        setPreviewTheme,
-        unreadNotifications,
-        setUnreadNotifications,
-        user,
-        currentSchool,
-        userSchools,
-        loadingSchools,
-        schoolSwitchKey,
-        switchSchool,
-        refreshSchools,
-        logout,
+        view, setView, sidebarOpen, setSidebarOpen, toast, notify,
+        previewTheme, setPreviewTheme, unreadNotifications, setUnreadNotifications,
+        user, currentSchool, userSchools, loadingSchools, schoolSwitchKey,
+        switchSchool, refreshSchools, logout,
       }}
     >
       {children}
@@ -179,8 +156,6 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
 export function useStudio() {
   const ctx = useContext(StudioContext)
-  if (!ctx) {
-    throw new Error('useStudio must be used within a StudioProvider')
-  }
+  if (!ctx) throw new Error('useStudio must be used within a StudioProvider')
   return ctx
 }

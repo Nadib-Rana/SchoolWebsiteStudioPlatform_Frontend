@@ -27,10 +27,23 @@ export class ApiSession {
     }
   }
 
+  public getRefreshToken(): string | null {
+    if (typeof window === 'undefined') return null
+    return localStorage.getItem('studio_refresh_token')
+  }
+
+  public setRefreshToken(token: string) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('studio_refresh_token', token)
+    }
+  }
+
   public clearAuthToken() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('studio_token')
+      localStorage.removeItem('studio_refresh_token')
       localStorage.removeItem('studio_school_id')
+      localStorage.removeItem('studio_school_slug')
     }
   }
 
@@ -56,9 +69,34 @@ export class ApiSession {
     }
   }
 
+  private async tryRefreshToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken()
+    if (!refreshToken) return null
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      const newAccess = json?.data?.accessToken || json?.accessToken
+      const newRefresh = json?.data?.refreshToken || json?.refreshToken
+      if (newAccess) {
+        this.setAuthToken(newAccess)
+        if (newRefresh) this.setRefreshToken(newRefresh)
+        return newAccess
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
   public async request<T>(
     endpoint: string,
     options: RequestInit = {},
+    isRetry = false,
   ): Promise<ApiResponse<T>> {
     const token = this.getAuthToken()
     const schoolId = this.getActiveSchoolId()
@@ -68,23 +106,25 @@ export class ApiSession {
       ...(options.headers as Record<string, string>),
     }
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-
-    if (schoolId) {
-      headers['x-school-id'] = schoolId
-    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    if (schoolId) headers['x-school-id'] = schoolId
 
     const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
 
     try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      })
-
+      const response = await fetch(url, { ...options, headers })
       const data = await response.json()
+
+      if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+        const refreshedToken = await this.tryRefreshToken()
+        if (refreshedToken) {
+          return this.request<T>(endpoint, options, true)
+        }
+        this.clearAuthToken()
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('studio:session_expired'))
+        }
+      }
 
       if (!response.ok) {
         const errorMsg = Array.isArray(data)

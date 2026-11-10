@@ -9,16 +9,7 @@ import { api } from '@/lib/api-client'
 import { useState } from 'react'
 
 export function StudioTopbar() {
-  const {
-    setSidebarOpen,
-    setView,
-    notify,
-    unreadNotifications,
-    user,
-    currentSchool,
-    refreshSchools,
-  } = useStudio()
-
+  const { setSidebarOpen, setView, notify, unreadNotifications, user, currentSchool, refreshSchools } = useStudio()
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -37,25 +28,25 @@ export function StudioTopbar() {
     ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || user.email
     : 'Administrator'
 
-  const userInitials =
-    fullName
-      .split(/\s+/)
-      .map((n) => n[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'AD'
-
+  const userInitials = fullName.split(/\s+/).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'AD'
   const isLive = currentSchool?.isPublished ?? true
   const schoolSlug = currentSchool?.slug || 'northfield-high'
 
   const handleGlobalPublish = async () => {
     if (isPublishing) return
+
+    const token = api.getAuthToken()
+    if (!token) {
+      notify('⚠️ Please sign in as an administrator to publish.')
+      setView('login')
+      return
+    }
+
     setIsPublishing(true)
     const schoolId = currentSchool?.id || api.getActiveSchoolId()
     const schoolName = currentSchool?.name || 'School'
 
     try {
-      // 1. Determine next version tag
       let nextTag = 'v1.1'
       try {
         const statusRes = await api.publishing.getStatus(schoolId)
@@ -63,31 +54,31 @@ export function StudioTopbar() {
         const currentTag = data?.currentVersionTag || 'v1.0'
         const match = currentTag.match(/v?(\d+)\.(\d+)/)
         if (match) {
-          const major = parseInt(match[1], 10)
-          const minor = parseInt(match[2], 10) + 1
-          nextTag = `v${major}.${minor}`
+          nextTag = `v${parseInt(match[1], 10)}.${parseInt(match[2], 10) + 1}`
         }
-      } catch (e) {
+      } catch {
         nextTag = `v1.${Date.now().toString().slice(-2)}`
       }
 
-      // 2. Execute release version snapshot on backend
       await api.publishing.release(
         {
           versionTag: nextTag,
           summary: `Production release ${nextTag} published via studio topbar for ${schoolName}`,
         },
-        schoolId
+        schoolId,
       )
 
-      // 3. Refresh studio schools state so isPublished is guaranteed true
       await refreshSchools(schoolId)
-
       notify(`🚀 Version ${nextTag} of ${schoolName} is now live!`)
     } catch (err: any) {
       console.error('[Publish] Release failed:', err)
       const msg = err?.message || 'Publishing release failed'
-      notify(`⚠️ Failed to publish: ${msg}`)
+      if (msg.includes('Unauthorized') || msg.includes('401') || msg.includes('expired')) {
+        notify('⚠️ Your session has expired. Please sign in to publish.')
+        setView('login')
+      } else {
+        notify(`⚠️ Failed to publish: ${msg}`)
+      }
     } finally {
       setIsPublishing(false)
     }
@@ -95,12 +86,7 @@ export function StudioTopbar() {
 
   return (
     <header className="topbar">
-      <button
-        type="button"
-        className="menu-button"
-        onClick={() => setSidebarOpen(true)}
-        aria-label="Open sidebar menu"
-      >
+      <button type="button" className="menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open sidebar menu">
         <Icon name="menu" />
       </button>
 
@@ -118,15 +104,7 @@ export function StudioTopbar() {
       </div>
 
       <div className="top-actions">
-        <Button
-          kind="ghost"
-          icon="eye"
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.open(`/${schoolSlug}`, '_blank')
-            }
-          }}
-        >
+        <Button kind="ghost" icon="eye" onClick={() => window.open(`/${schoolSlug}`, '_blank')}>
           <span className="hide-mobile">View Live Site</span>
         </Button>
 
@@ -146,17 +124,10 @@ export function StudioTopbar() {
               </>
             )}
           </button>
-          {notificationsOpen && (
-            <NotificationsPopover onClose={() => setNotificationsOpen(false)} />
-          )}
+          {notificationsOpen && <NotificationsPopover onClose={() => setNotificationsOpen(false)} />}
         </div>
 
-        <button
-          type="button"
-          className="icon-button hide-mobile"
-          aria-label="Help"
-          onClick={() => setView('settings')}
-        >
+        <button type="button" className="icon-button hide-mobile" aria-label="Help" onClick={() => setView('settings')}>
           <Icon name="help" />
         </button>
 
@@ -168,9 +139,7 @@ export function StudioTopbar() {
             aria-expanded={profileOpen}
             onClick={toggleProfile}
           >
-            <div style={{ textTransform: 'uppercase', fontWeight: 700 }}>
-              {userInitials}
-            </div>
+            <div style={{ textTransform: 'uppercase', fontWeight: 700 }}>{userInitials}</div>
             <span>
               <strong>{fullName}</strong>
               <small>{currentSchool?.role || user?.role || 'Admin'}</small>
@@ -188,9 +157,7 @@ export function StudioTopbar() {
           disabled={isPublishing}
           title={`Publish changes for ${currentSchool?.name || 'school'}`}
         >
-          <span className="publish-label">
-            {isPublishing ? 'Publishing...' : 'Publish'}
-          </span>
+          <span className="publish-label">{isPublishing ? 'Publishing...' : 'Publish'}</span>
         </Button>
       </div>
     </header>
