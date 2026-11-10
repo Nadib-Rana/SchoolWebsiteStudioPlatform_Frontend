@@ -102,10 +102,14 @@ export interface PublicSiteData {
     footerLayout: string
   }
   seo?: {
+    siteTitle?: string
     metaTitle?: string
+    tagline?: string
     metaDescription?: string
     ogImage?: string
+    ogImageUrl?: string
     keywords?: string[]
+    metaKeywords?: string[]
   }
   settings?: {
     allowPublicAdmission?: boolean

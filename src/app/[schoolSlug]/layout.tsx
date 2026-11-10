@@ -24,19 +24,23 @@ export async function generateMetadata({
   }
 
   const title =
+    siteData.seo?.siteTitle ||
     siteData.seo?.metaTitle ||
     `${siteData.school.name} — Official Website`
   const description =
     siteData.seo?.metaDescription ||
+    siteData.seo?.tagline ||
     siteData.profile?.shortBio ||
     siteData.profile?.motto ||
     'Welcome to our school portal'
 
   const iconUrl = siteData.school.faviconUrl || siteData.school.logoUrl || '/icon.svg'
+  const ogImg = siteData.seo?.ogImageUrl || siteData.seo?.ogImage || siteData.school.logoUrl
 
   return {
     title,
     description,
+    keywords: siteData.seo?.metaKeywords || siteData.seo?.keywords,
     icons: {
       icon: iconUrl,
       shortcut: iconUrl,
@@ -45,7 +49,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      images: siteData.seo?.ogImage ? [{ url: siteData.seo.ogImage }] : [],
+      images: ogImg ? [{ url: ogImg }] : [],
     },
   }
 }
