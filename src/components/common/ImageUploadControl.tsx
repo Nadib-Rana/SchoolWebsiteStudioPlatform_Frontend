@@ -1,20 +1,13 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Icon } from '@/components/common/Icon'
 import { MediaPickerModal } from '@/components/studio/media/MediaPickerModal'
 import { api } from '@/lib/api-client'
+import { ImageUploadPreview } from './ImageUploadPreview'
+import { ImageUploadActions } from './ImageUploadActions'
+import type { ImageUploadControlProps } from './image-upload.types'
 
-export interface ImageUploadControlProps {
-  value?: string | null
-  onChange: (url: string | null) => void
-  label?: string
-  helperText?: string
-  aspectRatio?: 'video' | 'square' | 'portrait' | 'auto'
-  fallbackInitial?: string
-  placeholderText?: string
-  pickerTitle?: string
-}
+export type { ImageUploadControlProps }
 
 export function ImageUploadControl({
   value,
@@ -37,7 +30,6 @@ export function ImageUploadControl({
     setIsUploading(true)
     try {
       const uploadRes = await api.storage.upload(file)
-      // Register media asset in PostgreSQL
       await api.gallery.createMedia({
         filename: uploadRes.key,
         originalName: file.name,
@@ -56,21 +48,15 @@ export function ImageUploadControl({
     }
   }
 
-  const getAspectStyle = () => {
-    switch (aspectRatio) {
-      case 'square':
-        return { aspectRatio: '1', width: '90px' }
-      case 'portrait':
-        return { aspectRatio: '3 / 4', width: '100px' }
-      case 'video':
-        return { aspectRatio: '16 / 9', width: '100%' }
-      default:
-        return { height: '110px', width: '100%' }
-    }
-  }
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+        width: '100%',
+      }}
+    >
       {label && (
         <span style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
           {label}
@@ -94,135 +80,21 @@ export function ImageUploadControl({
           flexDirection: aspectRatio === 'video' ? 'column' : 'row',
         }}
       >
-        {/* Preview Container */}
-        <div
+        <ImageUploadPreview
+          value={value}
+          aspectRatio={aspectRatio}
+          fallbackInitial={fallbackInitial}
+          placeholderText={placeholderText}
+          isUploading={isUploading}
           onClick={() => setModalOpen(true)}
-          style={{
-            ...getAspectStyle(),
-            borderRadius: '8px',
-            border: value ? '1px solid #cbd5e1' : '1px dashed #cbd5e1',
-            backgroundColor: '#f8fafc',
-            overflow: 'hidden',
-            position: 'relative',
-            cursor: 'pointer',
-            display: 'grid',
-            placeItems: 'center',
-            flexShrink: 0,
-            boxShadow: value ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
-          }}
-          title="Click to change image"
-        >
-          {value ? (
-            <img
-              src={value}
-              alt="Preview"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-              onError={(e) => {
-                ;(e.currentTarget as HTMLElement).style.display = 'none'
-              }}
-            />
-          ) : fallbackInitial ? (
-            <span style={{ fontSize: '24px', fontWeight: 700, color: '#163d72' }}>
-              {fallbackInitial}
-            </span>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#94a3b8', gap: '4px' }}>
-              <Icon name="image" size={20} />
-              <span style={{ fontSize: '10px' }}>{placeholderText}</span>
-            </div>
-          )}
+        />
 
-          {isUploading && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(15, 23, 42, 0.6)',
-                color: '#fff',
-                fontSize: '11px',
-                fontWeight: 600,
-                display: 'grid',
-                placeItems: 'center',
-              }}
-            >
-              Uploading...
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid #cbd5e1',
-              backgroundColor: '#ffffff',
-              color: '#0f172a',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'background-color 0.15s, border-color 0.15s',
-            }}
-          >
-            <Icon name="image" size={13} />
-            {value ? 'Change photo' : 'Choose image'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid #e2e8f0',
-              backgroundColor: '#f8fafc',
-              color: '#475569',
-              fontSize: '12px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <Icon name="plus" size={13} />
-            Upload direct
-          </button>
-
-          {value && (
-            <button
-              type="button"
-              onClick={() => onChange(null)}
-              style={{
-                padding: '6px 8px',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: 'transparent',
-                color: '#ef4444',
-                fontSize: '12px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-              title="Remove image"
-            >
-              <Icon name="close" size={13} />
-              Remove
-            </button>
-          )}
-        </div>
+        <ImageUploadActions
+          value={value}
+          onOpenPicker={() => setModalOpen(true)}
+          onDirectUploadClick={() => fileInputRef.current?.click()}
+          onRemove={() => onChange(null)}
+        />
       </div>
 
       {helperText && (

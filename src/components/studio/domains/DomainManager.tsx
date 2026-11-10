@@ -5,6 +5,8 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { PrimaryDomainCard } from './PrimaryDomainCard'
+import { DnsHelpCard } from './DnsHelpCard'
 
 interface DomainItem {
   domain: string
@@ -91,45 +93,7 @@ export function DomainManager() {
 
   return (
     <div className="domain-layout">
-      <div className="card primary-domain">
-        <div className="domain-icon">
-          <Icon name="globe" />
-        </div>
-        <div>
-          <span className="live-badge">
-            <i /> PRIMARY DOMAIN
-          </span>
-          <h2>{primary?.domain || `${activeSlug}.schoolcanvas.app`}</h2>
-          <p>
-            Your custom domain is connected, secure, and routing traffic to your
-            school website.
-          </p>
-          <div className="domain-tags">
-            <span>
-              <Icon name="check" size={12} /> Verified
-            </span>
-            <span>
-              <Icon name="check" size={12} /> SSL Active
-            </span>
-            <span>
-              <Icon name="check" size={12} /> Edge CDN Active
-            </span>
-          </div>
-        </div>
-        <Button
-          icon="external"
-          onClick={() =>
-            window.open(
-              primary?.domain.startsWith('http')
-                ? primary.domain
-                : `https://${primary?.domain}`,
-              '_blank',
-            )
-          }
-        >
-          Open website
-        </Button>
-      </div>
+      <PrimaryDomainCard domain={primary?.domain} activeSlug={activeSlug} />
 
       <div className="card domain-list">
         <div className="card-title flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -176,27 +140,7 @@ export function DomainManager() {
         ))}
       </div>
 
-      <div className="card dns-card">
-        <Icon name="help" />
-        <div>
-          <strong>DNS configuration & routing</strong>
-          <p>
-            Add a CNAME record pointing your subdomain to{' '}
-            <code>cname.schoolcanvas.app</code>. SSL certificates are issued
-            automatically.
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            if (typeof navigator !== 'undefined' && navigator.clipboard) {
-              navigator.clipboard.writeText('cname.schoolcanvas.app')
-            }
-            notify('Copied "cname.schoolcanvas.app" to clipboard')
-          }}
-        >
-          Copy DNS record
-        </Button>
-      </div>
+      <DnsHelpCard />
     </div>
   )
 }

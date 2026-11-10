@@ -3,44 +3,15 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Icon } from '@/components/common/Icon'
+import {
+  type PublicHeaderProps,
+  isDarkColor,
+  DEFAULT_HEADER_NAV,
+} from './header-helpers'
+import { PublicHeaderLogo } from './PublicHeaderLogo'
+import { PublicHeaderMobileMenu } from './PublicHeaderMobileMenu'
 
-export interface PublicHeaderProps {
-  schoolSlug?: string
-  schoolName?: string
-  motto?: string
-  logoUrl?: string
-  logoLetter?: string
-  navigation?: Array<{ label: string; url: string }>
-  setPage?: (p: string) => void
-  applyButtonText?: string
-  headerStyle?: {
-    bg?: string
-    align?: string
-    padding?: string
-    border?: boolean
-    shadow?: string
-    hideOnMobile?: boolean
-    customClass?: string
-  }
-}
-
-function isDarkColor(hex?: string): boolean {
-  if (!hex || hex === 'transparent' || hex === '#ffffff' || hex === '#fff') return false
-  const clean = hex.replace('#', '')
-  let r = 255,
-    g = 255,
-    b = 255
-  if (clean.length === 3) {
-    r = parseInt(clean[0] + clean[0], 16)
-    g = parseInt(clean[1] + clean[1], 16)
-    b = parseInt(clean[2] + clean[2], 16)
-  } else if (clean.length === 6) {
-    r = parseInt(clean.substring(0, 2), 16)
-    g = parseInt(clean.substring(2, 4), 16)
-    b = parseInt(clean.substring(4, 6), 16)
-  }
-  return (r * 299 + g * 587 + b * 114) / 1000 < 145
-}
+export type { PublicHeaderProps }
 
 export function PublicHeader({
   schoolSlug,
@@ -53,18 +24,7 @@ export function PublicHeader({
   applyButtonText,
   headerStyle,
 }: PublicHeaderProps) {
-  const [imgError, setImgError] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const defaultNav = [
-    { label: 'About', path: '/about', page: 'About School' },
-    { label: 'Academics', path: '/academics', page: 'Academic Programs' },
-    { label: 'Faculty', path: '/teachers', page: 'Teachers & Faculty' },
-    { label: 'Notices', path: '/notices', page: 'Notices' },
-    { label: 'Events', path: '/events', page: 'Events' },
-    { label: 'Gallery', path: '/gallery', page: 'Photo Gallery' },
-    { label: 'Contact', path: '/contact', page: 'Contact Us' },
-  ]
 
   const navItems =
     navigation && navigation.length > 0
@@ -73,65 +33,9 @@ export function PublicHeader({
           path: n.url.startsWith('/') ? n.url : `/${n.url}`,
           page: n.label,
         }))
-      : defaultNav
+      : DEFAULT_HEADER_NAV
 
-  const initial = logoLetter || (schoolName || 'N').charAt(0).toUpperCase()
   const isDark = isDarkColor(headerStyle?.bg)
-
-  const logoMarkup = (
-    <div className="public-logo logo-button" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-      {logoUrl && !imgError ? (
-        <img
-          src={logoUrl}
-          alt={schoolName}
-          className="header-logo-img"
-          onError={() => setImgError(true)}
-          style={{ width: '38px', height: '38px', objectFit: 'contain' }}
-        />
-      ) : (
-        <span
-          style={{
-            width: '38px',
-            height: '38px',
-            background: isDark ? '#e3ad3f' : '#102f58',
-            color: isDark ? '#0f172a' : '#ffffff',
-            display: 'grid',
-            placeItems: 'center',
-            fontWeight: 700,
-            fontSize: '18px',
-            borderRadius: '6px',
-            fontFamily: 'inherit',
-          }}
-        >
-          {initial}
-        </span>
-      )}
-      <div style={{ textAlign: 'left' }}>
-        <strong
-          style={{
-            display: 'block',
-            fontSize: '16px',
-            fontWeight: 700,
-            color: isDark ? '#ffffff' : '#0f172a',
-          }}
-        >
-          {schoolName}
-        </strong>
-        <small
-          style={{
-            display: 'block',
-            fontSize: '11px',
-            letterSpacing: '1.2px',
-            textTransform: 'uppercase',
-            color: isDark ? '#facc15' : '#b1842d',
-            marginTop: '2px',
-          }}
-        >
-          {motto}
-        </small>
-      </div>
-    </div>
-  )
 
   return (
     <header
@@ -162,25 +66,15 @@ export function PublicHeader({
           : {}),
       }}
     >
-      {schoolSlug ? (
-        <Link href={`/${schoolSlug}`} style={{ textDecoration: 'none' }}>
-          {logoMarkup}
-        </Link>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setPage && setPage('Home')}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          {logoMarkup}
-        </button>
-      )}
+      <PublicHeaderLogo
+        schoolSlug={schoolSlug}
+        schoolName={schoolName}
+        motto={motto}
+        logoUrl={logoUrl}
+        logoLetter={logoLetter}
+        isDark={isDark}
+        setPage={setPage}
+      />
 
       <nav
         style={{
@@ -272,64 +166,14 @@ export function PublicHeader({
       </button>
 
       {mobileMenuOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            background: headerStyle?.bg || (isDark ? '#091b35' : '#ffffff'),
-            color: isDark ? '#ffffff' : '#1e293b',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-            zIndex: 100,
-            padding: '12px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}
-        >
-          {navItems.map((n) =>
-            schoolSlug ? (
-              <Link
-                key={n.path}
-                href={n.path === '/' ? `/${schoolSlug}` : `/${schoolSlug}${n.path}`}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'inherit',
-                  textDecoration: 'none',
-                }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {n.label}
-              </Link>
-            ) : (
-              <button
-                key={n.label}
-                type="button"
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  textAlign: 'left',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'inherit',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setPage && setPage(n.page)
-                  setMobileMenuOpen(false)
-                }}
-              >
-                {n.label}
-              </button>
-            )
-          )}
-        </div>
+        <PublicHeaderMobileMenu
+          navItems={navItems}
+          schoolSlug={schoolSlug}
+          isDark={isDark}
+          headerBg={headerStyle?.bg}
+          setPage={setPage}
+          onClose={() => setMobileMenuOpen(false)}
+        />
       )}
     </header>
   )

@@ -1,19 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Button } from '@/components/common/Button'
-import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import type { MediaItem } from './media-library.types'
+import { MediaCardItem } from './MediaCardItem'
+import { MediaLibraryEmptyState } from './MediaLibraryEmptyState'
+import { MediaToolbar } from './MediaToolbar'
 
-export interface MediaItem {
-  id?: string
-  url: string
-  name: string
-  size: string
-  mimeType?: string
-  key?: string
-}
+export type { MediaItem }
 
 export function MediaLibrary() {
   const { notify } = useStudio()
@@ -66,7 +61,6 @@ export function MediaLibrary() {
       const uploadRes = await api.storage.upload(file)
       const isImg = file.type.startsWith('image/')
 
-      // Register media asset in PostgreSQL
       const created = await api.gallery.createMedia({
         filename: uploadRes.key,
         originalName: file.name,
@@ -156,43 +150,15 @@ export function MediaLibrary() {
 
   return (
     <>
-      <div className="media-toolbar">
-        <div className="search-field wide">
-          <Icon name="search" size={16} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search files and documents..."
-          />
-        </div>
-        <button type="button" className="select-button" onClick={cycleType}>
-          {type} <Icon name="chevron" size={13} />
-        </button>
-        {query && (
-          <button
-            type="button"
-            className="select-button"
-            onClick={() => setQuery('')}
-          >
-            Clear search <Icon name="close" size={13} />
-          </button>
-        )}
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          style={{ display: 'none' }}
-          onChange={handleFileUpload}
-          accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf"
-        />
-        <Button
-          kind="primary"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-        >
-          {uploading ? 'Uploading to storage...' : 'Upload file'}
-        </Button>
-      </div>
+      <MediaToolbar
+        query={query}
+        onQueryChange={setQuery}
+        type={type}
+        onCycleType={cycleType}
+        uploading={uploading}
+        fileInputRef={fileInputRef}
+        onFileUpload={handleFileUpload}
+      />
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
@@ -200,71 +166,22 @@ export function MediaLibrary() {
         </div>
       ) : filtered.length ? (
         <div className="media-grid">
-          {filtered.map((x) => {
-            const isImg = Boolean(x.url) && (!x.mimeType || x.mimeType.startsWith('image/'))
-            return (
-              <div className="card media-item" key={x.id || x.name}>
-                <div
-                  className={isImg ? 'media-photo' : 'document'}
-                  style={isImg ? { backgroundImage: `url(${x.url})` } : {}}
-                >
-                  {!isImg && (
-                    <>
-                      <Icon name="file" size={28} />
-                      <span>PDF</span>
-                    </>
-                  )}
-                </div>
-                <section>
-                  <strong title={x.name} className="truncate block">
-                    {x.name}
-                  </strong>
-                  <small>{x.size} · Stored in S3</small>
-                  <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-slate-100">
-                    {x.url && (
-                      <button
-                        type="button"
-                        onClick={() => handleCopyUrl(x.url)}
-                        title="Copy public URL"
-                        className="p-1 rounded text-slate-500 hover:text-blue-900 hover:bg-slate-100 text-xs flex items-center gap-1"
-                      >
-                        <Icon name="external" size={13} /> Copy link
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(x)}
-                      disabled={deletingId === x.id}
-                      title="Delete asset"
-                      className="p-1 rounded text-rose-500 hover:text-rose-700 hover:bg-rose-50 text-xs ml-auto flex items-center gap-1"
-                    >
-                      <Icon name="close" size={13} /> Delete
-                    </button>
-                  </div>
-                </section>
-              </div>
-            )
-          })}
+          {filtered.map((x) => (
+            <MediaCardItem
+              key={x.id || x.name}
+              item={x}
+              deletingId={deletingId}
+              onCopyUrl={handleCopyUrl}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       ) : (
-        <div className="empty-state">
-          <span>
-            <Icon name="image" size={32} />
-          </span>
-          <strong>No media files found</strong>
-          <p>
-            {query
-              ? 'No files matching your search filter.'
-              : 'Upload images, banners, circulars, or documents to your school media library.'}
-          </p>
-          <Button
-            kind="primary"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            Upload first file
-          </Button>
-        </div>
+        <MediaLibraryEmptyState
+          query={query}
+          uploading={uploading}
+          onUploadClick={() => fileInputRef.current?.click()}
+        />
       )}
     </>
   )

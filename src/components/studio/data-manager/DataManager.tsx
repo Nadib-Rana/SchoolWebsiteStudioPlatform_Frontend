@@ -3,17 +3,13 @@
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import type { DataManagerProps } from './data-manager.types'
+import { useDataManagerData } from './useDataManagerData'
+import { DataManagerSummary } from './DataManagerSummary'
+import { DataTableRows } from './DataTableRows'
 
-export interface DataManagerProps {
-  type: string
-  refreshKey?: number
-}
-
-interface DataItem {
-  id: string
-  cells: string[]
-}
+export type { DataManagerProps }
 
 export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
   const { notify } = useStudio()
@@ -26,114 +22,12 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
       ? ['Notice', 'Category', 'Publication date', 'Status']
       : ['Event', 'Date', 'Location', 'Status']
 
-  const [items, setItems] = useState<DataItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { items, setItems, loading } = useDataManagerData(type, refreshKey)
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('All statuses')
   const [page, setPage] = useState(0)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const statusOptions = ['All statuses', 'Published', 'Draft', 'Expired']
-
-  useEffect(() => {
-    let mounted = true
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        if (type === 'pages') {
-          const res = await api.pages.list()
-          const raw = (res as any)?.data || res
-          const data = Array.isArray(raw) ? raw : (raw?.items || [])
-          if (mounted && Array.isArray(data)) {
-            const mapped: DataItem[] = data.map((p: any) => ({
-              id: p.id,
-              cells: [
-                p.title,
-                p.slug === 'home' ? '/' : `/${p.slug}`,
-                p.status === 'PUBLISHED' ? 'Published' : 'Draft',
-                p.updatedAt
-                  ? new Date(p.updatedAt).toLocaleDateString()
-                  : 'Recently',
-              ],
-            }))
-            setItems(mapped)
-          }
-        } else if (type === 'teachers') {
-          const res = await api.teachers.list()
-          const raw = (res as any)?.data || res
-          const data = Array.isArray(raw) ? raw : (raw?.items || [])
-          if (mounted && Array.isArray(data)) {
-            const mapped: DataItem[] = data.map((t: any) => ({
-              id: t.id,
-              cells: [
-                t.name,
-                t.designation,
-                t.department || 'General',
-                t.status === 'ACTIVE' || t.status === 'PUBLISHED'
-                  ? 'Published'
-                  : 'Draft',
-              ],
-            }))
-            setItems(mapped)
-          }
-        } else if (type === 'notices') {
-          const res = await api.notices.list()
-          const raw = (res as any)?.data || res
-          const data = Array.isArray(raw) ? raw : (raw?.items || [])
-          if (mounted && Array.isArray(data)) {
-            const mapped: DataItem[] = data.map((n: any) => ({
-              id: n.id,
-              cells: [
-                n.title,
-                n.category || 'General',
-                n.publishDate || n.publishedAt
-                  ? new Date(
-                      n.publishDate || n.publishedAt,
-                    ).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  : 'Live',
-                n.status === 'PUBLISHED' ? 'Published' : 'Draft',
-              ],
-            }))
-            setItems(mapped)
-          }
-        } else if (type === 'events') {
-          const res = await api.events.list()
-          const raw = (res as any)?.data || res
-          const data = Array.isArray(raw) ? raw : (raw?.items || [])
-          if (mounted && Array.isArray(data)) {
-            const mapped: DataItem[] = data.map((e: any) => ({
-              id: e.id,
-              cells: [
-                e.title,
-                e.eventDate
-                  ? new Date(e.eventDate).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  : 'Scheduled',
-                e.venue || e.location || 'Main Campus',
-                e.status === 'PUBLISHED' ? 'Published' : 'Draft',
-              ],
-            }))
-            setItems(mapped)
-          }
-        }
-      } catch (err) {
-        console.warn(`Failed to load ${type} data from backend:`, err)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    fetchData()
-    return () => {
-      mounted = false
-    }
-  }, [type, refreshKey])
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}"?`)) return
@@ -185,24 +79,12 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
 
   return (
     <>
-      <div className="manager-summary">
-        <div>
-          <span>All items</span>
-          <strong>{items.length}</strong>
-        </div>
-        <div>
-          <span>Published</span>
-          <strong>{publishedCount}</strong>
-        </div>
-        <div>
-          <span>Drafts</span>
-          <strong>{draftsCount}</strong>
-        </div>
-        <div>
-          <span>Database status</span>
-          <strong>{loading ? 'Syncing...' : 'Connected'}</strong>
-        </div>
-      </div>
+      <DataManagerSummary
+        totalCount={items.length}
+        publishedCount={publishedCount}
+        draftsCount={draftsCount}
+        loading={loading}
+      />
 
       <div className="card data-card">
         <div className="data-tools">
@@ -246,67 +128,13 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
             <span>Action</span>
           </div>
 
-          {shown.map((item, i) => {
-            const r = item.cells
-            const isDeleting = deletingId === item.id
-            return (
-              <div className="table-row" key={item.id}>
-                <input
-                  className="check-box"
-                  type="checkbox"
-                  aria-label={`Select ${r[0]}`}
-                />
-                {r.map((x, j) =>
-                  j === 0 ? (
-                    <div className="primary-cell" key={x}>
-                      {type === 'teachers' && (
-                        <span className={`person p${i}`}>
-                          {r[0]
-                            .split(' ')
-                            .map((v) => v[0])
-                            .slice(-2)
-                            .join('')}
-                        </span>
-                      )}
-                      <strong>{x}</strong>
-                      {type === 'pages' && i === 0 && <small>Homepage</small>}
-                    </div>
-                  ) : j === r.length - 1 ? (
-                    <span className={`state-badge ${x.toLowerCase()}`} key={x}>
-                      <i />
-                      {x}
-                    </span>
-                  ) : (
-                    <span key={x}>{x}</span>
-                  ),
-                )}
-                <button
-                  type="button"
-                  title={`Delete ${r[0]}`}
-                  aria-label={`Delete ${r[0]}`}
-                  disabled={isDeleting}
-                  onClick={() => handleDelete(item.id, r[0])}
-                  className="p-1 hover:text-rose-600 transition-colors text-slate-400"
-                >
-                  <Icon name="close" size={14} />
-                </button>
-              </div>
-            )
-          })}
-
-          {shown.length === 0 && (
-            <div className="table-empty">
-              <Icon name="search" />
-              <strong>
-                {loading ? 'Loading from database...' : 'No results found'}
-              </strong>
-              <span>
-                {loading
-                  ? 'Connecting to PostgreSQL backend...'
-                  : 'Try changing the search or status filter.'}
-              </span>
-            </div>
-          )}
+          <DataTableRows
+            shown={shown}
+            type={type}
+            deletingId={deletingId}
+            loading={loading}
+            onDelete={handleDelete}
+          />
         </div>
 
         <div className="table-footer">

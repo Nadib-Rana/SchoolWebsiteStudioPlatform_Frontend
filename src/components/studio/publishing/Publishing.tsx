@@ -5,22 +5,10 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
-
-interface StagedChange {
-  type: string
-  title: string
-  detail: string
-  updatedAt: string
-}
-
-interface VersionRecord {
-  id: string
-  versionTag: string
-  summary: string
-  isCurrent: boolean
-  createdAt: string
-  publishedBy?: { firstName?: string; lastName?: string; username?: string }
-}
+import type { StagedChange, VersionRecord } from './publishing.types'
+import { PublishVersionModal } from './PublishVersionModal'
+import { VersionHistoryList } from './VersionHistoryList'
+import { PublishDangerZone } from './PublishDangerZone'
 
 export function Publishing() {
   const { notify } = useStudio()
@@ -187,155 +175,24 @@ export function Publishing() {
         )}
       </div>
 
-      {/* Version History Card */}
-      <div className="card version-card">
-        <div className="card-title">
-          <div>
-            <h3>Version history</h3>
-            <p>Immutable snapshots of previous releases</p>
-          </div>
-        </div>
-        {versions.length > 0 ? (
-          versions.map((x, i) => {
-            const author = x.publishedBy
-              ? `${x.publishedBy.firstName || ''} ${x.publishedBy.lastName || ''}`.trim() ||
-                x.publishedBy.username ||
-                'Administrator'
-              : 'System'
-            return (
-              <div className="version-row" key={x.id || x.versionTag}>
-                <b>{x.versionTag}</b>
-                <div>
-                  <strong>{x.summary || 'Production release'}</strong>
-                  <small>
-                    {formatTimeAgo(x.createdAt)} · {author}
-                  </small>
-                </div>
-                {x.isCurrent || i === 0 ? (
-                  <span className="state-badge published">
-                    <i />
-                    Live
-                  </span>
-                ) : (
-                  <Button onClick={() => setInspectVersion(x)}>
-                    Inspect
-                  </Button>
-                )}
-              </div>
-            )
-          })
-        ) : (
-          <div style={{ padding: '20px 0', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-            No previous version snapshots found. Publishing a release will create your first version snapshot.
-          </div>
-        )}
-      </div>
+      <VersionHistoryList
+        versions={versions}
+        onInspect={setInspectVersion}
+        formatTimeAgo={formatTimeAgo}
+      />
 
-      {/* Danger Zone: Publish / Unpublish Toggle */}
-      <div className="card danger-zone">
-        <div>
-          <strong>{isPublished ? 'Unpublish website' : 'Publish website online'}</strong>
-          <p>
-            {isPublished
-              ? 'Take the public website offline while keeping all content, media, and drafts safe in PostgreSQL.'
-              : 'Make your school website publicly accessible to visitors, parents, and prospective applicants.'}
-          </p>
-        </div>
-        <Button
-          onClick={handleTogglePublish}
-          disabled={toggling || loading}
-          className={isPublished ? 'border-rose-300 text-rose-700 hover:bg-rose-50' : 'bg-emerald-600 text-white hover:bg-emerald-700'}
-        >
-          {toggling
-            ? 'Updating...'
-            : isPublished
-            ? 'Unpublish website'
-            : 'Make website public'}
-        </Button>
-      </div>
+      <PublishDangerZone
+        isPublished={isPublished}
+        toggling={toggling}
+        loading={loading}
+        onTogglePublish={handleTogglePublish}
+      />
 
-      {/* Modal: Inspect Version Snapshot */}
-      {inspectVersion && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.55)',
-            backdropFilter: 'blur(3px)',
-            display: 'grid',
-            placeItems: 'center',
-            zIndex: 1000,
-            padding: '16px',
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setInspectVersion(null)
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '12px',
-              maxWidth: '480px',
-              width: '100%',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-              overflow: 'hidden',
-              border: '1px solid #e2e8f0',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
-                  Snapshot: {inspectVersion.versionTag}
-                </span>
-                <span className="state-badge published" style={{ fontSize: '11px' }}>
-                  Archived
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setInspectVersion(null)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
-              >
-                <Icon name="close" size={16} />
-              </button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px', color: '#334155' }}>
-              <div>
-                <strong>Release Summary:</strong>
-                <p style={{ margin: '4px 0 0', color: '#64748b' }}>
-                  {inspectVersion.summary || 'Production release'}
-                </p>
-              </div>
-              <div>
-                <strong>Created At:</strong>
-                <p style={{ margin: '4px 0 0', color: '#64748b' }}>
-                  {new Date(inspectVersion.createdAt).toLocaleString()} ({formatTimeAgo(inspectVersion.createdAt)})
-                </p>
-              </div>
-              <div>
-                <strong>Publisher:</strong>
-                <p style={{ margin: '4px 0 0', color: '#64748b' }}>
-                  {inspectVersion.publishedBy?.firstName
-                    ? `${inspectVersion.publishedBy.firstName} ${inspectVersion.publishedBy.lastName || ''}`.trim()
-                    : inspectVersion.publishedBy?.username || 'Workspace Administrator'}
-                </p>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '6px' }}>
-                <strong style={{ display: 'block', color: '#0f172a', marginBottom: '4px' }}>
-                  Database Integrity
-                </strong>
-                <span style={{ color: '#16a34a', fontWeight: 600 }}>✓ Atomic schema and page JSON preserved</span>
-              </div>
-            </div>
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-              <Button kind="primary" onClick={() => setInspectVersion(null)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PublishVersionModal
+        version={inspectVersion}
+        onClose={() => setInspectVersion(null)}
+        formatTimeAgo={formatTimeAgo}
+      />
     </div>
   )
 }

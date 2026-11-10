@@ -2,12 +2,14 @@
 
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
-import { heroImage, templates } from '@/config/templates'
+import { templates } from '@/config/templates'
 import { THEME_CONFIGS } from '@/config/themes'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import type { SchoolTheme } from '@/types/theme'
 import { useState } from 'react'
+import { TemplateHeroBanner } from './TemplateHeroBanner'
+import { TemplateGridCard } from './TemplateGridCard'
 
 export function Templates() {
   const { setView, previewTheme, setPreviewTheme, notify } = useStudio()
@@ -87,6 +89,11 @@ export function Templates() {
     notify(`"${templateName}" template applied! Builder & Preview now match ${templateName}.`)
   }
 
+  const handlePreviewTemplate = (theme: SchoolTheme, name: string) => {
+    handleApplyTemplate(theme, name)
+    setView('public')
+  }
+
   const visibleTemplates = templates.filter(
     (t) =>
       (filter === 'All templates' || t.category.includes(filter)) &&
@@ -112,60 +119,7 @@ export function Templates() {
         </Button>
       </div>
 
-      <div className="template-feature">
-        <div>
-          <span className="feature-pill">
-            <Icon name="sparkle" size={14} /> CURATED FOR YOU
-          </span>
-          <h2>
-            Designed to make your school
-            <br />
-            stand out with confidence.
-          </h2>
-          <p>
-            Every template is responsive, accessible, and purpose-built for school
-            communities.
-          </p>
-          <div>
-            <Button
-              kind="dark"
-              icon="eye"
-              onClick={() => setView('public')}
-            >
-              Preview your website
-            </Button>
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => setView('theme')}
-              title="Open Theme & Layout customizer"
-            >
-              How templates work <Icon name="arrow" size={14} />
-            </button>
-          </div>
-        </div>
-        <div className="browser-mock">
-          <div className="browser-top">
-            <i />
-            <i />
-            <i />
-          </div>
-          <div
-            className="browser-image"
-            style={{
-              backgroundImage: `linear-gradient(90deg,rgba(10,25,45,.82),rgba(10,25,45,.05)),url(${heroImage})`,
-            }}
-          >
-            <span>NORTHFIELD</span>
-            <strong>
-              Where curiosity
-              <br />
-              becomes character.
-            </strong>
-            <small>Explore our school →</small>
-          </div>
-        </div>
-      </div>
+      <TemplateHeroBanner />
 
       <div className="template-controls">
         <div className="category-tabs">
@@ -192,69 +146,17 @@ export function Templates() {
 
       {visibleTemplates.length ? (
         <div className="template-grid">
-          {visibleTemplates.map((t) => {
-            const isCurrent = previewTheme === t.theme
-            return (
-              <div className={`template-card ${isCurrent ? 'selected-card' : ''}`} key={t.name}>
-                <div
-                  className={`template-image ${device === 'mobile' ? 'mobile-shot' : ''}`}
-                  style={{ backgroundImage: `url(${t.image})` }}
-                >
-                  {t.tag && <span>{t.tag}</span>}
-                  <div className="template-devices">
-                    <button
-                      type="button"
-                      className={device === 'monitor' ? 'active' : ''}
-                      onClick={() => setDevice('monitor')}
-                      title="Desktop preview"
-                    >
-                      <Icon name="monitor" size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      className={device === 'mobile' ? 'active' : ''}
-                      onClick={() => setDevice('mobile')}
-                      title="Mobile preview"
-                    >
-                      <Icon name="mobile" size={14} />
-                    </button>
-                  </div>
-                  <div className="template-overlay">
-                    <Button
-                      kind="secondary"
-                      icon="eye"
-                      onClick={() => {
-                        handleApplyTemplate(t.theme, t.name)
-                        setView('public')
-                      }}
-                    >
-                      Live preview
-                    </Button>
-                  </div>
-                </div>
-                <div className="template-info">
-                  <div>
-                    <div className="template-title">
-                      <h3>{t.name}</h3>
-                      <span className="swatches">
-                        {t.colors.map((c) => (
-                          <i key={c} style={{ backgroundColor: c }} />
-                        ))}
-                      </span>
-                    </div>
-                    <p>{t.desc}</p>
-                    <small>{t.category}</small>
-                  </div>
-                  <Button
-                    kind={isCurrent ? 'primary' : 'secondary'}
-                    onClick={() => handleApplyTemplate(t.theme, t.name)}
-                  >
-                    {isCurrent ? '✓ Current template' : 'Select template'}
-                  </Button>
-                </div>
-              </div>
-            )
-          })}
+          {visibleTemplates.map((t) => (
+            <TemplateGridCard
+              key={t.name}
+              template={t}
+              isCurrent={previewTheme === t.theme}
+              device={device}
+              onDeviceChange={setDevice}
+              onApply={handleApplyTemplate}
+              onPreview={handlePreviewTemplate}
+            />
+          ))}
         </div>
       ) : (
         <div className="empty-state template-empty">

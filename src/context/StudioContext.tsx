@@ -11,50 +11,14 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import type {
+  CurrentUser,
+  CurrentSchool,
+  StudioContextType,
+} from './studio-context-types'
+import { autoApplyButtonAriaLabels } from './studio-accessibility'
 
-export interface CurrentUser {
-  id: string
-  email: string
-  username?: string
-  firstName?: string
-  lastName?: string
-  avatarUrl?: string
-  role?: string
-}
-
-export interface CurrentSchool {
-  id: string
-  name: string
-  slug: string
-  customDomain?: string | null
-  logoUrl?: string | null
-  plan?: string
-  isPublished?: boolean
-  role?: string
-}
-
-interface StudioContextType {
-  view: View
-  setView: (view: View) => void
-  sidebarOpen: boolean
-  setSidebarOpen: (open: boolean) => void
-  toast: string
-  notify: (message: string) => void
-  previewTheme: SchoolTheme
-  setPreviewTheme: (theme: SchoolTheme) => void
-  unreadNotifications: number
-  setUnreadNotifications: (count: number) => void
-
-  // User & Tenant State
-  user: CurrentUser | null
-  currentSchool: CurrentSchool | null
-  userSchools: CurrentSchool[]
-  loadingSchools: boolean
-  schoolSwitchKey: number
-  switchSchool: (schoolId: string) => Promise<void>
-  refreshSchools: (preferredSchoolId?: string) => Promise<void>
-  logout: () => void
-}
+export type { CurrentUser, CurrentSchool, StudioContextType }
 
 const StudioContext = createContext<StudioContextType | undefined>(undefined)
 
@@ -112,7 +76,6 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // Fetch user profile and schools concurrently
       const [profileRes, schoolsRes] = await Promise.allSettled([
         api.auth.getProfile(),
         api.schools.getMySchools(),
@@ -178,34 +141,12 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     setView('login')
   }, [notify])
 
-  // Initial load
   useEffect(() => {
     refreshSchools()
   }, [refreshSchools])
 
-  // Auto aria-label accessibility helper
   useEffect(() => {
-    const labels: Partial<Record<string, string>> = {
-      more: 'More options',
-      close: 'Close',
-      menu: 'Open menu',
-      bell: 'Notifications',
-      help: 'Help',
-      undo: 'Undo',
-      redo: 'Redo',
-      plus: 'Add item',
-      eye: 'Preview',
-      chevron: 'Open',
-      arrow: 'Continue',
-    }
-    document.querySelectorAll<HTMLButtonElement>('button:not([aria-label])').forEach((button) => {
-      if (!button.textContent?.trim()) {
-        const icon = button.querySelector<SVGElement>('svg[data-icon]')?.dataset.icon
-        const label = (icon && labels[icon]) || 'Action'
-        button.setAttribute('aria-label', label)
-        button.setAttribute('title', label)
-      }
-    })
+    autoApplyButtonAriaLabels()
   })
 
   return (

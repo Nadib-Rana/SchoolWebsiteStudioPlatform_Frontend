@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Icon } from '@/components/common/Icon'
 import { api } from '@/lib/api-client'
 import type { SchoolProfileData } from '@/lib/public-site'
+import { ContactInfoAside } from './ContactInfoAside'
+import { ContactSuccessMessage } from './ContactSuccessMessage'
 
 interface PublicContactFormProps {
   schoolSlug: string
@@ -53,89 +55,23 @@ export function PublicContactForm({
     }
   }
 
-  const address =
-    profile?.address || '27 Lakeview Avenue, Riverdale, NY 10471'
-  const phone = profile?.phone || '+1 (555) 234-5678'
-  const email = profile?.email || 'admissions@northfieldhigh.edu'
-  const officeHours =
-    profile?.officeHours || 'Monday – Friday · 8:00 AM – 4:30 PM'
+  const handleReset = () => {
+    setIsSubmitted(false)
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      subject: 'General enquiry',
+      message: '',
+    })
+  }
 
   return (
     <section className="contact-content max-w-6xl mx-auto px-6 py-12">
-      {/* School Office Contact Info */}
-      <div>
-        <span className="section-kicker">SCHOOL OFFICE & CAMPUS</span>
-        <h2>Visit or contact {schoolName}.</h2>
-        <p className="whitespace-pre-line leading-relaxed text-slate-700">
-          {address}
-        </p>
+      <ContactInfoAside schoolName={schoolName} profile={profile} />
 
-        <p className="mt-4">
-          <strong>Direct Telephone</strong>
-          <br />
-          <a
-            href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
-            className="text-blue-900 hover:underline font-medium"
-          >
-            {phone}
-          </a>
-        </p>
-
-        {profile?.emergencyPhone && (
-          <p className="mt-2 text-rose-700">
-            <strong>Emergency Hotline</strong>
-            <br />
-            {profile.emergencyPhone}
-          </p>
-        )}
-
-        <p className="mt-4">
-          <strong>Official Email</strong>
-          <br />
-          <a
-            href={`mailto:${email}`}
-            className="text-blue-900 hover:underline font-medium"
-          >
-            {email}
-          </a>
-        </p>
-
-        <p className="mt-4">
-          <strong>Office & Visiting Hours</strong>
-          <br />
-          <span className="text-slate-600">{officeHours}</span>
-        </p>
-      </div>
-
-      {/* Interactive Contact Inquiry Form */}
       {isSubmitted ? (
-        <div className="contact-success bg-emerald-50 border border-emerald-200 p-8 rounded-2xl text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-4">
-            <Icon name="check" size={24} />
-          </div>
-          <strong className="text-xl font-serif text-slate-900 block mb-2">
-            Thank you for getting in touch.
-          </strong>
-          <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed mb-6">
-            Your inquiry has been directly delivered to the {schoolName} administration team. We will review your message and reply within 1–2 business days.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setIsSubmitted(false)
-              setFormData({
-                fullName: '',
-                email: '',
-                phone: '',
-                subject: 'General enquiry',
-                message: '',
-              })
-            }}
-            className="px-5 py-2.5 rounded-lg bg-blue-900 text-white text-xs font-bold hover:bg-blue-950 transition-colors"
-          >
-            Send another inquiry
-          </button>
-        </div>
+        <ContactSuccessMessage schoolName={schoolName} onReset={handleReset} />
       ) : (
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
           {errorMsg && (
