@@ -1,6 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+export function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL
+  if (envUrl && !envUrl.includes('localhost:4000')) {
+    return envUrl.replace(/\/+$/, '')
+  }
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return '/api/v1'
+    }
+  }
+  return (envUrl || 'http://localhost:3000/api/v1').replace(/\/+$/, '')
+}
+
+export const API_BASE_URL = getApiBaseUrl()
 
 export interface ApiResponse<T = any> {
   success: boolean

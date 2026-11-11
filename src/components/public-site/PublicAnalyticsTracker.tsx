@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import { API_BASE_URL } from '@/lib/api/api-session'
 
 interface PublicAnalyticsTrackerProps {
   schoolSlug: string
@@ -24,7 +25,7 @@ export function PublicAnalyticsTracker({ schoolSlug }: PublicAnalyticsTrackerPro
       const device = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
       const referrer = typeof document !== 'undefined' ? document.referrer : ''
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+      const apiUrl = API_BASE_URL
 
       fetch(`${apiUrl}/public/analytics/track`, {
         method: 'POST',

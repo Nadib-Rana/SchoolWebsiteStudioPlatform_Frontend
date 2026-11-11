@@ -8,6 +8,7 @@ import { PublicPreviewBar } from '@/components/public-site/PublicPreviewBar'
 import { THEME_CONFIGS } from '@/config/themes'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { API_BASE_URL } from '@/lib/api/api-session'
 import type { PublicSiteData } from '@/lib/public-site'
 import type { SchoolTheme } from '@/types/theme'
 import { loadCustomThemeLocally, subscribeToThemeChanges } from '@/components/studio/theme/theme-sync-helper'
@@ -47,7 +48,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         }
 
         const slug = api.getActiveSchoolSlug() || 'northfield-high'
-        const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+        const base = API_BASE_URL
         const res = await fetch(`${base}/public/site?slug=${encodeURIComponent(slug)}`)
         if (res.ok) {
           const json = await res.json()
