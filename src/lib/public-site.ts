@@ -19,11 +19,18 @@ export type {
   PublicSiteData,
 }
 
-const API_BASE_URL =
-  process.env.INTERNAL_API_URL ||
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://profilebackendapi.ashyshop.com/api/v1'
+function resolveBackendApiUrl(): string {
+  const envUrl =
+    process.env.INTERNAL_API_URL ||
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL
+  if (envUrl && !envUrl.includes('localhost:4000') && !envUrl.includes('localhost:3000')) {
+    return envUrl.replace(/\/+$/, '')
+  }
+  return 'https://profilebackendapi.ashyshop.com/api/v1'
+}
+
+const API_BASE_URL = resolveBackendApiUrl()
 
 export const getPublicSiteData = cache(
   async (slug: string): Promise<PublicSiteData | null> => {
