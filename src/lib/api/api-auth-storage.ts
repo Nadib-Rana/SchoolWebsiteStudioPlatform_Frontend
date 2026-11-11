@@ -71,11 +71,20 @@ export function createAuthAndStorageEndpoints(session: ApiSession) {
           headers,
           body: formData,
         })
-        const json = await res.json()
+        const rawText = await res.text()
+        let json: any
+        try {
+          json = JSON.parse(rawText)
+        } catch {
+          json = {
+            success: res.ok,
+            message: rawText || `HTTP ${res.status}`,
+          }
+        }
         if (!res.ok || !json.success) {
           throw new Error(json.message || 'Failed to upload file to MinIO')
         }
-        return json.data as { key: string; publicUrl: string }
+        return (json.data || json) as { key: string; publicUrl: string }
       },
       getPresignedUploadUrl: async (filename: string, bucket?: string) => {
         return session.request<{
