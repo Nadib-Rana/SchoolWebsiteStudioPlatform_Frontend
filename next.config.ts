@@ -19,11 +19,14 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const rawApiUrl =
+    let rawApiUrl =
       process.env.INTERNAL_API_URL ||
       process.env.API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:3000/api/v1";
+      "https://profilebackendapi.ashyshop.com/api/v1";
+    if (rawApiUrl.includes("nadib.ashyshop.com") || rawApiUrl.includes("localhost:3000")) {
+      rawApiUrl = "https://profilebackendapi.ashyshop.com/api/v1";
+    }
     const cleanApiUrl = rawApiUrl.replace(/\/+$/, "");
     return [
       {

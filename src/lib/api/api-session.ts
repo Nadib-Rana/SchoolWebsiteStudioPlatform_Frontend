@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function getApiBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_API_URL
-  if (envUrl && !envUrl.includes('localhost:4000')) {
+  if (envUrl && !envUrl.includes('localhost:4000') && !envUrl.includes('localhost:3000')) {
     return envUrl.replace(/\/+$/, '')
   }
   if (typeof window !== 'undefined') {
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    const host = window.location.hostname
+    if (host.includes('ashyshop.com')) {
+      return 'https://profilebackendapi.ashyshop.com/api/v1'
+    }
+    if (host !== 'localhost' && host !== '127.0.0.1') {
       return '/api/v1'
     }
   }
-  return (envUrl || 'http://localhost:3000/api/v1').replace(/\/+$/, '')
+  return (envUrl || 'https://profilebackendapi.ashyshop.com/api/v1').replace(/\/+$/, '')
 }
 
 export const API_BASE_URL = getApiBaseUrl()
@@ -125,7 +129,17 @@ export class ApiSession {
 
     try {
       const response = await fetch(url, { ...options, headers })
-      const data = await response.json()
+      const rawText = await response.text()
+      let data: any
+      try {
+        data = JSON.parse(rawText)
+      } catch {
+        data = {
+          success: response.ok,
+          statusCode: response.status,
+          message: rawText || `HTTP ${response.status}`,
+        }
+      }
 
       if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
         const refreshedToken = await this.tryRefreshToken()

@@ -4,7 +4,7 @@ const API_BASE_URL =
   process.env.INTERNAL_API_URL ||
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:4000/api/v1'
+  'https://profilebackendapi.ashyshop.com/api/v1'
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
