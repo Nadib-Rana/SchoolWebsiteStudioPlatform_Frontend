@@ -9,7 +9,11 @@ interface PrimaryDomainCardProps {
 }
 
 export function PrimaryDomainCard({ domain, activeSlug }: PrimaryDomainCardProps) {
-  const displayDomain = domain || `${activeSlug}.schoolcanvas.app`
+  const displayDomain =
+    domain ||
+    (typeof window !== 'undefined'
+      ? `${window.location.host}/${activeSlug}`
+      : `${(process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com').replace(/^https?:\/\//, '')}/${activeSlug}`)
 
   return (
     <div className="card primary-domain">

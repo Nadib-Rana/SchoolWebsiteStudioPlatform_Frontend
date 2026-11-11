@@ -6,7 +6,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   'https://profilebackendapi.ashyshop.com/api/v1'
 const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com'
 
 interface SchoolRecord {
   id: string

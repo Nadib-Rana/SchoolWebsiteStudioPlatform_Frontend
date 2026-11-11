@@ -29,6 +29,15 @@ export function OnboardingStepIdentity({
   fieldErrors,
   clearFieldError,
 }: OnboardingStepIdentityProps) {
+  const displayOrigin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com')
+  const displayHost =
+    typeof window !== 'undefined'
+      ? window.location.host
+      : displayOrigin.replace(/^https?:\/\//, '')
+
   return (
     <>
       <span className="eyebrow">CREATE YOUR IDENTITY</span>
@@ -45,7 +54,7 @@ export function OnboardingStepIdentity({
         <label className="full">
           Website address (Slug) <span style={{ color: '#ef4444' }}>*</span>
           <div className="slug-input" style={fieldErrors.slug ? { borderColor: '#ef4444' } : {}}>
-            <span>schoolcanvas.app/</span>
+            <span>{displayHost}/</span>
             <input
               value={slug}
               onChange={(e) => {
@@ -63,7 +72,7 @@ export function OnboardingStepIdentity({
           ) : (
             <small style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
               Your public website URL will be:{' '}
-              <strong>http://localhost:3000/{slug || 'your-school'}</strong>
+              <strong>{displayOrigin}/{slug || 'your-school'}</strong>
             </small>
           )}
         </label>

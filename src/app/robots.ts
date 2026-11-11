@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com'
 
 export default function robots(): MetadataRoute.Robots {
   return {

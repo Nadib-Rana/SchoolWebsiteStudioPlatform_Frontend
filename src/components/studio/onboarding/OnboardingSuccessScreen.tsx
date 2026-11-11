@@ -10,6 +10,11 @@ interface OnboardingSuccessScreenProps {
 }
 
 export function OnboardingSuccessScreen({ createdSchool }: OnboardingSuccessScreenProps) {
+  const displayOrigin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com')
+
   const navigateToDashboard = () => {
     if (createdSchool.id) {
       api.setActiveSchoolId(createdSchool.id)
@@ -130,7 +135,7 @@ export function OnboardingSuccessScreen({ createdSchool }: OnboardingSuccessScre
               PUBLIC WEBSITE URL
             </small>
             <strong style={{ fontSize: '15px', color: '#1e293b' }}>
-              http://localhost:3000/{createdSchool.slug}
+              {displayOrigin}/{createdSchool.slug}
             </strong>
           </div>
           <Button

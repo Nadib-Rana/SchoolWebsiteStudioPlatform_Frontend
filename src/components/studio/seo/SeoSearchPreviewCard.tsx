@@ -11,7 +11,11 @@ interface SeoSearchPreviewCardProps {
 export function SeoSearchPreviewCard({ seo }: SeoSearchPreviewCardProps) {
   const [tab, setTab] = useState<'google' | 'social'>('google')
 
-  const displayUrl = seo.canonicalUrl || 'https://northfield.schoolcanvas.app'
+  const displayUrl =
+    seo.canonicalUrl ||
+    (typeof window !== 'undefined'
+      ? `${window.location.origin}/northfield-high`
+      : 'https://nadib.ashyshop.com/northfield-high')
   const domainHost = displayUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
 
   return (

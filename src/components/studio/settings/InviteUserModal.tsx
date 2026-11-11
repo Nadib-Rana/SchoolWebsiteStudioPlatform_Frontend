@@ -33,7 +33,10 @@ export function InviteUserModal({
   const [copied, setCopied] = useState(false)
 
   const handleCopyLink = () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+    const origin =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com')
     const link = `${origin}/login?invite=team&role=${inviteRole.toLowerCase()}`
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true)

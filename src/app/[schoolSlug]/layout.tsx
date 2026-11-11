@@ -86,7 +86,7 @@ export default async function SchoolPublicLayout({
     '@type': 'EducationalOrganization',
     name: siteData.school.name,
     description: siteData.seo?.metaDescription || siteData.profile?.shortBio,
-    url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${schoolSlug}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com'}/${schoolSlug}`,
     logo: siteData.school.logoUrl || undefined,
     telephone: siteData.profile?.phone || undefined,
     email: siteData.profile?.email || undefined,

@@ -14,6 +14,11 @@ export function OnboardingStepReview({
   slug,
   selectedTemplateIndex,
 }: OnboardingStepReviewProps) {
+  const displayHost =
+    typeof window !== 'undefined'
+      ? window.location.host
+      : (process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com').replace(/^https?:\/\//, '')
+
   const readyItems = [
     `School profile: ${schoolName}`,
     `Slug: ${slug}`,
@@ -40,7 +45,7 @@ export function OnboardingStepReview({
           <br />
           Building character.
         </strong>
-        <small>{slug}.schoolcanvas.app</small>
+        <small>{displayHost}/{slug}</small>
       </div>
       <div className="ready-list">
         {readyItems.map((x) => (
