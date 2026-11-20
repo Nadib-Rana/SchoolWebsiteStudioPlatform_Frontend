@@ -24,6 +24,7 @@ export const studioNav: readonly NavItem[] = [
   ['publishing', 'sparkle', 'Publishing'],
   ['design-system', 'layers', 'Design System'],
   ['settings', 'settings', 'Settings'],
+  ['help', 'help', 'Help Center'],
 ] as const
 
 export const workspaceNav = studioNav.slice(0, 4)

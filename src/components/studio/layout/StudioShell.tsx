@@ -1,13 +1,35 @@
 'use client'
 
 import { Toast } from '@/components/common/Toast'
+import { PageHelpDrawer } from '@/components/studio/help/PageHelpDrawer'
 import { StudioSidebar } from '@/components/studio/layout/StudioSidebar'
 import { StudioTopbar } from '@/components/studio/layout/StudioTopbar'
 import { useStudio } from '@/context/StudioContext'
-import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
+import { useHelpShortcut } from '@/hooks/useHelpShortcut'
+import { useCallback, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 
 export function StudioShell({ children }: { children: ReactNode }) {
-  const { view, setView, sidebarOpen, setSidebarOpen, toast } = useStudio()
+  const {
+    view,
+    setView,
+    sidebarOpen,
+    setSidebarOpen,
+    toast,
+    helpDrawerOpen,
+    setHelpDrawerOpen,
+    helpLang,
+    setHelpLang,
+  } = useStudio()
+
+  const toggleHelpDrawer = useCallback(() => {
+    setHelpDrawerOpen(!helpDrawerOpen)
+  }, [helpDrawerOpen, setHelpDrawerOpen])
+
+  const closeHelpDrawer = useCallback(() => {
+    setHelpDrawerOpen(false)
+  }, [setHelpDrawerOpen])
+
+  useHelpShortcut(helpDrawerOpen, toggleHelpDrawer, closeHelpDrawer)
 
   const isPublicOrAuth = ['public', 'login'].includes(view)
 
@@ -60,6 +82,14 @@ export function StudioShell({ children }: { children: ReactNode }) {
         {!isPublicOrAuth && <StudioTopbar />}
         {children}
       </main>
+      {!isPublicOrAuth && (
+        <PageHelpDrawer
+          isOpen={helpDrawerOpen}
+          onClose={closeHelpDrawer}
+          lang={helpLang}
+          setLang={setHelpLang}
+        />
+      )}
       <Toast message={toast} />
     </div>
   )

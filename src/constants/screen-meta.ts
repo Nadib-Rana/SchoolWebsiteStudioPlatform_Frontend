@@ -109,4 +109,10 @@ export const screenMeta: ScreenMetaMap = {
     description: 'Review, compare, and safely publish website changes.',
     action: 'Publish changes',
   },
+  help: {
+    title: 'Help Center & User Guide',
+    eyebrow: 'USER GUIDE',
+    description: 'Step-by-step workflows for every feature available to your role. Press Shift + ? anywhere for instant page help.',
+    action: 'Open Page Help',
+  },
 }

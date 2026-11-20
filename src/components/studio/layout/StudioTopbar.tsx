@@ -10,7 +10,7 @@ import { revalidatePublicSite } from '@/lib/revalidate-client'
 import { useState } from 'react'
 
 export function StudioTopbar() {
-  const { setSidebarOpen, setView, notify, unreadNotifications, user, currentSchool, refreshSchools } = useStudio()
+  const { setSidebarOpen, setView, notify, unreadNotifications, user, currentSchool, refreshSchools, setHelpDrawerOpen } = useStudio()
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -129,7 +129,13 @@ export function StudioTopbar() {
           {notificationsOpen && <NotificationsPopover onClose={() => setNotificationsOpen(false)} />}
         </div>
 
-        <button type="button" className="icon-button hide-mobile" aria-label="Help" onClick={() => setView('settings')}>
+        <button
+          type="button"
+          className="icon-button hide-mobile"
+          aria-label="Instant Page Help (Shift + ?)"
+          title="Instant Page Help (Shift + ?)"
+          onClick={() => setHelpDrawerOpen(true)}
+        >
           <Icon name="help" />
         </button>
 

@@ -23,6 +23,7 @@ export type View =
   | 'audit-logs'
   | 'settings'
   | 'publishing'
+  | 'help'
   | 'onboarding'
   | 'login'
 

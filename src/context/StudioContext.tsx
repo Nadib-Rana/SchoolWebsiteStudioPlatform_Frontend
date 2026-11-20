@@ -2,6 +2,7 @@
 
 import type { SchoolTheme } from '@/types/theme'
 import type { View } from '@/types/studio'
+import type { HelpLang } from '@/config/help-guides'
 import { api } from '@/lib/api-client'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { CurrentUser, CurrentSchool, StudioContextType } from './studio-context-types'
@@ -23,6 +24,21 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     return 'modern'
   })
   const [unreadNotifications, setUnreadNotifications] = useState(3)
+  const [helpDrawerOpen, setHelpDrawerOpen] = useState(false)
+  const [helpLang, setHelpLangState] = useState<HelpLang>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('studio_help_lang')
+      if (saved === 'bn' || saved === 'en') return saved
+    }
+    return 'en'
+  })
+
+  const setHelpLang = useCallback((lang: HelpLang) => {
+    setHelpLangState(lang)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('studio_help_lang', lang)
+    }
+  }, [])
 
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [currentSchool, setCurrentSchool] = useState<CurrentSchool | null>(null)
@@ -151,6 +167,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       value={{
         view, setView, sidebarOpen, setSidebarOpen, toast, notify,
         previewTheme, setPreviewTheme, unreadNotifications, setUnreadNotifications,
+        helpDrawerOpen, setHelpDrawerOpen, helpLang, setHelpLang,
         user, currentSchool, userSchools, loadingSchools, schoolSwitchKey,
         switchSchool, refreshSchools, logout,
       }}

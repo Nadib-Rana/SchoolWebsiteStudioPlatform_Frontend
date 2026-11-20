@@ -4,6 +4,7 @@ import { PublicSite } from '@/components/public-site/PublicSite'
 import { Login } from '@/components/studio/auth/Login'
 import { Builder } from '@/components/studio/builder/Builder'
 import { DesignSystem } from '@/components/studio/design-system/DesignSystem'
+import { HelpCenter } from '@/components/studio/help/HelpCenter'
 import { StudioShell } from '@/components/studio/layout/StudioShell'
 import { ManagementScreen } from '@/components/studio/management/ManagementScreen'
 import { Onboarding } from '@/components/studio/onboarding/Onboarding'
@@ -15,7 +16,7 @@ import { api } from '@/lib/api-client'
 import { useEffect, useState } from 'react'
 
 export function StudioApp() {
-  const { view, setView } = useStudio()
+  const { view, setView, helpLang, setHelpLang } = useStudio()
   const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
@@ -53,12 +54,14 @@ export function StudioApp() {
       {view === 'builder' && <Builder />}
       {view === 'theme' && <ThemeCustomization />}
       {view === 'design-system' && <DesignSystem />}
+      {view === 'help' && <HelpCenter lang={helpLang} setLang={setHelpLang} />}
       {![
         'overview',
         'templates',
         'builder',
         'theme',
         'design-system',
+        'help',
         'public',
         'login',
         'onboarding',

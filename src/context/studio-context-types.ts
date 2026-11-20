@@ -1,5 +1,6 @@
 import type { SchoolTheme } from '@/types/theme'
 import type { View } from '@/types/studio'
+import type { HelpLang } from '@/config/help-guides'
 
 export interface CurrentUser {
   id: string
@@ -33,6 +34,10 @@ export interface StudioContextType {
   setPreviewTheme: (theme: SchoolTheme) => void
   unreadNotifications: number
   setUnreadNotifications: (count: number) => void
+  helpDrawerOpen: boolean
+  setHelpDrawerOpen: (open: boolean) => void
+  helpLang: HelpLang
+  setHelpLang: (lang: HelpLang) => void
 
   // User & Tenant State
   user: CurrentUser | null
