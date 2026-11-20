@@ -95,22 +95,38 @@ export function createAcademicEndpoints(session: ApiSession) {
     },
 
     admissions: {
+      getClasses: async (schoolSlug: string) => {
+        return session.request<{
+          source: 'ERP' | 'LOCAL'
+          erpConnected: boolean
+          classes: Array<{ id: string; name: string; section?: string; capacity?: number }>
+        }>(`/public/admissions/${encodeURIComponent(schoolSlug)}/classes`)
+      },
       apply: async (data: {
         schoolSlug: string
-        studentName: string
+        firstName?: string
+        lastName?: string
+        studentName?: string
         dateOfBirth: string
         gender: string
+        phone?: string
+        email?: string
+        bloodGroup?: string
         applyingForGrade: string
+        appliedClassId?: string
         previousSchool?: string
         guardianName: string
         guardianRelationship: string
         guardianPhone: string
-        guardianEmail: string
+        guardianEmail?: string
         address: string
+        documentsUrl?: string
         documents?: Record<string, string>
       }) => {
         return session.request<{
           success: boolean
+          source?: 'ERP' | 'ERP_PENDING_SYNC' | 'LOCAL'
+          queued?: boolean
           applicationNumber: string
           studentName: string
           status: string
@@ -120,20 +136,36 @@ export function createAcademicEndpoints(session: ApiSession) {
           body: JSON.stringify(data),
         })
       },
-      track: async (applicationNumber: string, guardianPhone?: string) => {
+      track: async (
+        applicationNumber: string,
+        identifier?: string,
+        schoolSlug?: string,
+      ) => {
         const params = new URLSearchParams()
         params.append('applicationNumber', applicationNumber)
-        if (guardianPhone) params.append('guardianPhone', guardianPhone)
+        if (identifier) {
+          params.append('identifier', identifier)
+          params.append('guardianPhone', identifier)
+        }
+        if (schoolSlug) params.append('schoolSlug', schoolSlug)
         return session.request<{
+          source?: 'ERP' | 'LOCAL'
           applicationNumber: string
           schoolName: string
           studentName: string
           applyingForGrade: string
           status: string
+          interviewDate?: string | null
           notes?: string
           submittedAt: string
           lastUpdatedAt: string
         }>(`/public/admissions/track?${params.toString()}`)
+      },
+      verifyAlumni: async (schoolSlug: string, code: string) => {
+        const params = new URLSearchParams({ code })
+        return session.request<any>(
+          `/public/${encodeURIComponent(schoolSlug)}/alumni/verify?${params.toString()}`,
+        )
       },
       list: async (
         schoolId?: string,

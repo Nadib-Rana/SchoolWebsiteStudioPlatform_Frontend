@@ -3,9 +3,38 @@
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
-import { api } from '@/lib/api-client'
+import { api, API_BASE_URL } from '@/lib/api-client'
 import type { IconName } from '@/types/studio'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+
+interface ErpCredentialsSummary {
+  erpBaseUrl?: string
+  apiKeyHint?: string
+  hasApiKey?: boolean
+  webhookSecretHint?: string
+  hasWebhookSecret?: boolean
+  enabled?: boolean
+  tenantId?: string
+  erpSchoolName?: string
+  erpSubdomain?: string
+  openClassesCount?: number
+  lastVerifiedAt?: string
+}
+
+interface IntegrationRecord {
+  id: string
+  type: string
+  name: string
+  status: string
+  lastSyncAt?: string
+  credentials?: ErpCredentialsSummary
+  syncHistory?: Array<{
+    action?: string
+    detail?: string
+    timestamp?: string
+    status?: string
+  }>
+}
 
 function IntegrationCard({
   icon,
@@ -16,6 +45,7 @@ function IntegrationCard({
   footer,
   action,
   onAction,
+  disabled,
 }: {
   icon: IconName
   title: string
@@ -25,6 +55,7 @@ function IntegrationCard({
   footer: string
   action: string
   onAction: () => void
+  disabled?: boolean
 }) {
   return (
     <div className="card integration-card">
@@ -51,7 +82,7 @@ function IntegrationCard({
       ))}
       <div className="integration-footer">
         <small>{footer}</small>
-        <Button onClick={onAction}>
+        <Button onClick={onAction} disabled={disabled}>
           {action}
         </Button>
       </div>
@@ -61,86 +92,332 @@ function IntegrationCard({
 
 export function Integrations() {
   const { notify } = useStudio()
-  const [history, setHistory] = useState<Array<[string, string, string]>>([
-    ['ERP automatic sync', '36 records reviewed', 'Success · Live connected'],
-    ['Admission API health check', 'Gateway responded in 142 ms', 'Healthy · Live'],
-    ['ERP teacher import', 'All records up to date', 'Synchronized'],
-  ])
+  const [erpRecord, setErpRecord] = useState<IntegrationRecord | null>(null)
+  const [gatewayRecord, setGatewayRecord] = useState<IntegrationRecord | null>(null)
+  const [history, setHistory] = useState<Array<[string, string, string, string]>>([])
 
-  useEffect(() => {
-    let mounted = true
-    const loadIntegrations = async () => {
-      try {
-        const res = await api.integrations.get()
-        const data = (res as any)?.data || res
-        if (mounted && Array.isArray(data) && data.length > 0) {
-          const mappedLogs: Array<[string, string, string]> = []
-          data.forEach((integ: any) => {
-            if (Array.isArray(integ.syncLogs)) {
-              integ.syncLogs.forEach((l: any) => {
-                mappedLogs.push([
-                  `${integ.type} ${l.operation || 'sync'}`,
-                  l.details || 'Sync completed successfully',
-                  `${l.status || 'Success'} · ${new Date(l.createdAt).toLocaleDateString()}`,
-                ])
-              })
-            }
-          })
-          if (mappedLogs.length > 0) {
-            setHistory(mappedLogs)
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load integration logs:', err)
+  const [erpBaseUrl, setErpBaseUrl] = useState('')
+  const [apiKey, setApiKey] = useState('')
+  const [webhookSecret, setWebhookSecret] = useState('')
+  const [enabled, setEnabled] = useState(true)
+  const [copiedWebhook, setCopiedWebhook] = useState(false)
+
+  const [isSaving, setIsSaving] = useState(false)
+  const [isTesting, setIsTesting] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [testBanner, setTestBanner] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
+
+  const loadIntegrations = useCallback(async () => {
+    try {
+      const res = await api.integrations.get()
+      const data: IntegrationRecord[] = (res as any)?.data || res || []
+      if (!Array.isArray(data)) return
+
+      const erp = data.find((i) => i.type === 'SCHOOL_ERP') || null
+      const gateway = data.find((i) => i.type === 'ADMISSION_GATEWAY') || null
+      setErpRecord(erp)
+      setGatewayRecord(gateway)
+
+      if (erp?.credentials) {
+        setErpBaseUrl(erp.credentials.erpBaseUrl || '')
+        setEnabled(erp.credentials.enabled ?? false)
       }
-    }
-    loadIntegrations()
-    return () => {
-      mounted = false
+
+      const mappedLogs: Array<[string, string, string, string]> = []
+      data.forEach((integ) => {
+        const logs = Array.isArray(integ.syncHistory) ? integ.syncHistory : []
+        logs.forEach((l) => {
+          const ts = l.timestamp
+            ? isNaN(Date.parse(l.timestamp))
+              ? l.timestamp
+              : new Date(l.timestamp).toLocaleString()
+            : 'Recent'
+          mappedLogs.push([
+            l.action || `${integ.name} sync`,
+            l.detail || 'Completed',
+            `${l.status || 'SUCCESS'} · ${ts}`,
+            (l.status || 'SUCCESS').toUpperCase(),
+          ])
+        })
+      })
+      setHistory(mappedLogs)
+    } catch (err) {
+      console.warn('Failed to load integrations:', err)
     }
   }, [])
 
-  const handleSync = async (type: string) => {
+  useEffect(() => {
+    loadIntegrations()
+  }, [loadIntegrations])
+
+  const handleSaveErpConfig = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!erpBaseUrl.trim()) {
+      setTestBanner({ type: 'error', text: 'Please enter your ERP API Base URL.' })
+      return
+    }
+    setIsSaving(true)
+    setTestBanner(null)
+    try {
+      const credentials: Record<string, any> = {
+        erpBaseUrl: erpBaseUrl.trim(),
+        enabled,
+      }
+      if (apiKey.trim()) {
+        credentials.apiKey = apiKey.trim()
+      }
+      if (webhookSecret.trim()) {
+        credentials.webhookSecret = webhookSecret.trim()
+      }
+
+      await api.integrations.configure({
+        type: 'SCHOOL_ERP',
+        name: 'School ERP System',
+        status: enabled ? 'CONNECTED' : 'INACTIVE',
+        credentials,
+      })
+      setApiKey('')
+      setWebhookSecret('')
+      notify('School ERP configuration saved securely')
+      setTestBanner({
+        type: 'success',
+        text: 'Configuration saved. Click "Test Live Connection" to verify your API key with the ERP.',
+      })
+      await loadIntegrations()
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to save ERP configuration'
+      setTestBanner({ type: 'error', text: msg })
+      notify(msg)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleTestErpConnection = async () => {
+    setIsTesting(true)
+    setTestBanner(null)
+    try {
+      const payload: { erpBaseUrl?: string; apiKey?: string; enabled?: boolean } = {
+        enabled,
+      }
+      if (erpBaseUrl.trim()) payload.erpBaseUrl = erpBaseUrl.trim()
+      if (apiKey.trim()) payload.apiKey = apiKey.trim()
+
+      const res = await api.integrations.testErp(payload)
+      const data = (res as any)?.data || res
+      setApiKey('')
+      const summary = `Connected to ${data?.schoolName || 'School ERP'} (Tenant: ${data?.tenantId || 'Verified'}, Open Classes: ${data?.openClassesCount ?? 0})`
+      setTestBanner({ type: 'success', text: summary })
+      notify('ERP live connection verified!')
+      await loadIntegrations()
+    } catch (err: any) {
+      const msg = err?.message || 'ERP connection test failed'
+      setTestBanner({ type: 'error', text: msg })
+      notify(msg)
+      await loadIntegrations()
+    } finally {
+      setIsTesting(false)
+    }
+  }
+
+  const handleSync = async (type: 'SCHOOL_ERP' | 'ADMISSION_GATEWAY') => {
+    setIsSyncing(true)
     try {
       await api.integrations.sync(type)
-      notify(`${type} synchronization completed and logged to database`)
-    } catch (err) {
-      console.error('Sync failed:', err)
-      notify(`${type} sync failed`)
+      notify(`${type} synchronization completed`)
+      await loadIntegrations()
+    } catch (err: any) {
+      notify(err?.message || `${type} sync failed`)
+    } finally {
+      setIsSyncing(false)
     }
+  }
+
+  const creds = erpRecord?.credentials
+  const isErpLive = Boolean(creds?.enabled && creds?.hasApiKey && creds?.erpBaseUrl)
+  const activeSchoolId = api.getActiveSchoolId()
+  const webhookUrl = `${API_BASE_URL}/public/webhooks/erp/${activeSchoolId || 'SCHOOL_ID'}`
+
+  const handleCopyWebhookUrl = () => {
+    navigator.clipboard.writeText(webhookUrl)
+    setCopiedWebhook(true)
+    notify('ERP Webhook URL copied to clipboard')
+    setTimeout(() => setCopiedWebhook(false), 2000)
   }
 
   return (
     <div className="integration-grid">
       <IntegrationCard
         icon="layers"
-        title="School ERP"
-        label="Connected"
-        description="Sync approved school, academic, and teacher information."
+        title="School ERP Website Integration"
+        label={isErpLive ? 'Connected' : 'Not Configured'}
+        description="Connect your external School ERP for live admissions, open classes, status tracking, and alumni verification."
         items={[
-          'School information sync',
-          'Academic information sync',
-          'Approved teacher profiles',
+          creds?.erpSchoolName
+            ? `Linked ERP School: ${creds.erpSchoolName}`
+            : 'Dynamic open classes dropdown',
+          creds?.openClassesCount !== undefined
+            ? `${creds.openClassesCount} open admission class(es) detected`
+            : 'Real-time application submission & tracking',
+          creds?.tenantId
+            ? `Alumni verification ready (Tenant linked)`
+            : 'Encrypted server-side x-website-key proxy',
         ]}
-        footer="Last synchronized: Live connected"
-        action="Sync now"
-        onAction={() => handleSync('ERP')}
+        footer={
+          erpRecord?.lastSyncAt
+            ? `Last verified: ${new Date(erpRecord.lastSyncAt).toLocaleString()}`
+            : 'Configure your ERP API URL and key below'
+        }
+        action={isSyncing ? 'Syncing...' : 'Sync ERP now'}
+        onAction={() => handleSync('SCHOOL_ERP')}
+        disabled={isSyncing}
       />
+
       <IntegrationCard
         icon="plug"
         title="Admission API Gateway"
-        label="Healthy"
-        description="Securely send applicants to your existing admission system."
+        label={gatewayRecord?.status || 'Healthy'}
+        description="Routes public admission forms & applicant tracking to your ERP (or local registry when ERP is disabled)."
         items={[
-          'Gateway connection active',
-          'Application URL configured',
-          'API health checks passing',
+          isErpLive
+            ? 'Mode: Live ERP Proxy + Local Mirror'
+            : 'Mode: Standalone Local Registry',
+          'Server-side secret protection (no key in browser)',
+          'Automatic 400 / 401 / 403 / 429 error handling',
         ]}
-        footer="Gateway active on port 4000"
-        action="Test connection"
-        onAction={() => handleSync('ADMISSION')}
+        footer={
+          gatewayRecord?.lastSyncAt
+            ? `Last checked: ${new Date(gatewayRecord.lastSyncAt).toLocaleString()}`
+            : 'Gateway ready'
+        }
+        action={isSyncing ? 'Checking...' : 'Test gateway'}
+        onAction={() => handleSync('ADMISSION_GATEWAY')}
+        disabled={isSyncing}
       />
-      <div className="card sync-history">
+
+      {/* ERP Configuration Panel */}
+      <div className="card sync-history" style={{ gridColumn: '1 / -1' }}>
+        <div className="card-title">
+          <div>
+            <h3>Connect School ERP (x-website-key)</h3>
+            <p>
+              Paste your ERP API Base URL and the <code>sk_web_...</code> key generated from{' '}
+              <strong>ERP → System → Website Integration</strong>. Keys are stored encrypted on the server.
+            </p>
+          </div>
+          {creds?.apiKeyHint && (
+            <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">
+              Saved Key: {creds.apiKeyHint}
+            </span>
+          )}
+        </div>
+
+        <form onSubmit={handleSaveErpConfig} className="space-y-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                ERP API Base URL *
+              </label>
+              <input
+                type="url"
+                required
+                placeholder="https://erp.myschool.edu.bd/api/v1"
+                value={erpBaseUrl}
+                onChange={(e) => setErpBaseUrl(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                Website API Key (x-website-key) {creds?.hasApiKey ? '(leave blank to keep existing)' : '*'}
+              </label>
+              <input
+                type="password"
+                placeholder={creds?.hasApiKey ? creds.apiKeyHint || 'sk_web_••••••••' : 'sk_web_xxxxxxxx...'}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-slate-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                ERP Status Webhook URL (paste into ERP Website Integration)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={webhookUrl}
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-50 text-xs font-mono text-slate-700"
+                />
+                <Button type="button" onClick={handleCopyWebhookUrl}>
+                  {copiedWebhook ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                Webhook HMAC Secret {creds?.hasWebhookSecret ? `(${creds.webhookSecretHint || 'saved'})` : '(Optional)'}
+              </label>
+              <input
+                type="password"
+                placeholder={
+                  creds?.hasWebhookSecret
+                    ? 'Leave blank to keep existing secret'
+                    : 'Paste ERP webhook signing secret (X-ERP-Signature)'
+                }
+                value={webhookSecret}
+                onChange={(e) => setWebhookSecret(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-slate-900"
+              />
+            </div>
+          </div>
+
+          <label className="inline-flex items-center gap-2.5 text-sm text-slate-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(e) => setEnabled(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            <span>Enable Live ERP Admission Sync & Alumni Verification for this school</span>
+          </label>
+
+          {testBanner && (
+            <div
+              className={`p-3.5 rounded-lg text-sm border ${
+                testBanner.type === 'success'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-rose-50 border-rose-200 text-rose-800'
+              }`}
+            >
+              {testBanner.text}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Button type="submit" disabled={isSaving || isTesting}>
+              {isSaving ? 'Saving...' : 'Save ERP Settings'}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleTestErpConnection}
+              disabled={isTesting || isSaving}
+            >
+              {isTesting ? 'Testing Connection...' : 'Test Live Connection'}
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      {/* Sync History */}
+      <div className="card sync-history" style={{ gridColumn: '1 / -1' }}>
         <div className="card-title">
           <div>
             <h3>Synchronization history</h3>
@@ -149,25 +426,30 @@ export function Integrations() {
           <button
             type="button"
             className="text-button"
-            onClick={() => {
+            onClick={async () => {
+              await loadIntegrations()
               notify('Sync history refreshed from database')
             }}
           >
             Refresh history
           </button>
         </div>
-        {history.map((x, i) => (
-          <div className="sync-item" key={x[0] + i}>
-            <span className={i === 2 ? 'rev' : 'ok'}>
-              <Icon name={i === 2 ? 'clock' : 'check'} size={14} />
-            </span>
-            <div>
-              <strong>{x[0]}</strong>
-              <small>{x[1]}</small>
+        {history.length === 0 ? (
+          <p className="text-sm text-slate-500 py-4">No synchronization events logged yet.</p>
+        ) : (
+          history.map((x, i) => (
+            <div className="sync-item" key={x[0] + i}>
+              <span className={x[3] === 'ERROR' ? 'rev' : 'ok'}>
+                <Icon name={x[3] === 'ERROR' ? 'close' : 'check'} size={14} />
+              </span>
+              <div>
+                <strong>{x[0]}</strong>
+                <small>{x[1]}</small>
+              </div>
+              <span>{x[2]}</span>
             </div>
-            <span>{x[2]}</span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )

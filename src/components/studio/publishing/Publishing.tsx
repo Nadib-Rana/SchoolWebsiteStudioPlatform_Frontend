@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import type { CreateBackupParams, StagedChange, VersionRecord } from './publishing.types'
 import { PublishReleaseCard } from './PublishReleaseCard'
 import { PublishVersionModal } from './PublishVersionModal'
@@ -12,7 +13,7 @@ import { CreateBackupModal } from './CreateBackupModal'
 import { RestoreConfirmModal } from './RestoreConfirmModal'
 
 export function Publishing() {
-  const { notify, setView } = useStudio()
+  const { notify, setView, currentSchool } = useStudio()
   const [loading, setLoading] = useState(true)
   const [publishing, setPublishing] = useState(false)
   const [toggling, setToggling] = useState(false)
@@ -62,6 +63,7 @@ export function Publishing() {
         versionTag: nextTag,
         summary: `Production release ${nextTag} with latest studio customizations and profile updates`,
       })
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       notify(`Version ${nextTag} published successfully!`)
       await loadStatus()
     } catch (err: unknown) {
@@ -86,6 +88,7 @@ export function Publishing() {
   const handleConfirmRestore = async (versionId: string, reason?: string) => {
     try {
       await api.publishing.restoreVersion(versionId, { reason })
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       notify('Website revision successfully restored!')
       await loadStatus()
     } catch (err: unknown) {
@@ -118,6 +121,7 @@ export function Publishing() {
     setToggling(true)
     try {
       await api.publishing.toggleStatus(nextState)
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       setIsPublished(nextState)
       notify(nextState ? 'Website is now live to the public!' : 'Website unpublished.')
       await loadStatus()

@@ -69,6 +69,38 @@ export function createSiteConfigEndpoints(session: ApiSession) {
         const id = schoolId || session.getActiveSchoolId()
         return session.request<any[]>(`/schools/${id}/integrations`)
       },
+      configure: async (
+        data: {
+          type: string
+          name?: string
+          status?: string
+          credentials?: Record<string, any>
+        },
+        schoolId?: string,
+      ) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/integrations`, {
+          method: 'PATCH',
+          body: JSON.stringify(data),
+        })
+      },
+      testErp: async (
+        data?: { erpBaseUrl?: string; apiKey?: string; enabled?: boolean },
+        schoolId?: string,
+      ) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<{
+          connected: boolean
+          tenantId: string
+          schoolName: string
+          subdomain?: string
+          openClassesCount?: number
+          integration?: any
+        }>(`/schools/${id}/integrations/erp/test`, {
+          method: 'POST',
+          body: JSON.stringify(data || {}),
+        })
+      },
       sync: async (type: string, schoolId?: string) => {
         const id = schoolId || session.getActiveSchoolId()
         return session.request<any>(`/schools/${id}/integrations/${type}/sync`, {

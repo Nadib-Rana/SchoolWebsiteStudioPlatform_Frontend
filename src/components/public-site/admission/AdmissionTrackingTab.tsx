@@ -35,7 +35,7 @@ export function AdmissionTrackingTab({
             Lookup Your Admission Progress
           </h3>
           <p className="text-slate-600 text-sm mt-1">
-            Enter your reference code (e.g. ADM-2026-1024) to check your review status in real time.
+            Enter your reference code (e.g. ADM-2026-0001) and registered phone number to check live review status.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export function AdmissionTrackingTab({
             <input
               type="text"
               required
-              placeholder="e.g. ADM-2026-8491"
+              placeholder="e.g. ADM-2026-0001"
               value={trackAppNumber}
               onChange={(e) => setTrackAppNumber(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm font-mono uppercase"
@@ -56,12 +56,12 @@ export function AdmissionTrackingTab({
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-              Guardian Phone Number *
+              Applicant or Guardian Phone / Email *
             </label>
             <input
-              type="tel"
+              type="text"
               required
-              placeholder="e.g. +1 (555) 345-6789"
+              placeholder="e.g. 01711000000"
               value={trackPhone}
               onChange={(e) => setTrackPhone(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
@@ -123,13 +123,27 @@ export function AdmissionTrackingTab({
                 <span className="font-semibold text-slate-900">{trackResult.studentName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Grade Level:</span>
+                <span className="text-slate-500">Class / Grade:</span>
                 <span className="font-semibold text-slate-900">{trackResult.applyingForGrade}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Institution:</span>
                 <span className="font-semibold text-slate-900">{trackResult.schoolName}</span>
               </div>
+              {trackResult.interviewDate && (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Interview Schedule:</span>
+                  <span className="font-semibold text-indigo-700">
+                    {new Date(trackResult.interviewDate).toLocaleString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-slate-500">Submitted On:</span>
                 <span className="text-slate-700">

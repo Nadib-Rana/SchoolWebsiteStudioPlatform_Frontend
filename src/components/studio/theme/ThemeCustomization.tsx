@@ -3,13 +3,14 @@
 import { Button } from '@/components/common/Button'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import { useEffect, useState } from 'react'
 import { ThemeControlsSidebar } from './ThemeControlsSidebar'
 import { ThemePreviewBrowser } from './ThemePreviewBrowser'
 import { saveCustomThemeLocally } from './theme-sync-helper'
 
 export function ThemeCustomization() {
-  const { notify } = useStudio()
+  const { notify, currentSchool } = useStudio()
   const [style, setStyle] = useState('Rounded')
   const [header, setHeader] = useState('Centered')
   const [previewDevice, setPreviewDevice] = useState<'monitor' | 'tablet' | 'mobile'>('monitor')
@@ -40,6 +41,12 @@ export function ThemeCustomization() {
                 : cfg.buttonRadius.includes('none')
                 ? 'Square'
                 : 'Rounded'
+            )
+          }
+          if (cfg.headerLayout) {
+            const normalized = String(cfg.headerLayout).trim().toLowerCase()
+            setHeader(
+              normalized.charAt(0).toUpperCase() + normalized.slice(1)
             )
           }
         }
@@ -106,6 +113,7 @@ export function ThemeCustomization() {
         headerLayout: header.toLowerCase(),
       })
       await api.theme.publish()
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       notify('Theme successfully published to live website!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to publish theme.'

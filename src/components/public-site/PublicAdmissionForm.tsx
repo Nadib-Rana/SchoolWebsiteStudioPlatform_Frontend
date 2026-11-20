@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Icon } from '@/components/common/Icon'
 import { api } from '@/lib/api-client'
 import {
   type TabMode,
   type Step,
   type AdmissionFormData,
+  type ErpClassOption,
   type SubmissionResult,
   type TrackResult,
 } from './admission/admission-form.types'
@@ -17,6 +18,22 @@ import { AdmissionStepReview } from './admission/AdmissionStepReview'
 import { AdmissionSuccessScreen } from './admission/AdmissionSuccessScreen'
 import { AdmissionTrackingTab } from './admission/AdmissionTrackingTab'
 import { AdmissionStepperHeader } from './admission/AdmissionStepperHeader'
+
+const FALLBACK_CLASSES: ErpClassOption[] = [
+  { id: 'Kindergarten', name: 'Kindergarten' },
+  { id: 'Grade 1', name: 'Grade 1' },
+  { id: 'Grade 2', name: 'Grade 2' },
+  { id: 'Grade 3', name: 'Grade 3' },
+  { id: 'Grade 4', name: 'Grade 4' },
+  { id: 'Grade 5', name: 'Grade 5' },
+  { id: 'Grade 6', name: 'Grade 6' },
+  { id: 'Grade 7', name: 'Grade 7' },
+  { id: 'Grade 8', name: 'Grade 8' },
+  { id: 'Grade 9', name: 'Grade 9' },
+  { id: 'Grade 10', name: 'Grade 10' },
+  { id: 'Grade 11', name: 'Grade 11' },
+  { id: 'Grade 12', name: 'Grade 12' },
+]
 
 interface PublicAdmissionFormProps {
   schoolSlug: string
@@ -31,10 +48,29 @@ export function PublicAdmissionForm({
 }: PublicAdmissionFormProps) {
   const [activeTab, setActiveTab] = useState<TabMode>('apply')
   const [step, setStep] = useState<Step>(1)
+  const [classes, setClasses] = useState<ErpClassOption[]>(FALLBACK_CLASSES)
+  const [isLoadingClasses, setIsLoadingClasses] = useState(true)
+  const [isErpConnected, setIsErpConnected] = useState(false)
+
   const [formData, setFormData] = useState<AdmissionFormData>({
-    studentName: '', dateOfBirth: '', gender: 'Male', applyingForGrade: 'Grade 1',
-    previousSchool: '', guardianName: '', guardianRelationship: 'Father',
-    guardianPhone: '', guardianEmail: '', address: '', declaration: false,
+    firstName: '',
+    lastName: '',
+    studentName: '',
+    dateOfBirth: '',
+    gender: 'MALE',
+    phone: '',
+    email: '',
+    bloodGroup: '',
+    applyingForGrade: 'Grade 1',
+    appliedClassId: 'Grade 1',
+    previousSchool: '',
+    guardianName: '',
+    guardianRelationship: 'Father',
+    guardianPhone: '',
+    guardianEmail: '',
+    address: '',
+    documentsUrl: '',
+    declaration: false,
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -48,7 +84,38 @@ export function PublicAdmissionForm({
   const [trackError, setTrackError] = useState<string | null>(null)
   const [trackResult, setTrackResult] = useState<TrackResult | null>(null)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    let active = true
+    const loadClasses = async () => {
+      setIsLoadingClasses(true)
+      try {
+        const res = await api.admissions.getClasses(schoolSlug)
+        const payload = res?.data
+        if (active && payload && Array.isArray(payload.classes) && payload.classes.length > 0) {
+          setClasses(payload.classes)
+          setIsErpConnected(Boolean(payload.erpConnected))
+          const first = payload.classes[0]
+          setFormData((prev) => ({
+            ...prev,
+            appliedClassId: first.id,
+            applyingForGrade: first.name,
+          }))
+        }
+      } catch {
+        // Fallback grades already populated
+      } finally {
+        if (active) setIsLoadingClasses(false)
+      }
+    }
+    loadClasses()
+    return () => {
+      active = false
+    }
+  }, [schoolSlug])
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }))
@@ -57,17 +124,37 @@ export function PublicAdmissionForm({
     }
   }
 
+  const handleClassSelect = (classId: string) => {
+    const selected = classes.find((c) => c.id === classId)
+    setFormData((prev) => ({
+      ...prev,
+      appliedClassId: classId,
+      applyingForGrade: selected ? selected.name : classId,
+    }))
+  }
+
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault()
     setApplyError(null)
     if (step === 1) {
-      if (!formData.studentName.trim() || !formData.dateOfBirth || !formData.applyingForGrade) {
+      if (
+        !formData.firstName.trim() ||
+        !formData.lastName.trim() ||
+        !formData.dateOfBirth ||
+        !formData.phone.trim() ||
+        !formData.applyingForGrade
+      ) {
         setApplyError('Please fill in all required student details before proceeding.')
         return
       }
       setStep(2)
     } else if (step === 2) {
-      if (!formData.guardianName.trim() || !formData.guardianPhone.trim() || !formData.guardianEmail.trim() || !formData.address.trim()) {
+      if (
+        !formData.guardianName.trim() ||
+        !formData.guardianPhone.trim() ||
+        !formData.guardianEmail.trim() ||
+        !formData.address.trim()
+      ) {
         setApplyError('Please fill in all required guardian contact details before proceeding.')
         return
       }
@@ -84,18 +171,26 @@ export function PublicAdmissionForm({
     setIsSubmitting(true)
     setApplyError(null)
     try {
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim()
       const res = await api.admissions.apply({
         schoolSlug,
-        studentName: formData.studentName,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        studentName: fullName,
         dateOfBirth: formData.dateOfBirth,
         gender: formData.gender,
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || undefined,
+        bloodGroup: formData.bloodGroup || undefined,
         applyingForGrade: formData.applyingForGrade,
-        previousSchool: formData.previousSchool || undefined,
-        guardianName: formData.guardianName,
+        appliedClassId: formData.appliedClassId || undefined,
+        previousSchool: formData.previousSchool.trim() || undefined,
+        guardianName: formData.guardianName.trim(),
         guardianRelationship: formData.guardianRelationship,
-        guardianPhone: formData.guardianPhone,
-        guardianEmail: formData.guardianEmail,
-        address: formData.address,
+        guardianPhone: formData.guardianPhone.trim(),
+        guardianEmail: formData.guardianEmail.trim() || undefined,
+        address: formData.address.trim(),
+        documentsUrl: formData.documentsUrl.trim() || undefined,
       })
       if (res.data) setSubmissionResult(res.data)
     } catch (err: unknown) {
@@ -114,13 +209,21 @@ export function PublicAdmissionForm({
 
   const handleTrackSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!trackAppNumber.trim()) return setTrackError('Please provide your admission application reference number.')
-    if (!trackPhone.trim()) return setTrackError('Please provide guardian contact phone number for verification.')
+    if (!trackAppNumber.trim()) {
+      return setTrackError('Please provide your admission application reference number.')
+    }
+    if (!trackPhone.trim()) {
+      return setTrackError('Please provide your registered phone number or email for verification.')
+    }
     setIsTracking(true)
     setTrackError(null)
     setTrackResult(null)
     try {
-      const res = await api.admissions.track(trackAppNumber.trim(), trackPhone.trim())
+      const res = await api.admissions.track(
+        trackAppNumber.trim(),
+        trackPhone.trim(),
+        schoolSlug,
+      )
       if (res.data) setTrackResult(res.data)
     } catch (err: unknown) {
       setTrackError(err instanceof Error ? err.message : 'Application record not found.')
@@ -137,7 +240,9 @@ export function PublicAdmissionForm({
         <div className="p-8 sm:p-10">
           {!allowAdmissions ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-2xl font-bold">!</div>
+              <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-2xl font-bold">
+                !
+              </div>
               <h3 className="text-xl font-bold text-slate-900">Admissions Currently Closed</h3>
               <p className="text-slate-600 max-w-md mx-auto mt-2 text-sm leading-relaxed">
                 Public online admissions for {schoolName} are currently closed. Please contact the administrative office.
@@ -149,7 +254,11 @@ export function PublicAdmissionForm({
               submissionResult={submissionResult}
               copied={copied}
               onCopy={handleCopyApplicationNumber}
-              onTrack={(num) => { setTrackAppNumber(num); setActiveTab('track') }}
+              onTrack={(num) => {
+                setTrackAppNumber(num)
+                setTrackPhone(formData.phone || formData.guardianPhone)
+                setActiveTab('track')
+              }}
             />
           ) : (
             <div>
@@ -160,9 +269,34 @@ export function PublicAdmissionForm({
                   <span>{applyError}</span>
                 </div>
               )}
-              {step === 1 && <AdmissionStepStudent formData={formData} handleInputChange={handleInputChange} onNext={handleNextStep} />}
-              {step === 2 && <AdmissionStepGuardian formData={formData} handleInputChange={handleInputChange} onNext={handleNextStep} onBack={() => setStep(1)} />}
-              {step === 3 && <AdmissionStepReview formData={formData} handleInputChange={handleInputChange} onBack={() => setStep(2)} onSubmit={handleFinalSubmit} isSubmitting={isSubmitting} />}
+              {step === 1 && (
+                <AdmissionStepStudent
+                  formData={formData}
+                  classes={classes}
+                  isLoadingClasses={isLoadingClasses}
+                  isErpConnected={isErpConnected}
+                  handleInputChange={handleInputChange}
+                  onClassSelect={handleClassSelect}
+                  onNext={handleNextStep}
+                />
+              )}
+              {step === 2 && (
+                <AdmissionStepGuardian
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  onNext={handleNextStep}
+                  onBack={() => setStep(1)}
+                />
+              )}
+              {step === 3 && (
+                <AdmissionStepReview
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  onBack={() => setStep(2)}
+                  onSubmit={handleFinalSubmit}
+                  isSubmitting={isSubmitting}
+                />
+              )}
             </div>
           )}
         </div>

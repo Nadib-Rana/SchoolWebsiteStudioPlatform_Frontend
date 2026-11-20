@@ -79,7 +79,7 @@ export default async function SchoolPublicLayout({
   const accentColor = siteData.theme?.secondaryColor || themeCfg.secondaryColor || '#e3ad3f'
   const fontHeading = siteData.theme?.fontHeading || themeCfg.fontHeading || "'DM Serif Display', serif"
   const fontBody = siteData.theme?.fontBody || 'Inter'
-  const headerBg = themeCfg.headerBg || primaryColor
+  const headerBg = siteData.theme?.primaryColor || themeCfg.headerBg || primaryColor
 
   const schemaOrg = {
     '@context': 'https://schema.org',

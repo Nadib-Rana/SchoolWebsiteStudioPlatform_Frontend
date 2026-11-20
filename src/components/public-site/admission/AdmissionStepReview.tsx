@@ -20,6 +20,8 @@ export function AdmissionStepReview({
   onSubmit,
   isSubmitting,
 }: AdmissionStepReviewProps) {
+  const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.studentName
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 divide-y divide-slate-200/80 text-sm">
@@ -29,10 +31,10 @@ export function AdmissionStepReview({
           </h4>
           <div className="grid grid-cols-2 gap-2 text-slate-600">
             <div>
-              <span className="font-semibold text-slate-800">Name:</span> {formData.studentName}
+              <span className="font-semibold text-slate-800">Name:</span> {fullName}
             </div>
             <div>
-              <span className="font-semibold text-slate-800">Grade:</span> {formData.applyingForGrade}
+              <span className="font-semibold text-slate-800">Class / Grade:</span> {formData.applyingForGrade}
             </div>
             <div>
               <span className="font-semibold text-slate-800">Date of Birth:</span> {formData.dateOfBirth}
@@ -40,6 +42,19 @@ export function AdmissionStepReview({
             <div>
               <span className="font-semibold text-slate-800">Gender:</span> {formData.gender}
             </div>
+            <div>
+              <span className="font-semibold text-slate-800">Phone:</span> {formData.phone}
+            </div>
+            {formData.bloodGroup && (
+              <div>
+                <span className="font-semibold text-slate-800">Blood Group:</span> {formData.bloodGroup}
+              </div>
+            )}
+            {formData.email && (
+              <div className="col-span-2">
+                <span className="font-semibold text-slate-800">Email:</span> {formData.email}
+              </div>
+            )}
             {formData.previousSchool && (
               <div className="col-span-2">
                 <span className="font-semibold text-slate-800">Previous School:</span> {formData.previousSchool}

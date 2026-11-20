@@ -1,34 +1,57 @@
 'use client'
 
 import { Icon } from '@/components/common/Icon'
-import type { AdmissionFormData } from './admission-form.types'
+import type { AdmissionFormData, ErpClassOption } from './admission-form.types'
 
 interface AdmissionStepStudentProps {
   formData: AdmissionFormData
+  classes: ErpClassOption[]
+  isLoadingClasses: boolean
+  isErpConnected: boolean
   handleInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void
+  onClassSelect: (classId: string) => void
   onNext: (e: React.FormEvent) => void
 }
 
 export function AdmissionStepStudent({
   formData,
+  classes,
+  isLoadingClasses,
+  isErpConnected,
   handleInputChange,
+  onClassSelect,
   onNext,
 }: AdmissionStepStudentProps) {
   return (
     <form onSubmit={onNext} className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="sm:col-span-2">
+        <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Student Full Name *
+            First Name *
           </label>
           <input
             type="text"
-            name="studentName"
+            name="firstName"
             required
-            placeholder="e.g. Liam Vance"
-            value={formData.studentName}
+            placeholder="e.g. Arafat"
+            value={formData.firstName}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            Last Name *
+          </label>
+          <input
+            type="text"
+            name="lastName"
+            required
+            placeholder="e.g. Rahman"
+            value={formData.lastName}
             onChange={handleInputChange}
             className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
           />
@@ -58,40 +81,94 @@ export function AdmissionStepStudent({
             onChange={handleInputChange}
             className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm bg-white"
           >
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Non-binary">Non-binary</option>
-            <option value="Prefer not to say">Prefer not to say</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
           </select>
         </div>
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Applying For Grade / Year *
+            Applicant Phone Number *
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            required
+            placeholder="e.g. 01711000000"
+            value={formData.phone}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            Applicant Email (Optional)
+          </label>
+          <input
+            type="email"
+            name="email"
+            placeholder="e.g. student@example.com"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            Applying For Class / Grade *{' '}
+            {isErpConnected && (
+              <span className="ml-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                Live ERP
+              </span>
+            )}
           </label>
           <select
-            name="applyingForGrade"
-            value={formData.applyingForGrade}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm bg-white"
+            name="appliedClassId"
+            required
+            disabled={isLoadingClasses}
+            value={formData.appliedClassId || formData.applyingForGrade}
+            onChange={(e) => onClassSelect(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm bg-white disabled:opacity-60"
           >
-            <option value="Kindergarten">Kindergarten</option>
-            <option value="Grade 1">Grade 1</option>
-            <option value="Grade 2">Grade 2</option>
-            <option value="Grade 3">Grade 3</option>
-            <option value="Grade 4">Grade 4</option>
-            <option value="Grade 5">Grade 5</option>
-            <option value="Grade 6">Grade 6</option>
-            <option value="Grade 7">Grade 7</option>
-            <option value="Grade 8">Grade 8</option>
-            <option value="Grade 9">Grade 9</option>
-            <option value="Grade 10">Grade 10</option>
-            <option value="Grade 11">Grade 11</option>
-            <option value="Grade 12">Grade 12</option>
+            {isLoadingClasses ? (
+              <option value="">Loading available classes...</option>
+            ) : (
+              classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name}
+                  {cls.section ? ` (${cls.section})` : ''}
+                </option>
+              ))
+            )}
           </select>
         </div>
 
         <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+            Blood Group (Optional)
+          </label>
+          <select
+            name="bloodGroup"
+            value={formData.bloodGroup}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm bg-white"
+          >
+            <option value="">Select Blood Group</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+
+        <div className="sm:col-span-2">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
             Previous School Attended (Optional)
           </label>

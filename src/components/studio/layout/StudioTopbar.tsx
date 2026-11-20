@@ -6,6 +6,7 @@ import { NotificationsPopover } from '@/components/studio/layout/NotificationsPo
 import { ProfilePopover } from '@/components/studio/layout/ProfilePopover'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import { useState } from 'react'
 
 export function StudioTopbar() {
@@ -68,6 +69,7 @@ export function StudioTopbar() {
         schoolId,
       )
 
+      await revalidatePublicSite(schoolSlug)
       await refreshSchools(schoolId)
       notify(`🚀 Version ${nextTag} of ${schoolName} is now live!`)
     } catch (err: any) {

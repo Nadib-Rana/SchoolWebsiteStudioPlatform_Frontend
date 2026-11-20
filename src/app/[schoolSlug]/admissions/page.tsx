@@ -107,6 +107,14 @@ export default async function AdmissionsPage({ params }: PageProps) {
         <Link href={`/${schoolSlug}/contact`} className="hero-secondary mt-4">
           Book a Campus Tour <Icon name="arrow" size={15} />
         </Link>
+        <div className="mt-4">
+          <Link
+            href={`/${schoolSlug}/alumni-verify`}
+            className="text-sm font-medium text-slate-600 hover:text-slate-900 underline"
+          >
+            Looking to verify an Alumni record? Visit the Alumni Verification Portal
+          </Link>
+        </div>
       </section>
     </main>
   )
