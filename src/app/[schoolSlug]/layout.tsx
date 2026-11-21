@@ -133,7 +133,7 @@ export default async function SchoolPublicLayout({
         <div
           style={{
             background: announcementBg,
-            color: '#f8fafc',
+            color: dbSections.sectionStyles?.['Announcement bar']?.textColor || '#f8fafc',
             padding: '10px 20px',
             fontSize: '13px',
             display: 'flex',

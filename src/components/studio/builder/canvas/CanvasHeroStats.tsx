@@ -101,6 +101,7 @@ export function CanvasHeroStats({
         className={`mini-hero ${selected === 'Hero section' ? 'selected' : ''} ${heroStyle?.customClass || ''}`}
         style={{
           backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${activeSlideUrl})`,
+          color: heroStyle?.textColor || undefined,
           transition: 'background-image 0.5s ease-in-out',
           textAlign: (heroStyle?.align as any) || 'left',
           paddingTop: heroPad,
@@ -222,6 +223,7 @@ export function CanvasHeroStats({
           cursor: 'pointer',
           position: 'relative',
           background: statsStyle?.bg || activeCfg?.primaryColor || '#163d72',
+          color: statsStyle?.textColor || undefined,
           textAlign: (statsStyle?.align as any) || 'center',
           paddingTop: statsPad,
           paddingBottom: statsPad,

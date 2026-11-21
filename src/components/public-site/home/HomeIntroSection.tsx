@@ -5,7 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import { campusImage } from '@/config/templates'
 
 interface HomeIntroSectionProps {
-  sectionStyle?: { bg?: string; padding?: string }
+  sectionStyle?: { bg?: string; padding?: string; textColor?: string }
   schoolName: string
   establishedYear: number | string
   introKicker: string
@@ -51,6 +51,7 @@ export function HomeIntroSection({
       className="public-intro"
       style={{
         background: sectionStyle?.bg || undefined,
+        color: sectionStyle?.textColor || undefined,
         paddingTop: pad,
         paddingBottom: pad,
       }}
@@ -64,9 +65,9 @@ export function HomeIntroSection({
       </div>
       <div>
         <span className="section-kicker">{introKicker}</span>
-        <h2 style={{ whiteSpace: 'pre-line' }}>{introTitle}</h2>
-        <p>{introDesc}</p>
-        <blockquote>{resolvedQuote}</blockquote>
+        <h2 style={{ whiteSpace: 'pre-line', color: sectionStyle?.textColor || undefined }}>{introTitle}</h2>
+        <p style={{ color: sectionStyle?.textColor || undefined }}>{introDesc}</p>
+        <blockquote style={{ color: sectionStyle?.textColor || undefined }}>{resolvedQuote}</blockquote>
         {schoolSlug ? (
           <Link href={`/${schoolSlug}/about`} className="read-link">
             Discover our story <Icon name="arrow" size={15} />

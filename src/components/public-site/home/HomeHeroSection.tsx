@@ -9,7 +9,7 @@ interface HomeHeroSectionProps {
   currentHeroImage: string
   heroImages?: string[]
   sliderIntervalSec?: number
-  sectionStyle?: { align?: string; padding?: string }
+  sectionStyle?: { align?: string; padding?: string; textColor?: string }
   motto: string
   heroHeading: string
   heroDesc: string
@@ -133,10 +133,10 @@ export function HomeHeroSection({
       />
 
       {/* Foreground Content */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={{ position: 'relative', zIndex: 2, color: sectionStyle?.textColor || undefined }}>
         <span className="public-eyebrow">{motto}</span>
-        <h1 style={{ whiteSpace: 'pre-line' }}>{heroHeading}</h1>
-        <p>{heroDesc}</p>
+        <h1 style={{ whiteSpace: 'pre-line', color: sectionStyle?.textColor || undefined }}>{heroHeading}</h1>
+        <p style={{ color: sectionStyle?.textColor || undefined }}>{heroDesc}</p>
         <div>
           {schoolSlug ? (
             <Link

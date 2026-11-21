@@ -2,6 +2,7 @@ import type { IconName } from '@/types/studio'
 
 export interface SectionStyle {
   bg: string
+  textColor?: string
   align: 'left' | 'center' | 'right'
   padding: 'compact' | 'normal' | 'spacious'
   border: boolean

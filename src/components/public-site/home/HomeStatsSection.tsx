@@ -6,7 +6,7 @@ interface StatItem {
 }
 
 interface HomeStatsSectionProps {
-  sectionStyle?: { bg?: string; padding?: string }
+  sectionStyle?: { bg?: string; padding?: string; textColor?: string }
   statsList: StatItem[]
 }
 
@@ -23,14 +23,15 @@ export function HomeStatsSection({ sectionStyle, statsList }: HomeStatsSectionPr
       className="public-stats"
       style={{
         background: sectionStyle?.bg || undefined,
+        color: sectionStyle?.textColor || undefined,
         paddingTop: pad,
         paddingBottom: pad,
       }}
     >
       {statsList.slice(0, 4).map((stat, idx) => (
         <div key={idx}>
-          <strong>{stat.value}</strong>
-          <span>{stat.label}</span>
+          <strong style={{ color: sectionStyle?.textColor || undefined }}>{stat.value}</strong>
+          <span style={{ color: sectionStyle?.textColor || undefined }}>{stat.label}</span>
         </div>
       ))}
     </section>

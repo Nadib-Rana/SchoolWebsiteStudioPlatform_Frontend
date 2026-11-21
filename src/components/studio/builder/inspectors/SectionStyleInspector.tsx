@@ -14,6 +14,14 @@ const COLOR_PRESETS = [
   { label: 'Slate', color: '#f1f5f9' }, { label: 'Navy', color: '#091a30' }, { label: 'Brand', color: '#163d72' },
 ]
 
+const TEXT_COLOR_PRESETS = [
+  { label: 'Auto', color: '' },
+  { label: 'Dark', color: '#0f172a' },
+  { label: 'Muted', color: '#334155' },
+  { label: 'White', color: '#ffffff' },
+  { label: 'Gold', color: '#facc15' },
+]
+
 const PADDING_PRESETS = [
   { id: 'compact' as const, label: 'Compact' },
   { id: 'normal' as const, label: 'Normal' },
@@ -53,6 +61,44 @@ export function SectionStyleInspector({ activeTab, activeStyle, updateActiveStyl
                 {c.label}
               </button>
             ))}
+          </div>
+
+          <label style={{ marginTop: '14px', display: 'block' }}>
+            Custom text color
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+              <input
+                type="color"
+                value={activeStyle.textColor && activeStyle.textColor.startsWith('#') ? activeStyle.textColor : '#0f172a'}
+                onChange={(e) => updateActiveStyle({ textColor: e.target.value })}
+                style={{ width: '38px', height: '38px', padding: 0, border: 'none', cursor: 'pointer', borderRadius: '6px' }}
+              />
+              <input
+                placeholder="Auto (theme default)"
+                value={activeStyle.textColor || ''}
+                onChange={(e) => updateActiveStyle({ textColor: e.target.value })}
+                style={{ flex: 1 }}
+              />
+            </div>
+          </label>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+            {TEXT_COLOR_PRESETS.map((c) => {
+              const isActive = (activeStyle.textColor || '') === c.color
+              return (
+                <button
+                  key={c.label}
+                  type="button"
+                  onClick={() => updateActiveStyle({ textColor: c.color })}
+                  style={{
+                    flex: 1, padding: '6px 2px', fontSize: '11px', borderRadius: '6px', cursor: 'pointer',
+                    border: isActive ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                    background: c.color || '#f8fafc',
+                    color: c.color === '#0f172a' || c.color === '#334155' ? '#fff' : '#0f172a',
+                  }}
+                >
+                  {c.label}
+                </button>
+              )
+            })}
           </div>
         </SettingGroup>
 

@@ -62,6 +62,7 @@ export function CanvasIntroPrincipal({
           cursor: 'pointer',
           position: 'relative',
           background: introStyle?.bg || '#ffffff',
+          color: introStyle?.textColor || undefined,
           textAlign: introStyle?.align || 'center',
           paddingTop: introPad,
           paddingBottom: introPad,
@@ -148,6 +149,7 @@ export function CanvasIntroPrincipal({
         style={{
           padding: principalPad,
           background: principalStyle?.bg || '#f8fafc',
+          color: principalStyle?.textColor || undefined,
           textAlign: principalStyle?.align || 'left',
           borderTop: '1px solid #e2e8f0',
           borderBottom: '1px solid #e2e8f0',

@@ -1,7 +1,7 @@
 'use client'
 
 interface HomePrincipalSectionProps {
-  sectionStyle?: { bg?: string; padding?: string }
+  sectionStyle?: { bg?: string; padding?: string; textColor?: string }
   principalQuote: string
   principalName: string
   principalTitle: string
@@ -27,24 +27,25 @@ export function HomePrincipalSection({
       className="principal-home"
       style={{
         background: sectionStyle?.bg || undefined,
+        color: sectionStyle?.textColor || undefined,
         paddingTop: pad,
         paddingBottom: pad,
       }}
     >
       <div>
         <span className="section-kicker">A MESSAGE FROM OUR PRINCIPAL</span>
-        <blockquote>{principalQuote}</blockquote>
+        <blockquote style={{ color: sectionStyle?.textColor || undefined }}>{principalQuote}</blockquote>
         <strong
           style={{
             display: 'block',
             fontSize: '18px',
-            color: '#0f172a',
+            color: sectionStyle?.textColor || '#0f172a',
             marginTop: '16px',
           }}
         >
           {principalName}
         </strong>
-        <span style={{ fontSize: '13px', color: '#64748b' }}>
+        <span style={{ fontSize: '13px', color: sectionStyle?.textColor || '#64748b' }}>
           {principalTitle}
         </span>
       </div>
