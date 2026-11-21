@@ -223,10 +223,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Customize content, background, and visibility', bn: 'টেক্সট, ছবি ও স্টাইল পরিবর্তন করুন' },
+        title: { en: 'Customize Hero Slider, Intro Photo & Styles', bn: 'হিরো স্লাইডার, ইন্ট্রো ছবি ও স্টাইল কাস্টমাইজ করুন' },
         detail: {
-          en: 'Update headings, button labels, hero banner images, or toggle section visibility. Use Undo/Redo anytime.',
-          bn: 'হেডিং, বাটন টেক্সট, হিরো ইমেজ পরিবর্তন করুন এবং প্রয়োজনে Undo/Redo ব্যবহার করুন।',
+          en: 'In Hero section, add 2–6 images to activate an automatic crossfade Hero Background Slider with custom speed (3s–12s). In School Introduction, upload your campus image and highlight quote.',
+          bn: 'Hero সেকশনে ২–৬টি ছবি যোগ করলে অটোমেটিক ক্রসফেড স্লাইডার (৩–১২ সেকেন্ড) চালু হবে। School Introduction সেকশনে ক্যাম্পাসের ছবি ও কোট আপলোড করা যাবে।',
         },
       },
       {
@@ -498,10 +498,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Copy URL to reuse anywhere', bn: 'URL কপি করে ব্যবহার করুন' },
+        title: { en: 'Copy URL or Delete unused files', bn: 'URL কপি করুন অথবা অপ্রয়োজনীয় ফাইল ডিলিট করুন' },
         detail: {
-          en: 'Copy any uploaded asset URL to reuse in Builder banners, Notices, or Teachers.',
-          bn: 'আপলোড করা ফাইলের URL কপি করে বিল্ডার, নোটিশ বা টিচার প্রোফাইলে ব্যবহার করুন।',
+          en: 'Copy any uploaded asset URL to reuse in Builder, Notices, or Teachers. Delete unused images anytime from the Media Library or directly inside the Media Picker modal (✕ button) to free storage.',
+          bn: 'আপলোড করা ফাইলের URL কপি করে বিল্ডার, নোটিশ বা টিচার প্রোফাইলে ব্যবহার করুন। স্টোরেজ খালি করতে Media Library বা Media Picker মডালের (✕) বাটন থেকে ছবি ডিলিট করতে পারবেন।',
         },
       },
     ],
