@@ -7,20 +7,24 @@ import type { MediaAssetItem } from './media-picker.types'
 interface MediaPickerLibraryTabProps {
   assets: MediaAssetItem[]
   loading: boolean
+  deletingId?: string | null
   searchQuery: string
   setSearchQuery: (q: string) => void
   selectedUrl: string
   setSelectedUrl: (url: string) => void
+  onDeleteAsset?: (asset: MediaAssetItem) => void
   onGoToUpload: () => void
 }
 
 export function MediaPickerLibraryTab({
   assets,
   loading,
+  deletingId,
   searchQuery,
   setSearchQuery,
   selectedUrl,
   setSelectedUrl,
+  onDeleteAsset,
   onGoToUpload,
 }: MediaPickerLibraryTabProps) {
   const filtered = assets.filter((a) =>
@@ -125,6 +129,37 @@ export function MediaPickerLibraryTab({
                     objectFit: 'cover',
                   }}
                 />
+                {onDeleteAsset && (
+                  <button
+                    type="button"
+                    disabled={Boolean(asset.id && deletingId === asset.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDeleteAsset(asset)
+                    }}
+                    title="Delete image from Media Library"
+                    aria-label={`Delete ${asset.name}`}
+                    style={{
+                      position: 'absolute',
+                      top: '6px',
+                      left: '6px',
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '50%',
+                      border: '1px solid rgba(255,255,255,0.6)',
+                      backgroundColor: 'rgba(185, 28, 28, 0.88)',
+                      color: '#fff',
+                      display: 'grid',
+                      placeItems: 'center',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      opacity: asset.id && deletingId === asset.id ? 0.5 : 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
                 {isSelected && (
                   <div
                     style={{

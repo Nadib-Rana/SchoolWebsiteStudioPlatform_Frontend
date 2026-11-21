@@ -87,7 +87,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
           onCloseAddModal={() => setNavAddModal(false)}
         />
       )}
-      {view === 'media' && <MediaLibrary />}
+      {view === 'media' && <MediaLibrary refreshKey={refreshKey} />}
       {view === 'seo' && <SEOManager />}
       {view === 'domains' && <DomainManager />}
       {view === 'integrations' && <Integrations />}

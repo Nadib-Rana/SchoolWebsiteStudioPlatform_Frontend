@@ -51,6 +51,14 @@ export async function loadHomepageSectionsFromBackend(
           if (c.buttonLabel && setters.setButtonLabel) setters.setButtonLabel(c.buttonLabel)
           if (c.buttonLink && setters.setButtonLink) setters.setButtonLink(c.buttonLink)
           if (c.heroBg && setters.setHeroBg) setters.setHeroBg(c.heroBg)
+          if (Array.isArray(c.heroImages) && c.heroImages.length > 0 && setters.setHeroImages) {
+            setters.setHeroImages(c.heroImages)
+          } else if (c.heroBg && setters.setHeroImages) {
+            setters.setHeroImages([c.heroBg])
+          }
+          if (typeof c.sliderIntervalSec === 'number' && setters.setSliderIntervalSec) {
+            setters.setSliderIntervalSec(c.sliderIntervalSec)
+          }
           if (c.overlayOpacity && setters.setOverlayOpacity) setters.setOverlayOpacity(c.overlayOpacity)
         } else if (sec.type === 'intro' || sec.type === 'programs') {
           if (c.kicker && setters.setIntroKicker) setters.setIntroKicker(c.kicker)

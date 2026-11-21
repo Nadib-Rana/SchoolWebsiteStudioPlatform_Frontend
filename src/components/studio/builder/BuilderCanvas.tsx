@@ -85,6 +85,8 @@ export function BuilderCanvas({
           device={device}
           overlayOpacity={state.overlayOpacity}
           heroBg={state.heroBg}
+          heroImages={state.heroImages}
+          sliderIntervalSec={state.sliderIntervalSec}
           eyebrow={state.eyebrow}
           heading={state.heading}
           description={state.description}

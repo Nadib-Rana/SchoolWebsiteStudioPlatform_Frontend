@@ -85,6 +85,14 @@ export function PublicHome({
     schoolData?.profile?.coverUrl ||
     activeCfg.heroImage ||
     heroImage
+  const heroImages: string[] =
+    (Array.isArray(draft?.heroImages) && draft.heroImages.length > 0
+      ? draft.heroImages
+      : Array.isArray(dbSections.heroImages) && dbSections.heroImages.length > 0
+      ? dbSections.heroImages
+      : [currentHeroImage])
+  const sliderIntervalSec =
+    draft?.sliderIntervalSec || dbSections.sliderIntervalSec || 5
   const heroBtnLink =
     draft?.buttonLink || dbSections.buttonLink || '/about'
   const heroOverlay =
@@ -176,6 +184,8 @@ export function PublicHome({
       <HomeHeroSection
         heroOverlay={heroOverlay}
         currentHeroImage={currentHeroImage}
+        heroImages={heroImages}
+        sliderIntervalSec={sliderIntervalSec}
         sectionStyle={sectionStyles['Hero section']}
         motto={motto}
         heroHeading={heroHeading}

@@ -33,7 +33,10 @@ export function buildSectionsPayload(
       content: {
         eyebrow: state.eyebrow, heading: state.heading, description: state.description,
         buttonLabel: state.buttonLabel, buttonLink: state.buttonLink,
-        overlayOpacity: state.overlayOpacity, heroBg: state.heroBg || undefined,
+        overlayOpacity: state.overlayOpacity,
+        heroBg: (Array.isArray(state.heroImages) && state.heroImages[0]) || state.heroBg || undefined,
+        heroImages: Array.isArray(state.heroImages) && state.heroImages.length > 0 ? state.heroImages : undefined,
+        sliderIntervalSec: state.sliderIntervalSec || 5,
       },
       settings: sectionStyles['Hero section'] || DEFAULT_STYLES['Hero section'],
       isVisible: true,

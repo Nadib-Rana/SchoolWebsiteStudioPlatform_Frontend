@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '@/components/common/Icon'
 import { heroImage } from '@/config/templates'
 import type { DeviceType } from '@/types/theme'
@@ -13,6 +14,8 @@ interface CanvasHeroStatsProps {
   device: DeviceType
   overlayOpacity: number
   heroBg: string | null
+  heroImages?: string[]
+  sliderIntervalSec?: number
   eyebrow: string
   heading: string
   description: string
@@ -37,6 +40,8 @@ export function CanvasHeroStats({
   device,
   overlayOpacity,
   heroBg,
+  heroImages,
+  sliderIntervalSec = 5,
   eyebrow,
   heading,
   description,
@@ -57,6 +62,30 @@ export function CanvasHeroStats({
   const statsStyle = sectionStyles['Statistics']
   const heroPad = heroStyle?.padding === 'compact' ? '35px' : heroStyle?.padding === 'spacious' ? '95px' : '60px'
   const statsPad = statsStyle?.padding === 'compact' ? '14px' : statsStyle?.padding === 'spacious' ? '45px' : '26px'
+  const slides = useMemo(() => {
+    const list =
+      Array.isArray(heroImages) && heroImages.length > 0
+        ? heroImages.filter(Boolean)
+        : [heroBg || heroImage]
+    return list.length > 0 ? list : [heroImage]
+  }, [heroImages, heroBg])
+
+  const [slideIdx, setSlideIdx] = useState(0)
+
+  useEffect(() => {
+    if (slideIdx >= slides.length) setSlideIdx(0)
+  }, [slides.length, slideIdx])
+
+  useEffect(() => {
+    if (slides.length <= 1) return
+    const timer = window.setInterval(() => {
+      setSlideIdx((prev) => (prev + 1) % slides.length)
+    }, Math.max(2, sliderIntervalSec) * 1000)
+    return () => window.clearInterval(timer)
+  }, [slides.length, sliderIntervalSec])
+
+  const activeSlideUrl = slides[slideIdx] || heroBg || heroImage
+
   const stats = [
     { v: stat1Val, l: stat1Label },
     { v: stat2Val, l: stat2Label },
@@ -71,7 +100,8 @@ export function CanvasHeroStats({
         onClick={() => setSelected('Hero section')}
         className={`mini-hero ${selected === 'Hero section' ? 'selected' : ''} ${heroStyle?.customClass || ''}`}
         style={{
-          backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${heroBg || heroImage})`,
+          backgroundImage: `linear-gradient(90deg,rgba(9,27,53,${overlayOpacity / 100}),rgba(9,27,53,${(overlayOpacity / 100) * 0.25})),url(${activeSlideUrl})`,
+          transition: 'background-image 0.5s ease-in-out',
           textAlign: (heroStyle?.align as any) || 'left',
           paddingTop: heroPad,
           paddingBottom: heroPad,
@@ -85,6 +115,44 @@ export function CanvasHeroStats({
         }}
       >
         {selected === 'Hero section' && <div className="selection-label">Hero section</div>}
+        {slides.length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '12px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: '6px',
+              zIndex: 3,
+            }}
+          >
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                aria-label={`Preview slide ${idx + 1}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSlideIdx(idx)
+                }}
+                style={{
+                  width: idx === slideIdx ? '20px' : '7px',
+                  height: '7px',
+                  borderRadius: '9999px',
+                  border: 0,
+                  padding: 0,
+                  cursor: 'pointer',
+                  background:
+                    idx === slideIdx
+                      ? activeCfg?.secondaryColor || '#f4cc70'
+                      : 'rgba(255,255,255,0.55)',
+                  transition: 'all 200ms ease',
+                }}
+              />
+            ))}
+          </div>
+        )}
         <div>
           <small style={{ color: activeCfg?.secondaryColor || '#f4cc70', fontWeight: 700 }}>
             {eyebrow}

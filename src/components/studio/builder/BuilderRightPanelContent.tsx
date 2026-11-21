@@ -64,6 +64,10 @@ export function BuilderRightPanelContent({
           setButtonLink={state.setButtonLink}
           heroBg={state.heroBg}
           setHeroBg={state.setHeroBg}
+          heroImages={state.heroImages}
+          setHeroImages={state.setHeroImages}
+          sliderIntervalSec={state.sliderIntervalSec}
+          setSliderIntervalSec={state.setSliderIntervalSec}
           overlayOpacity={state.overlayOpacity}
           setOverlayOpacity={state.setOverlayOpacity}
         />

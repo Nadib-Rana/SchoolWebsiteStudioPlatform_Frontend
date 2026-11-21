@@ -8,6 +8,7 @@ export function useMediaPickerAssets(onAssetUploaded: (url: string) => void) {
   const [assets, setAssets] = useState<MediaAssetItem[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -30,6 +31,7 @@ export function useMediaPickerAssets(onAssetUploaded: (url: string) => void) {
               m.sizeFormatted ||
               `${((m.sizeBytes || 1048576) / (1024 * 1024)).toFixed(1)} MB`,
             mimeType: m.mimeType,
+            key: m.filename,
           }))
         setAssets(mapped)
       }
@@ -48,7 +50,7 @@ export function useMediaPickerAssets(onAssetUploaded: (url: string) => void) {
     setUploadError(null)
     try {
       const uploadRes = await api.storage.upload(file)
-      await api.gallery.createMedia({
+      const created = await api.gallery.createMedia({
         filename: uploadRes.key,
         originalName: file.name,
         mimeType: file.type || 'image/jpeg',
@@ -56,12 +58,15 @@ export function useMediaPickerAssets(onAssetUploaded: (url: string) => void) {
         url: uploadRes.publicUrl,
         category: 'IMAGE',
       })
+      const newId = (created as any)?.data?.id || (created as any)?.id
 
       const newAsset: MediaAssetItem = {
+        id: newId,
         url: uploadRes.publicUrl,
         name: file.name,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
         mimeType: file.type,
+        key: uploadRes.key,
       }
       setAssets((prev) => [newAsset, ...prev])
       onAssetUploaded(uploadRes.publicUrl)
@@ -73,13 +78,50 @@ export function useMediaPickerAssets(onAssetUploaded: (url: string) => void) {
     }
   }
 
+  const handleDeleteAsset = async (
+    asset: MediaAssetItem,
+    onDeletedUrl?: (url: string) => void,
+  ) => {
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm(`Delete "${asset.name}" permanently from Media Library?`)
+    ) {
+      return
+    }
+    if (!asset.id) {
+      setAssets((prev) => prev.filter((a) => a.url !== asset.url))
+      onDeletedUrl?.(asset.url)
+      return
+    }
+    setDeletingId(asset.id)
+    setUploadError(null)
+    try {
+      await api.gallery.deleteMedia(asset.id)
+      if (asset.key) {
+        try {
+          await api.storage.delete(asset.key)
+        } catch {
+          // Best-effort S3/MinIO object cleanup
+        }
+      }
+      setAssets((prev) => prev.filter((a) => a.id !== asset.id))
+      onDeletedUrl?.(asset.url)
+    } catch (err: any) {
+      setUploadError(err?.message || 'Failed to delete image.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return {
     assets,
     loading,
     uploading,
+    deletingId,
     uploadError,
     fileInputRef,
     loadAssets,
     handleFileUpload,
+    handleDeleteAsset,
   }
 }

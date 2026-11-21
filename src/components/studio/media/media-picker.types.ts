@@ -12,4 +12,5 @@ export interface MediaAssetItem {
   name: string
   size?: string
   mimeType?: string
+  key?: string
 }

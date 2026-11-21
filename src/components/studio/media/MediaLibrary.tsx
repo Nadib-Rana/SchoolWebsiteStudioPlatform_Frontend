@@ -10,8 +10,8 @@ import { MediaToolbar } from './MediaToolbar'
 
 export type { MediaItem }
 
-export function MediaLibrary() {
-  const { notify } = useStudio()
+export function MediaLibrary({ refreshKey = 0 }: { refreshKey?: number }) {
+  const { notify, schoolSwitchKey } = useStudio()
   const [items, setItems] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
@@ -50,7 +50,7 @@ export function MediaLibrary() {
 
   useEffect(() => {
     void fetchMedia()
-  }, [])
+  }, [refreshKey, schoolSwitchKey])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

@@ -27,10 +27,12 @@ export function MediaPickerModal({
     assets,
     loading,
     uploading,
+    deletingId,
     uploadError,
     fileInputRef,
     loadAssets,
     handleFileUpload,
+    handleDeleteAsset,
   } = useMediaPickerAssets((newUrl) => {
     setSelectedUrl(newUrl)
     setActiveTab('library')
@@ -98,10 +100,16 @@ export function MediaPickerModal({
             <MediaPickerLibraryTab
               assets={assets}
               loading={loading}
+              deletingId={deletingId}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               selectedUrl={selectedUrl}
               setSelectedUrl={setSelectedUrl}
+              onDeleteAsset={(asset) =>
+                handleDeleteAsset(asset, (deletedUrl) => {
+                  if (selectedUrl === deletedUrl) setSelectedUrl('')
+                })
+              }
               onGoToUpload={() => setActiveTab('upload')}
             />
           )}

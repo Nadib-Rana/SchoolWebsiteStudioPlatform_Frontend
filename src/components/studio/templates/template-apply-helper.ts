@@ -31,6 +31,7 @@ export async function applyTemplateToBuilder(
         buttonLabel: cfg.buttonLabel,
         announcementText: cfg.announcementText,
         heroBg: cfg.heroImage,
+        heroImages: [cfg.heroImage],
         appliedTheme: templateTheme,
         introKicker: `WELCOME TO ${resolvedSchoolName.toUpperCase()}`,
         sectionStyles: {

@@ -13,6 +13,8 @@ export interface ParsedHomepageSections {
   buttonLabel?: string
   buttonLink?: string
   heroBg?: string
+  heroImages?: string[]
+  sliderIntervalSec?: number
   overlayOpacity?: number
   introKicker?: string
   introTitle?: string
@@ -129,6 +131,12 @@ export function parseHomepageSections(
       if (c.buttonLabel) result.buttonLabel = c.buttonLabel
       if (c.buttonLink) result.buttonLink = c.buttonLink
       if (c.heroBg) result.heroBg = c.heroBg
+      if (Array.isArray(c.heroImages) && c.heroImages.length > 0) {
+        result.heroImages = c.heroImages.filter((u: any) => typeof u === 'string' && u.trim())
+      }
+      if (c.sliderIntervalSec !== undefined) {
+        result.sliderIntervalSec = Number(c.sliderIntervalSec)
+      }
       if (c.overlayOpacity !== undefined) result.overlayOpacity = Number(c.overlayOpacity)
     } else if (type === 'intro' || type === 'programs') {
       if (c.kicker) result.introKicker = c.kicker

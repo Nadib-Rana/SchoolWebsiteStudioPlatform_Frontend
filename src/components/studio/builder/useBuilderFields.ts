@@ -13,6 +13,14 @@ export function useBuilderFields(previewTheme?: string) {
 
   const [appliedTheme, setAppliedTheme] = useState<SchoolTheme>(currentTheme)
   const [heroBg, setHeroBg] = useState<string | null>(local?.heroBg || themeCfg.heroImage)
+  const [heroImages, setHeroImages] = useState<string[]>(
+    Array.isArray(local?.heroImages) && local.heroImages.length > 0
+      ? local.heroImages
+      : [local?.heroBg || themeCfg.heroImage].filter(Boolean) as string[],
+  )
+  const [sliderIntervalSec, setSliderIntervalSec] = useState<number>(
+    typeof local?.sliderIntervalSec === 'number' ? local.sliderIntervalSec : 5,
+  )
   const [showAnnouncement, setShowAnnouncement] = useState(local?.showAnnouncement !== undefined ? local.showAnnouncement : true)
   const [announcementText, setAnnouncementText] = useState(local?.announcementText || themeCfg.announcementText)
   const [announcementLink, setAnnouncementLink] = useState(local?.announcementLink || 'Apply now')
@@ -75,6 +83,14 @@ export function useBuilderFields(previewTheme?: string) {
     if (saved.buttonLabel) setButtonLabel(saved.buttonLabel)
     if (saved.buttonLink) setButtonLink(saved.buttonLink)
     if (saved.heroBg) setHeroBg(saved.heroBg)
+    if (Array.isArray(saved.heroImages) && saved.heroImages.length > 0) {
+      setHeroImages(saved.heroImages)
+    } else if (saved.heroBg) {
+      setHeroImages([saved.heroBg])
+    }
+    if (typeof saved.sliderIntervalSec === 'number') {
+      setSliderIntervalSec(saved.sliderIntervalSec)
+    }
     if (saved.overlayOpacity !== undefined) setOverlayOpacity(saved.overlayOpacity)
     if (saved.introKicker) setIntroKicker(saved.introKicker)
     if (saved.introTitle) setIntroTitle(saved.introTitle)
@@ -114,7 +130,7 @@ export function useBuilderFields(previewTheme?: string) {
   }
 
   const values = {
-    appliedTheme, heroBg, showAnnouncement, announcementText, announcementLink,
+    appliedTheme, heroBg, heroImages, sliderIntervalSec, showAnnouncement, announcementText, announcementLink,
     schoolName, logoLetter, applyButtonText, eyebrow, heading, description,
     buttonLabel, buttonLink, overlayOpacity, introKicker, introTitle, introDesc, introImage, introQuote,
     principalName, principalTitle, principalQuote, principalPhoto,
@@ -125,7 +141,7 @@ export function useBuilderFields(previewTheme?: string) {
   }
 
   const setters = {
-    setAppliedTheme, setHeroBg, setShowAnnouncement, setAnnouncementText, setAnnouncementLink,
+    setAppliedTheme, setHeroBg, setHeroImages, setSliderIntervalSec, setShowAnnouncement, setAnnouncementText, setAnnouncementLink,
     setSchoolName, setLogoLetter, setApplyButtonText, setEyebrow, setHeading, setDescription,
     setButtonLabel, setButtonLink, setOverlayOpacity, setIntroKicker, setIntroTitle, setIntroDesc, setIntroImage, setIntroQuote,
     setPrincipalName, setPrincipalTitle, setPrincipalQuote, setPrincipalPhoto,
