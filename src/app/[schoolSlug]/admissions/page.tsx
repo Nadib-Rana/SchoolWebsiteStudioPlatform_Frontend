@@ -159,7 +159,11 @@ export default async function AdmissionsPage({ params }: PageProps) {
         <PublicAdmissionForm
           schoolSlug={schoolSlug}
           schoolName={schoolName}
-          allowAdmissions={siteData.settings?.allowPublicAdmission ?? true}
+          logoUrl={siteData.school.logoUrl || undefined}
+          address={siteData.profile?.address || undefined}
+          phone={siteData.profile?.phone || undefined}
+          email={siteData.profile?.email || undefined}
+          allowAdmissions={allowPublicAdmission}
         />
       </section>
 

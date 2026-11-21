@@ -9,6 +9,7 @@ interface AdmissionSuccessScreenProps {
   copied: boolean
   onCopy: () => void
   onTrack: (appNum: string) => void
+  onPrintReceipt: () => void
 }
 
 export function AdmissionSuccessScreen({
@@ -17,6 +18,7 @@ export function AdmissionSuccessScreen({
   copied,
   onCopy,
   onTrack,
+  onPrintReceipt,
 }: AdmissionSuccessScreenProps) {
   return (
     <div className="text-center py-8">
@@ -40,11 +42,20 @@ export function AdmissionSuccessScreen({
         <div className="text-3xl font-mono font-extrabold text-slate-900 mt-1 tracking-wider">
           {submissionResult.applicationNumber}
         </div>
-        <div className="mt-4 flex gap-3 justify-center">
+        <div className="mt-5 flex flex-wrap gap-3 justify-center">
+          <button
+            type="button"
+            onClick={onPrintReceipt}
+            className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 text-white rounded-xl shadow-sm hover:opacity-95 active:scale-95 transition"
+            style={{ background: 'var(--navy, #102f58)' }}
+          >
+            <Icon name="download" size={14} />
+            Download / Print Receipt (PDF)
+          </button>
           <button
             type="button"
             onClick={onCopy}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 active:scale-95 transition"
           >
             <Icon name="copy" size={14} />
             {copied ? 'Copied to Clipboard!' : 'Copy Reference Number'}
@@ -52,7 +63,7 @@ export function AdmissionSuccessScreen({
           <button
             type="button"
             onClick={() => onTrack(submissionResult.applicationNumber)}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-900 text-white rounded-lg shadow-sm hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 bg-slate-900 text-white rounded-xl shadow-sm hover:bg-slate-800 transition"
           >
             Track Progress <Icon name="arrow" size={14} />
           </button>

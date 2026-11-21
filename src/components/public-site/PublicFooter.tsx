@@ -43,6 +43,7 @@ export function PublicFooter({
     { label: 'Academics', path: '/academics', page: 'Academic Programs' },
     { label: 'Admissions', path: '/admissions', page: 'Admission Information' },
     { label: 'Notices', path: '/notices', page: 'Notices' },
+    { label: 'Downloads', path: '/downloads', page: 'Notices' },
     { label: 'Contact', path: '/contact', page: 'Contact Us' },
   ]
   const links = showAdmissions

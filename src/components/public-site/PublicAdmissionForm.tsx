@@ -18,6 +18,10 @@ import { AdmissionStepReview } from './admission/AdmissionStepReview'
 import { AdmissionSuccessScreen } from './admission/AdmissionSuccessScreen'
 import { AdmissionTrackingTab } from './admission/AdmissionTrackingTab'
 import { AdmissionStepperHeader } from './admission/AdmissionStepperHeader'
+import {
+  printAdmissionReceipt,
+  printTrackStatusSlip,
+} from './admission/admission-receipt-print'
 
 const FALLBACK_CLASSES: ErpClassOption[] = [
   { id: 'Kindergarten', name: 'Kindergarten' },
@@ -38,12 +42,20 @@ const FALLBACK_CLASSES: ErpClassOption[] = [
 interface PublicAdmissionFormProps {
   schoolSlug: string
   schoolName: string
+  logoUrl?: string
+  address?: string
+  phone?: string
+  email?: string
   allowAdmissions?: boolean
 }
 
 export function PublicAdmissionForm({
   schoolSlug,
   schoolName,
+  logoUrl,
+  address,
+  phone,
+  email,
   allowAdmissions = true,
 }: PublicAdmissionFormProps) {
   const [activeTab, setActiveTab] = useState<TabMode>('apply')
@@ -286,6 +298,13 @@ export function PublicAdmissionForm({
               submissionResult={submissionResult}
               copied={copied}
               onCopy={handleCopyApplicationNumber}
+              onPrintReceipt={() =>
+                printAdmissionReceipt(
+                  { schoolName, logoUrl, address, phone, email, schoolSlug },
+                  submissionResult,
+                  formData,
+                )
+              }
               onTrack={(num) => {
                 setTrackAppNumber(num)
                 setTrackPhone(formData.phone || formData.guardianPhone)
@@ -344,6 +363,12 @@ export function PublicAdmissionForm({
           trackError={trackError}
           trackResult={trackResult}
           onTrackSubmit={handleTrackSubmit}
+          onPrintStatus={(result) =>
+            printTrackStatusSlip(
+              { schoolName, logoUrl, address, phone, email, schoolSlug },
+              result,
+            )
+          }
         />
       )}
     </div>

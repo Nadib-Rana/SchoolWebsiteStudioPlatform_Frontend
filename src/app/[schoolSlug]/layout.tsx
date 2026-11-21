@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PublicHeader } from '@/components/public-site/PublicHeader'
 import { PublicFooter } from '@/components/public-site/PublicFooter'
+import { PublicNoticeTicker } from '@/components/public-site/PublicNoticeTicker'
+import { PublicFloatingContact } from '@/components/public-site/PublicFloatingContact'
 import { PublicAnalyticsTracker } from '@/components/public-site/PublicAnalyticsTracker'
 import { getPublicSiteData } from '@/lib/public-site'
 import { parseHomepageSections } from '@/lib/homepage-sections-parser'
@@ -241,7 +243,16 @@ export default async function SchoolPublicLayout({
           bg: headerBg,
         }}
       />
+      <PublicNoticeTicker
+        schoolSlug={schoolSlug}
+        notices={siteData.notices || []}
+      />
       <div className="flex-1">{children}</div>
+      <PublicFloatingContact
+        schoolName={siteData.school.name}
+        phone={siteData.profile?.phone || dbSections.footerPhone}
+        whatsapp={siteData.profile?.socialLinks?.whatsapp}
+      />
       <PublicFooter
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
