@@ -223,17 +223,17 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Customize Hero Slider, Intro Photo, Colors & Nav Alignment', bn: 'হিরো স্লাইডার, ছবি, টেক্সট কালার ও মেনু অ্যালাইনমেন্ট' },
+        title: { en: 'Customize Hero Slider, Photo Position, Colors & Nav Alignment', bn: 'হিরো স্লাইডার, ছবির পজিশন, কালার ও মেনু অ্যালাইনমেন্ট' },
         detail: {
-          en: 'In Hero section, add 2–6 images for an automatic crossfade slider (3s–12s). In any section Style tab, set custom Background Color, Text Color, and Header Navigation Alignment (Left / Center / Right).',
-          bn: 'Hero সেকশনে ২–৬টি ছবি দিয়ে অটো-স্লাইডার (৩–১২ সেকেন্ড) চালু করুন। যেকোনো সেকশনের Style ট্যাব থেকে কাস্টম Background Color, Text Color এবং Header মেনুর Left/Center/Right অ্যালাইনমেন্ট সেট করা যাবে।',
+          en: 'In Hero section, add 2–6 images for an automatic crossfade slider (3s–12s). In School Introduction, edit campus photo & Image Badge Title/Subtitle. In the Style tab, set Background Color, Text Color, Header Nav Alignment (Left/Center/Right), and Photo Position (Left/Right) for Principal Message & School Introduction.',
+          bn: 'Hero সেকশনে ২–৬টি ছবি দিয়ে অটো-স্লাইডার চালু করুন। School Introduction-এ ক্যাম্পাস ছবি ও Image Badge এডিট করুন। Style ট্যাব থেকে Background/Text Color, Header মেনুর Left/Center/Right অ্যালাইনমেন্ট এবং Principal Message ও School Introduction-এর Photo Left/Right পজিশন বদলানো যাবে।',
         },
       },
       {
-        title: { en: 'Click "Save draft" then "Publish"', bn: '"Save draft" এবং পরে "Publish" ক্লিক করুন' },
+        title: { en: 'One-click Publish (Auto-saves Builder changes)', bn: '১ ক্লিকে Publish (অটো-সেভসহ)' },
         detail: {
-          en: 'Click "Save draft" in the Builder toolbar to persist sections to the database, then click topbar "Publish" to refresh the live site.',
-          bn: 'বিল্ডার টুলবারের "Save draft" ক্লিক করে ডাটাবেজে সেভ করুন, তারপর টপবারের "Publish" বাটনে ক্লিক করে লাইভ করুন।',
+          en: 'Click "Preview" anytime to inspect live colors/styles, "Save draft" to keep changes private, or click topbar "Publish" directly — it automatically saves your latest Builder edits and publishes live immediately.',
+          bn: 'যেকোনো সময় "Preview" দিয়ে লাইভ লুক দেখুন, অথবা সরাসরি টপবারের "Publish" বাটনে ক্লিক করুন—এটা অটোমেটিক আপনার সর্বশেষ এডিট সেভ করে সাথে সাথেই লাইভ সাইটে পাবলিশ করে দেবে।',
         },
       },
     ],
@@ -407,10 +407,10 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Create a notice', bn: 'নতুন নোটিশ তৈরি করুন' },
+        title: { en: 'Create a notice & upload PDF attachment', bn: 'নতুন নোটিশ তৈরি ও PDF আপলোড করুন' },
         detail: {
-          en: 'Click "Create notice", add title, category, description, optional PDF/image attachment, and set priority.',
-          bn: '"Create notice" ক্লিক করে শিরোনাম, ক্যাটাগরি, বিস্তারিত ও প্রয়োজনীয় PDF ফাইল যুক্ত করুন।',
+          en: 'Click "Create notice", pick a category (General, Routine, Syllabus, Examinations, Holiday, Admissions), and use "Upload PDF / File" to attach downloadable documents directly.',
+          bn: '"Create notice" ক্লিক করে ক্যাটাগরি (Routine, Syllabus, Examinations, Holiday ইত্যাদি) সিলেক্ট করুন এবং "Upload PDF / File" বাটন দিয়ে সরাসরি PDF ফাইল যুক্ত করুন।',
         },
       },
       {
