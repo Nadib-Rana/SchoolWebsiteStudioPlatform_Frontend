@@ -81,9 +81,77 @@ export default async function SchoolPublicLayout({
   const accentColor = siteData.theme?.secondaryColor || themeCfg.secondaryColor || '#e3ad3f'
   const fontHeading = siteData.theme?.fontHeading || themeCfg.fontHeading || "'DM Serif Display', serif"
   const fontBody = siteData.theme?.fontBody || 'Inter'
-  const headerBg = siteData.theme?.primaryColor || themeCfg.headerBg || primaryColor
+
+  if (siteData.settings?.maintenanceMode) {
+    const initial = (siteData.school.name || 'S').charAt(0).toUpperCase()
+    return (
+      <div
+        className={`public-site ${themeClass} min-h-screen flex items-center justify-center p-6`}
+        style={
+          {
+            '--navy': primaryColor,
+            '--accent': accentColor,
+            '--font-heading': fontHeading,
+            fontFamily: `${fontBody}, sans-serif`,
+            background: `linear-gradient(135deg, ${primaryColor} 0%, #0f172a 100%)`,
+          } as React.CSSProperties
+        }
+      >
+        <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 sm:p-10 text-center">
+          {siteData.school.logoUrl ? (
+            <img
+              src={siteData.school.logoUrl}
+              alt={siteData.school.name}
+              className="w-16 h-16 mx-auto mb-5 rounded-2xl object-contain border border-slate-100 bg-slate-50 p-1.5"
+            />
+          ) : (
+            <div
+              className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-md"
+              style={{ background: primaryColor }}
+            >
+              {initial}
+            </div>
+          )}
+          <span
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-3"
+            style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#b45309' }}
+          >
+            Scheduled Maintenance
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+            {siteData.school.name}
+          </h1>
+          <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed">
+            Our official school website is currently undergoing scheduled maintenance and updates. We will be back online shortly.
+          </p>
+          {(siteData.profile?.email || siteData.profile?.phone) && (
+            <div className="mt-6 pt-5 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+              <p className="font-semibold text-slate-700">Need urgent assistance?</p>
+              <p>
+                {siteData.profile?.phone && <span>{siteData.profile.phone}</span>}
+                {siteData.profile?.phone && siteData.profile?.email && <span> · </span>}
+                {siteData.profile?.email && (
+                  <a
+                    href={`mailto:${siteData.profile.email}`}
+                    className="underline text-slate-700"
+                  >
+                    {siteData.profile.email}
+                  </a>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const dbSections = parseHomepageSections(siteData)
+  const headerBg =
+    dbSections.sectionStyles?.['Header']?.bg ||
+    siteData.theme?.primaryColor ||
+    themeCfg.headerBg ||
+    primaryColor
   const showAnnouncement =
     dbSections.showAnnouncement !== undefined
       ? dbSections.showAnnouncement && Boolean(dbSections.announcementText)

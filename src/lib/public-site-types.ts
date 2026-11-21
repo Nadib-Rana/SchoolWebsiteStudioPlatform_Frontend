@@ -113,6 +113,7 @@ export interface PublicSiteData {
   }
   settings?: {
     allowPublicAdmission?: boolean
+    maintenanceMode?: boolean
     showNoticeBoard?: boolean
     showEventsCalendar?: boolean
   }
