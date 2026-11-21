@@ -196,7 +196,7 @@ export function CanvasIntroPrincipal({
             principalStyle?.hideOnMobile && device === 'mobile'
               ? 'none'
               : 'grid',
-          gridTemplateColumns: '120px 1fr',
+          gridTemplateColumns: device === 'mobile' ? '1fr' : '1fr 140px',
           gap: '24px',
           alignItems: 'center',
           cursor: 'pointer',
@@ -217,17 +217,6 @@ export function CanvasIntroPrincipal({
         {selected === 'Principal message' && (
           <div className="selection-label">Principal message</div>
         )}
-        <img
-          src={principalPhoto}
-          alt={principalName}
-          style={{
-            width: '120px',
-            height: '135px',
-            objectFit: 'cover',
-            borderRadius: '10px',
-            boxShadow: '0 4px 12px rgba(15,23,42,0.1)',
-          }}
-        />
         <div>
           <span
             style={{
@@ -238,14 +227,14 @@ export function CanvasIntroPrincipal({
               textTransform: 'uppercase',
             }}
           >
-            Principal&apos;s Message
+            A Message From Our Principal
           </span>
           <p
             style={{
               fontFamily: activeCfg?.fontHeading || 'serif',
               fontSize: '15px',
               fontStyle: 'italic',
-              color: '#334155',
+              color: principalStyle?.textColor || '#334155',
               margin: '8px 0 12px',
               lineHeight: 1.5,
             }}
@@ -253,14 +242,36 @@ export function CanvasIntroPrincipal({
             {principalQuote}
           </p>
           <strong
-            style={{ display: 'block', fontSize: '14px', color: '#0f172a' }}
+            style={{
+              display: 'block',
+              fontSize: '14px',
+              color: principalStyle?.textColor || '#0f172a',
+            }}
           >
             {principalName}
           </strong>
-          <small style={{ color: '#64748b', fontSize: '12px' }}>
+          <small
+            style={{
+              color: principalStyle?.textColor || '#64748b',
+              fontSize: '12px',
+              opacity: principalStyle?.textColor ? 0.85 : 1,
+            }}
+          >
             {principalTitle}
           </small>
         </div>
+        <img
+          src={principalPhoto}
+          alt={principalName}
+          style={{
+            width: '130px',
+            height: '155px',
+            objectFit: 'cover',
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(15,23,42,0.1)',
+            justifySelf: device === 'mobile' ? 'center' : 'end',
+          }}
+        />
       </div>
     </>
   )

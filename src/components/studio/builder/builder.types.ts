@@ -18,7 +18,7 @@ export const DEFAULT_STYLES: Record<string, SectionStyle> = {
   'Header': { bg: '#ffffff', align: 'left', padding: 'compact', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-header', customClass: '' },
   'Hero section': { bg: '#091b35', align: 'left', padding: 'spacious', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-hero-section', customClass: '' },
   'Statistics': { bg: '#163d72', align: 'center', padding: 'compact', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-statistics', customClass: '' },
-  'School introduction': { bg: '#ffffff', align: 'center', padding: 'normal', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-school-introduction', customClass: '' },
+  'School introduction': { bg: '#ffffff', align: 'left', padding: 'normal', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-school-introduction', customClass: '' },
   'Principal message': { bg: '#f8fafc', align: 'left', padding: 'normal', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-principal-message', customClass: '' },
   'Latest notices': { bg: '#ffffff', align: 'left', padding: 'normal', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-latest-notices', customClass: '' },
   'Upcoming events': { bg: '#f1f5f9', align: 'left', padding: 'normal', border: false, shadow: 'none', hideOnMobile: false, animation: 'none', customId: 'canvas-upcoming-events', customClass: '' },
