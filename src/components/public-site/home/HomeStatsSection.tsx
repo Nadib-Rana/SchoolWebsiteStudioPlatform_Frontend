@@ -6,7 +6,17 @@ interface StatItem {
 }
 
 interface HomeStatsSectionProps {
-  sectionStyle?: { bg?: string; padding?: string; textColor?: string }
+  sectionStyle?: {
+    bg?: string
+    padding?: string
+    textColor?: string
+    hideOnMobile?: boolean
+    border?: boolean
+    shadow?: string
+    align?: string
+    customClass?: string
+    customId?: string
+  }
   statsList: StatItem[]
 }
 
@@ -18,14 +28,20 @@ export function HomeStatsSection({ sectionStyle, statsList }: HomeStatsSectionPr
       ? '50px'
       : '32px'
 
+  const isHiddenMobile = Boolean(sectionStyle?.hideOnMobile)
+
   return (
     <section
-      className="public-stats"
+      id={sectionStyle?.customId || 'section-statistics'}
+      className={`public-stats ${isHiddenMobile ? 'hidden sm:grid' : ''} ${sectionStyle?.customClass || ''}`}
       style={{
         background: sectionStyle?.bg || undefined,
         color: sectionStyle?.textColor || undefined,
+        textAlign: (sectionStyle?.align as any) || undefined,
         paddingTop: pad,
         paddingBottom: pad,
+        ...(sectionStyle?.border ? { borderTop: '2px solid rgba(255,255,255,0.2)', borderBottom: '2px solid rgba(255,255,255,0.2)' } : {}),
+        ...(sectionStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : sectionStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
       }}
     >
       {statsList.slice(0, 4).map((stat, idx) => (
