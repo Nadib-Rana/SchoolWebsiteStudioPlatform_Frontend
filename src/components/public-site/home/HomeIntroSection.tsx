@@ -13,6 +13,8 @@ interface HomeIntroSectionProps {
   introDesc: string
   introImage?: string
   introQuote?: string
+  introBadgeTitle?: string
+  introBadgeSubtitle?: string
   schoolSlug?: string
   setPage?: (p: string) => void
 }
@@ -26,6 +28,8 @@ export function HomeIntroSection({
   introDesc,
   introImage,
   introQuote,
+  introBadgeTitle,
+  introBadgeSubtitle,
   schoolSlug,
   setPage,
 }: HomeIntroSectionProps) {
@@ -39,6 +43,8 @@ export function HomeIntroSection({
   const resolvedQuote =
     introQuote ||
     '“Every child deserves to be truly known, deeply supported, and meaningfully challenged.”'
+  const resolvedBadgeTitle = introBadgeTitle?.trim() || `Since ${establishedYear}`
+  const resolvedBadgeSubtitle = introBadgeSubtitle?.trim() || 'Growing together'
 
   return (
     <section
@@ -52,8 +58,8 @@ export function HomeIntroSection({
       <div className="intro-image">
         <img src={resolvedImage} alt={`${schoolName} campus`} />
         <span>
-          <strong>Since {establishedYear}</strong>
-          <small>Growing together</small>
+          <strong>{resolvedBadgeTitle}</strong>
+          <small>{resolvedBadgeSubtitle}</small>
         </span>
       </div>
       <div>

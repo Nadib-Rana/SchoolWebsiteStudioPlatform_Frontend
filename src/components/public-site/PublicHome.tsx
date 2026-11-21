@@ -124,6 +124,10 @@ export function PublicHome({
     draft?.introQuote ||
     dbSections.introQuote ||
     '“Every child deserves to be truly known, deeply supported, and meaningfully challenged.”'
+  const introBadgeTitle =
+    draft?.introBadgeTitle || dbSections.introBadgeTitle || ''
+  const introBadgeSubtitle =
+    draft?.introBadgeSubtitle || dbSections.introBadgeSubtitle || 'Growing together'
 
   const principalName =
     draft?.principalName ||
@@ -207,6 +211,8 @@ export function PublicHome({
         introDesc={introDesc}
         introImage={introImage}
         introQuote={introQuote}
+        introBadgeTitle={introBadgeTitle}
+        introBadgeSubtitle={introBadgeSubtitle}
         schoolSlug={schoolSlug}
         setPage={setPage}
       />

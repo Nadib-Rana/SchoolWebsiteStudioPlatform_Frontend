@@ -21,6 +21,8 @@ export interface ParsedHomepageSections {
   introDesc?: string
   introImage?: string
   introQuote?: string
+  introBadgeTitle?: string
+  introBadgeSubtitle?: string
   principalName?: string
   principalTitle?: string
   principalQuote?: string
@@ -144,6 +146,8 @@ export function parseHomepageSections(
       if (c.description) result.introDesc = c.description
       if (c.image) result.introImage = c.image
       if (c.quote) result.introQuote = c.quote
+      if (c.badgeTitle) result.introBadgeTitle = c.badgeTitle
+      if (c.badgeSubtitle) result.introBadgeSubtitle = c.badgeSubtitle
     } else if (type === 'principal') {
       if (c.name) result.principalName = c.name
       if (c.title) result.principalTitle = c.title

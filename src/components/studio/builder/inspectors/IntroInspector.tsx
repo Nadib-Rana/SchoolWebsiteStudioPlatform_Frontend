@@ -14,6 +14,10 @@ interface IntroInspectorProps {
   setIntroImage: (url: string) => void
   introQuote: string
   setIntroQuote: (s: string) => void
+  introBadgeTitle: string
+  setIntroBadgeTitle: (s: string) => void
+  introBadgeSubtitle: string
+  setIntroBadgeSubtitle: (s: string) => void
 }
 
 export function IntroInspector({
@@ -27,6 +31,10 @@ export function IntroInspector({
   setIntroImage,
   introQuote,
   setIntroQuote,
+  introBadgeTitle,
+  setIntroBadgeTitle,
+  introBadgeSubtitle,
+  setIntroBadgeSubtitle,
 }: IntroInspectorProps) {
   return (
     <SettingGroup title="Introduction content">
@@ -70,6 +78,22 @@ export function IntroInspector({
           helperText="Displayed beside your school introduction section on the live homepage."
         />
       </div>
+      <label style={{ marginTop: '12px' }}>
+        Image Badge Title (optional)
+        <input
+          placeholder="Leave blank for 'Since <Established Year>'"
+          value={introBadgeTitle}
+          onChange={(e) => setIntroBadgeTitle(e.target.value)}
+        />
+      </label>
+      <label>
+        Image Badge Subtitle
+        <input
+          placeholder="e.g. Growing together"
+          value={introBadgeSubtitle}
+          onChange={(e) => setIntroBadgeSubtitle(e.target.value)}
+        />
+      </label>
     </SettingGroup>
   )
 }

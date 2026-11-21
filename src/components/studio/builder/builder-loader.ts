@@ -66,6 +66,8 @@ export async function loadHomepageSectionsFromBackend(
           if (c.description && setters.setIntroDesc) setters.setIntroDesc(c.description)
           if (c.image && setters.setIntroImage) setters.setIntroImage(c.image)
           if (c.quote && setters.setIntroQuote) setters.setIntroQuote(c.quote)
+          if (c.badgeTitle && setters.setIntroBadgeTitle) setters.setIntroBadgeTitle(c.badgeTitle)
+          if (c.badgeSubtitle && setters.setIntroBadgeSubtitle) setters.setIntroBadgeSubtitle(c.badgeSubtitle)
         } else if (sec.type === 'principal') {
           if (c.name && setters.setPrincipalName) setters.setPrincipalName(c.name)
           if (c.title && setters.setPrincipalTitle) setters.setPrincipalTitle(c.title)

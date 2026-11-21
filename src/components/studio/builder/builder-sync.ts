@@ -50,6 +50,8 @@ export function buildSectionsPayload(
         description: state.introDesc,
         image: state.introImage || undefined,
         quote: state.introQuote || undefined,
+        badgeTitle: state.introBadgeTitle || undefined,
+        badgeSubtitle: state.introBadgeSubtitle || undefined,
       },
       settings: sectionStyles['School introduction'] || DEFAULT_STYLES['School introduction'],
       isVisible: true,

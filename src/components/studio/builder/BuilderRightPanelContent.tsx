@@ -85,6 +85,10 @@ export function BuilderRightPanelContent({
           setIntroImage={state.setIntroImage}
           introQuote={state.introQuote}
           setIntroQuote={state.setIntroQuote}
+          introBadgeTitle={state.introBadgeTitle}
+          setIntroBadgeTitle={state.setIntroBadgeTitle}
+          introBadgeSubtitle={state.introBadgeSubtitle}
+          setIntroBadgeSubtitle={state.setIntroBadgeSubtitle}
         />
       )}
 
