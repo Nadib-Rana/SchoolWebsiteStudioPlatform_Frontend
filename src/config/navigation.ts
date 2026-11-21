@@ -22,7 +22,6 @@ export const studioNav: readonly NavItem[] = [
   ['analytics', 'chart', 'Analytics'],
   ['audit-logs', 'clock', 'Audit Logs'],
   ['publishing', 'sparkle', 'Publishing'],
-  ['design-system', 'layers', 'Design System'],
   ['settings', 'settings', 'Settings'],
   ['help', 'help', 'Help Center'],
 ] as const
