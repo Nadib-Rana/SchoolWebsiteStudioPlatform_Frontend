@@ -1,6 +1,6 @@
 'use client'
 
-import type { CustomSectionData } from './builder.types'
+import type { CustomSectionData, SectionStyle } from './builder.types'
 import { AnnouncementInspector } from './inspectors/AnnouncementInspector'
 import { HeaderInspector } from './inspectors/HeaderInspector'
 import { HeroInspector } from './inspectors/HeroInspector'
@@ -13,6 +13,8 @@ import { CustomSectionInspector } from './inspectors/CustomSectionInspector'
 
 interface BuilderRightPanelContentProps {
   selected: string
+  activeStyle?: SectionStyle
+  updateActiveStyle?: (patch: Partial<SectionStyle>) => void
   customSectionsData: Record<string, CustomSectionData>
   setCustomSectionsData: React.Dispatch<React.SetStateAction<Record<string, CustomSectionData>>>
   onManageAlbumPhotos: () => void
@@ -21,6 +23,8 @@ interface BuilderRightPanelContentProps {
 
 export function BuilderRightPanelContent({
   selected,
+  activeStyle,
+  updateActiveStyle,
   customSectionsData,
   setCustomSectionsData,
   onManageAlbumPhotos,
@@ -107,6 +111,8 @@ export function BuilderRightPanelContent({
 
       {selected === 'Statistics' && (
         <StatisticsInspector
+          isHidden={Boolean(activeStyle?.isHidden)}
+          onToggleHidden={(hidden) => updateActiveStyle?.({ isHidden: hidden })}
           stat1Val={state.stat1Val}
           setStat1Val={state.setStat1Val}
           stat1Label={state.stat1Label}

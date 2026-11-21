@@ -9,6 +9,7 @@ export interface SectionStyle {
   border: boolean
   shadow: 'none' | 'subtle' | 'card'
   hideOnMobile: boolean
+  isHidden?: boolean
   animation: string
   customId: string
   customClass: string

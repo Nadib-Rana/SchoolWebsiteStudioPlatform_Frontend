@@ -227,7 +227,10 @@ export function CanvasHeroStats({
           textAlign: (statsStyle?.align as any) || 'center',
           paddingTop: statsPad,
           paddingBottom: statsPad,
-          display: statsStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'grid',
+          display:
+            statsStyle?.isHidden || (statsStyle?.hideOnMobile && device === 'mobile')
+              ? 'none'
+              : 'grid',
           outline: selected === 'Statistics' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
           ...(statsStyle?.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),

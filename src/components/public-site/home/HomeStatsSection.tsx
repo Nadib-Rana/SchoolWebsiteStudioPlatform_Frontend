@@ -11,6 +11,7 @@ interface HomeStatsSectionProps {
     padding?: string
     textColor?: string
     hideOnMobile?: boolean
+    isHidden?: boolean
     border?: boolean
     shadow?: string
     align?: string
@@ -21,6 +22,10 @@ interface HomeStatsSectionProps {
 }
 
 export function HomeStatsSection({ sectionStyle, statsList }: HomeStatsSectionProps) {
+  if (sectionStyle?.isHidden) {
+    return null
+  }
+
   const pad =
     sectionStyle?.padding === 'compact'
       ? '20px'

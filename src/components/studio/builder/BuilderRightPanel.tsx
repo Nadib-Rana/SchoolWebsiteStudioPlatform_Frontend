@@ -77,6 +77,8 @@ export function BuilderRightPanel({
       {activeTab === 'content' && (
         <BuilderRightPanelContent
           selected={selected}
+          activeStyle={activeStyle}
+          updateActiveStyle={updateActiveStyle}
           customSectionsData={customSectionsData}
           setCustomSectionsData={setCustomSectionsData}
           onManageAlbumPhotos={onManageAlbumPhotos}

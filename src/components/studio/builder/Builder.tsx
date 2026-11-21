@@ -64,6 +64,7 @@ export function Builder() {
           sectionList={sectionList}
           selected={selected}
           showAnnouncement={state.showAnnouncement}
+          sectionStyles={sectionStyles}
           onSelectSection={handleSelectSection}
           onDeleteSection={handleDeleteSection}
           onOpenAddModal={() => setShowAddModal(true)}

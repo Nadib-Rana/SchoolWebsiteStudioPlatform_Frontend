@@ -1,7 +1,7 @@
 'use client'
 
 import { Icon } from '@/components/common/Icon'
-import { SECTION_TEMPLATES, type SectionItem } from './builder.types'
+import { SECTION_TEMPLATES, type SectionItem, type SectionStyle } from './builder.types'
 
 interface BuilderLeftSidebarProps {
   leftPanelTab: 'sections' | 'components'
@@ -9,6 +9,7 @@ interface BuilderLeftSidebarProps {
   sectionList: SectionItem[]
   selected: string
   showAnnouncement: boolean
+  sectionStyles?: Record<string, SectionStyle>
   onSelectSection: (label: string) => void
   onDeleteSection: (label: string, e: React.MouseEvent) => void
   onOpenAddModal: () => void
@@ -21,6 +22,7 @@ export function BuilderLeftSidebar({
   sectionList,
   selected,
   showAnnouncement,
+  sectionStyles,
   onSelectSection,
   onDeleteSection,
   onOpenAddModal,
@@ -59,7 +61,9 @@ export function BuilderLeftSidebar({
           </div>
           <div className="section-list">
             {sectionList.map((sec) => {
-              const isHidden = sec.label === 'Announcement bar' && !showAnnouncement
+              const isHidden =
+                (sec.label === 'Announcement bar' && !showAnnouncement) ||
+                Boolean(sectionStyles?.[sec.label]?.isHidden)
               return (
                 <button
                   key={sec.label}

@@ -234,6 +234,15 @@ export function SectionStyleInspector({ selected, activeTab, activeStyle, update
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '10px' }}>
           <input
             type="checkbox"
+            checked={Boolean(activeStyle.isHidden)}
+            onChange={(e) => updateActiveStyle({ isHidden: e.target.checked })}
+            style={{ width: 'auto', margin: 0 }}
+          />
+          <span>Hide this section completely (All devices)</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '10px' }}>
+          <input
+            type="checkbox"
             checked={activeStyle.hideOnMobile}
             onChange={(e) => updateActiveStyle({ hideOnMobile: e.target.checked })}
             style={{ width: 'auto', margin: 0 }}
@@ -241,7 +250,7 @@ export function SectionStyleInspector({ selected, activeTab, activeStyle, update
           <span>Hide this section on mobile devices</span>
         </label>
         <small style={{ color: '#64748b', fontSize: '12px' }}>
-          When checked, this section will automatically be hidden on phone screens.
+          Control whether this section is hidden across all devices or only on phone screens.
         </small>
       </SettingGroup>
 

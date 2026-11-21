@@ -3,6 +3,8 @@
 import { SettingGroup } from '@/components/common/SettingGroup'
 
 interface StatisticsInspectorProps {
+  isHidden?: boolean
+  onToggleHidden?: (hidden: boolean) => void
   stat1Val: string
   setStat1Val: (s: string) => void
   stat1Label: string
@@ -22,6 +24,8 @@ interface StatisticsInspectorProps {
 }
 
 export function StatisticsInspector({
+  isHidden = false,
+  onToggleHidden,
   stat1Val,
   setStat1Val,
   stat1Label,
@@ -41,6 +45,23 @@ export function StatisticsInspector({
 }: StatisticsInspectorProps) {
   return (
     <SettingGroup title="Key stats counters">
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          marginBottom: '12px',
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={!isHidden}
+          onChange={(e) => onToggleHidden?.(!e.target.checked)}
+          style={{ width: 'auto', margin: 0 }}
+        />
+        <span>Show statistics section on website</span>
+      </label>
       <label>
         Stat 1 (Value / Label)
         <div style={{ display: 'flex', gap: '8px' }}>
