@@ -142,17 +142,21 @@ export default async function SchoolAcademicsPage({ params }: PageProps) {
 
       {/* CTA Section */}
       <section className="public-cta">
-        <span>APPLY TODAY</span>
+        <span>{(siteData.settings?.allowPublicAdmission ?? true) ? 'APPLY TODAY' : 'GET IN TOUCH'}</span>
         <h2>Ready to join the {schoolName} community?</h2>
         <p>
-          Online admissions for the upcoming academic year are now open. Start your application in minutes.
+          {(siteData.settings?.allowPublicAdmission ?? true)
+            ? 'Online admissions for the upcoming academic year are now open. Start your application in minutes.'
+            : `Learn more about our academic programs and upcoming enrollment dates at ${schoolName}.`}
         </p>
         <div className="flex gap-4 justify-center mt-6">
-          <Link href={`/${schoolSlug}/admissions`} className="hero-primary">
-            Apply for Admission <Icon name="arrow" size={15} />
-          </Link>
+          {(siteData.settings?.allowPublicAdmission ?? true) && (
+            <Link href={`/${schoolSlug}/admissions`} className="hero-primary">
+              Apply for Admission <Icon name="arrow" size={15} />
+            </Link>
+          )}
           <Link href={`/${schoolSlug}/contact`} className="hero-secondary">
-            Inquire with Admissions <Icon name="arrow" size={15} />
+            Contact Admissions Office <Icon name="arrow" size={15} />
           </Link>
         </div>
       </section>

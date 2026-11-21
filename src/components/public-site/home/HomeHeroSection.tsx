@@ -19,6 +19,7 @@ interface HomeHeroSectionProps {
   setPage?: (p: string) => void
   schoolName: string
   establishedYear: number | string
+  showAdmissions?: boolean
 }
 
 export function HomeHeroSection({
@@ -36,6 +37,7 @@ export function HomeHeroSection({
   setPage,
   schoolName,
   establishedYear,
+  showAdmissions = true,
 }: HomeHeroSectionProps) {
   const slides = useMemo(() => {
     const list =
@@ -155,19 +157,20 @@ export function HomeHeroSection({
             </button>
           )}
 
-          {schoolSlug ? (
-            <Link href={`/${schoolSlug}/admissions`} className="hero-secondary">
-              Apply for admission
-            </Link>
-          ) : (
-            <button
-              type="button"
-              className="hero-secondary"
-              onClick={() => setPage && setPage('Admission Information')}
-            >
-              Apply for admission
-            </button>
-          )}
+          {showAdmissions &&
+            (schoolSlug ? (
+              <Link href={`/${schoolSlug}/admissions`} className="hero-secondary">
+                Apply for admission
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="hero-secondary"
+                onClick={() => setPage && setPage('Admission Information')}
+              >
+                Apply for admission
+              </button>
+            ))}
         </div>
       </div>
 

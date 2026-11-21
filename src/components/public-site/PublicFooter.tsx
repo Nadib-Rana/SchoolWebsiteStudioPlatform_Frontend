@@ -13,6 +13,7 @@ export interface PublicFooterProps {
   showAdmissions?: boolean
   footerStyle?: {
     bg?: string
+    textColor?: string
     align?: string
     padding?: string
     border?: boolean
@@ -76,13 +77,13 @@ export function PublicFooter({
       }}
     >
       <div className="public-logo">
-        <span style={{ width: '37px', height: '37px', background: 'rgba(255,255,255,0.15)', borderRadius: '6px' }}>{initial}</span>
+        <span style={{ width: '37px', height: '37px', background: 'rgba(255,255,255,0.15)', borderRadius: '6px', color: footerStyle?.textColor || '#ffffff' }}>{initial}</span>
         <div>
-          <strong style={{ color: '#ffffff' }}>{schoolName}</strong>
+          <strong style={{ color: footerStyle?.textColor || '#ffffff' }}>{schoolName}</strong>
           <small style={{ color: '#facc15' }}>{motto}</small>
         </div>
       </div>
-      <p style={{ color: '#cbd5e1' }}>
+      <p style={{ color: footerStyle?.textColor || '#cbd5e1' }}>
         {address}
         <br />
         {phone} · {email}
@@ -90,7 +91,7 @@ export function PublicFooter({
       <div>
         {links.map((link) =>
           schoolSlug ? (
-            <Link key={link.label} href={`/${schoolSlug}${link.path}`} style={{ color: '#e2e8f0' }}>
+            <Link key={link.label} href={`/${schoolSlug}${link.path}`} style={{ color: footerStyle?.textColor || '#e2e8f0' }}>
               {link.label}
             </Link>
           ) : (
@@ -98,7 +99,7 @@ export function PublicFooter({
               key={link.label}
               type="button"
               className="text-button"
-              style={{ color: '#e2e8f0' }}
+              style={{ color: footerStyle?.textColor || '#e2e8f0' }}
               onClick={() => setPage && setPage(link.page)}
             >
               {link.label}
@@ -107,7 +108,7 @@ export function PublicFooter({
         )}
       </div>
       {copyright && (
-        <div style={{ width: '100%', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '12px', color: '#94a3b8', textAlign: 'center' }}>
+        <div style={{ width: '100%', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '12px', color: footerStyle?.textColor || '#94a3b8', opacity: footerStyle?.textColor ? 0.85 : 1, textAlign: 'center' }}>
           {copyright}
         </div>
       )}

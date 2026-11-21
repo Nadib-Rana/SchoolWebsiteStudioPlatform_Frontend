@@ -204,6 +204,7 @@ export function PublicHome({
         setPage={setPage}
         schoolName={schoolName}
         establishedYear={establishedYear}
+        showAdmissions={schoolData?.settings?.allowPublicAdmission ?? true}
       />
       <HomeStatsSection sectionStyle={sectionStyles['Statistics']} statsList={statsList} />
       <HomeIntroSection

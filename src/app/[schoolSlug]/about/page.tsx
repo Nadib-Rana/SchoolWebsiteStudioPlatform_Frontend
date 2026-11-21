@@ -118,9 +118,11 @@ export default async function SchoolAboutPage({ params }: PageProps) {
           We invite prospective families to discover what makes our school unique.
         </p>
         <div className="flex gap-4 mt-6">
-          <Link href={`/${schoolSlug}/admissions`} className="hero-primary">
-            Apply for admission <Icon name="external" size={15} />
-          </Link>
+          {(siteData.settings?.allowPublicAdmission ?? true) && (
+            <Link href={`/${schoolSlug}/admissions`} className="hero-primary">
+              Apply for admission <Icon name="external" size={15} />
+            </Link>
+          )}
           <Link href={`/${schoolSlug}/contact`} className="hero-secondary">
             Schedule a visit <Icon name="arrow" size={15} />
           </Link>
