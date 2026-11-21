@@ -114,6 +114,8 @@ export function BuilderCanvas({
           introDesc={state.introDesc}
           introImage={state.introImage}
           introQuote={state.introQuote}
+          introBadgeTitle={state.introBadgeTitle}
+          introBadgeSubtitle={state.introBadgeSubtitle}
           principalPhoto={state.principalPhoto}
           principalName={state.principalName}
           principalQuote={state.principalQuote}

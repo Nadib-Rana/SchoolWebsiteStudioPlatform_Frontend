@@ -14,6 +14,8 @@ interface CanvasIntroPrincipalProps {
   introDesc: string
   introImage?: string
   introQuote?: string
+  introBadgeTitle?: string
+  introBadgeSubtitle?: string
   principalPhoto: string
   principalName: string
   principalQuote: string
@@ -31,6 +33,8 @@ export function CanvasIntroPrincipal({
   introDesc,
   introImage,
   introQuote,
+  introBadgeTitle,
+  introBadgeSubtitle,
   principalPhoto,
   principalName,
   principalQuote,
@@ -109,6 +113,41 @@ export function CanvasIntroPrincipal({
                   boxShadow: '0 8px 20px rgba(15, 23, 42, 0.12)',
                 }}
               />
+              <span
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  bottom: '-10px',
+                  background: activeCfg?.primaryColor || '#102f58',
+                  color: '#ffffff',
+                  padding: '10px 14px',
+                  borderRadius: '6px',
+                  boxShadow: '0 8px 18px rgba(15, 23, 42, 0.2)',
+                  textAlign: 'left',
+                  lineHeight: 1.25,
+                }}
+              >
+                <strong
+                  style={{
+                    display: 'block',
+                    fontFamily: activeCfg?.fontHeading,
+                    fontSize: '13px',
+                    fontWeight: 500,
+                  }}
+                >
+                  {introBadgeTitle?.trim() || 'Since Est.'}
+                </strong>
+                <small
+                  style={{
+                    display: 'block',
+                    fontSize: '10px',
+                    color: '#cbd5e1',
+                    marginTop: '2px',
+                  }}
+                >
+                  {introBadgeSubtitle?.trim() || 'Growing together'}
+                </small>
+              </span>
             </div>
           )}
           <div>
