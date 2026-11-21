@@ -77,8 +77,12 @@ export function PublicHome({
     draft?.heading || dbSections.heading || activeCfg.headline
   const heroDesc =
     draft?.description || dbSections.description || activeCfg.description
-  const heroBtnLabel =
+  const rawBtnLabel =
     draft?.buttonLabel || dbSections.buttonLabel || activeCfg.buttonLabel
+  const heroBtnLabel =
+    rawBtnLabel === 'Discover Northfield' || rawBtnLabel === 'Discover Our School'
+      ? `Discover ${schoolName}`
+      : rawBtnLabel
   const currentHeroImage =
     draft?.heroBg ||
     dbSections.heroBg ||

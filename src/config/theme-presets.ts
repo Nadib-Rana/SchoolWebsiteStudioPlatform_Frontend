@@ -32,7 +32,7 @@ export const THEME_CONFIGS: Record<SchoolTheme, ThemeConfig> = {
     heroImage: heroImage,
     announcementText:
       '📢 Admissions open for the 2026–2027 Academic Year · Limited seats available!',
-    buttonLabel: 'Discover Northfield',
+    buttonLabel: 'Discover Our School',
     fontHeading: "'DM Serif Display', serif",
   },
   classic: {

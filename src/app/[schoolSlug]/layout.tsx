@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PublicHeader } from '@/components/public-site/PublicHeader'
 import { PublicFooter } from '@/components/public-site/PublicFooter'
 import { PublicAnalyticsTracker } from '@/components/public-site/PublicAnalyticsTracker'
 import { getPublicSiteData } from '@/lib/public-site'
+import { parseHomepageSections } from '@/lib/homepage-sections-parser'
 import { THEME_CONFIGS } from '@/config/themes'
 import type { SchoolTheme } from '@/types/theme'
 
@@ -81,6 +83,15 @@ export default async function SchoolPublicLayout({
   const fontBody = siteData.theme?.fontBody || 'Inter'
   const headerBg = siteData.theme?.primaryColor || themeCfg.headerBg || primaryColor
 
+  const dbSections = parseHomepageSections(siteData)
+  const showAnnouncement =
+    dbSections.showAnnouncement !== undefined
+      ? dbSections.showAnnouncement && Boolean(dbSections.announcementText)
+      : false
+  const announcementBg =
+    dbSections.sectionStyles?.['Announcement bar']?.bg || primaryColor
+  const footerBg = dbSections.sectionStyles?.['Footer']?.bg || primaryColor
+
   const schemaOrg = {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
@@ -118,13 +129,45 @@ export default async function SchoolPublicLayout({
         }}
       />
       <PublicAnalyticsTracker schoolSlug={schoolSlug} />
+      {showAnnouncement && dbSections.announcementText && (
+        <div
+          style={{
+            background: announcementBg,
+            color: '#f8fafc',
+            padding: '10px 20px',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            textAlign: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          <span>{dbSections.announcementText}</span>
+          {dbSections.announcementLink && (
+            <Link
+              href={`/${schoolSlug}/admissions`}
+              style={{
+                color: '#facc15',
+                fontWeight: 700,
+                textDecoration: 'underline',
+              }}
+            >
+              {dbSections.announcementLink} →
+            </Link>
+          )}
+        </div>
+      )}
       <PublicHeader
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
         motto={siteData.profile?.motto || themeCfg.eyebrow}
         logoUrl={siteData.school.logoUrl || undefined}
+        applyButtonText={dbSections.applyButtonText || 'Apply now'}
         navigation={siteData.navigation}
         headerStyle={{
+          ...(dbSections.sectionStyles?.['Header'] || {}),
           bg: headerBg,
         }}
       />
@@ -133,11 +176,13 @@ export default async function SchoolPublicLayout({
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
         motto={siteData.profile?.motto || themeCfg.eyebrow}
-        address={siteData.profile?.address}
-        phone={siteData.profile?.phone}
-        email={siteData.profile?.email}
+        address={siteData.profile?.address || dbSections.footerAddress}
+        phone={siteData.profile?.phone || dbSections.footerPhone}
+        email={siteData.profile?.email || dbSections.footerEmail}
+        copyright={dbSections.footerCopyright}
         footerStyle={{
-          bg: primaryColor,
+          ...(dbSections.sectionStyles?.['Footer'] || {}),
+          bg: footerBg,
         }}
       />
     </div>

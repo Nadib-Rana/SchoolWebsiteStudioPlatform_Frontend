@@ -35,11 +35,17 @@ export function HomeContactSection({
           </button>
         )}
       </div>
-      <div className="map-placeholder">
+      <a
+        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${schoolName} ${address}`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="map-placeholder"
+        style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+      >
         <Icon name="globe" size={30} />
         <strong>{schoolName}</strong>
-        <span>Interactive map location</span>
-      </div>
+        <span>Open in Google Maps →</span>
+      </a>
     </section>
   )
 }
