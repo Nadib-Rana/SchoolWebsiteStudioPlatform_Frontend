@@ -47,5 +47,7 @@ export interface StudioContextType {
   schoolSwitchKey: number
   switchSchool: (schoolId: string) => Promise<void>
   refreshSchools: (preferredSchoolId?: string) => Promise<void>
+  registerBeforePublish: (fn: (() => Promise<void>) | null) => void
+  runBeforePublish: () => Promise<void>
   logout: () => void
 }

@@ -10,7 +10,7 @@ import { revalidatePublicSite } from '@/lib/revalidate-client'
 import { useState } from 'react'
 
 export function StudioTopbar() {
-  const { setSidebarOpen, setView, notify, unreadNotifications, user, currentSchool, refreshSchools, setHelpDrawerOpen } = useStudio()
+  const { setSidebarOpen, setView, notify, unreadNotifications, user, currentSchool, refreshSchools, runBeforePublish, setHelpDrawerOpen } = useStudio()
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -48,6 +48,9 @@ export function StudioTopbar() {
     const schoolName = currentSchool?.name || 'School'
 
     try {
+      // Flush any unsaved Website Builder edits (colors, text, layout) to DB before publishing
+      await runBeforePublish()
+
       let nextTag = 'v1.1'
       try {
         const statusRes = await api.publishing.getStatus(schoolId)

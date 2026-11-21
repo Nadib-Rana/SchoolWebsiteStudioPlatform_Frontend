@@ -42,7 +42,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
           setBuilderData(cached)
         }
 
-        const slug = api.getActiveSchoolSlug() || 'northfield-high'
+        const slug = currentSchool?.slug || api.getActiveSchoolSlug() || 'northfield-high'
         const base = API_BASE_URL
         const res = await fetch(`${base}/public/site?slug=${encodeURIComponent(slug)}`)
         if (res.ok) {
@@ -59,7 +59,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [currentSchool?.id, currentSchool?.slug])
 
   useEffect(() => {
     if (previewTheme && previewTheme !== theme) {
@@ -86,22 +86,26 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
   }
 
   const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
-  const isCustomizedForTheme = !builderData?.appliedTheme || builderData?.appliedTheme === theme
-  const effectiveSchoolName = (isCustomizedForTheme && builderData?.schoolName) || activeCfg.schoolName
-  const effectiveMotto = (isCustomizedForTheme && builderData?.eyebrow) || activeCfg.eyebrow
+  const effectiveSchoolName =
+    siteData?.school?.name || currentSchool?.name || builderData?.schoolName || activeCfg.schoolName
+  const effectiveMotto = builderData?.eyebrow || siteData?.profile?.motto || activeCfg.eyebrow
   const showAnnouncement = builderData?.showAnnouncement !== undefined ? builderData.showAnnouncement : true
-  const announcementText = (isCustomizedForTheme && builderData?.announcementText) || activeCfg.announcementText
+  const announcementText = builderData?.announcementText || activeCfg.announcementText
   const announcementLink = builderData?.announcementLink || 'Apply now'
-  const effectiveAnnouncementBg = (isCustomizedForTheme && builderData?.sectionStyles?.['Announcement bar']?.bg) || activeCfg.primaryColor
-  const effectiveHeaderBg = (isCustomizedForTheme && builderData?.sectionStyles?.['Header']?.bg) || activeCfg.headerBg
+  const effectivePrimaryColor =
+    customTheme?.primaryColor || siteData?.theme?.primaryColor || activeCfg.primaryColor
+  const effectiveAnnouncementBg =
+    builderData?.sectionStyles?.['Announcement bar']?.bg || effectivePrimaryColor
+  const effectiveHeaderBg =
+    builderData?.sectionStyles?.['Header']?.bg || effectivePrimaryColor || activeCfg.headerBg
 
   return (
     <div
       className={`public-site theme-${theme}`}
       style={
         {
-          '--navy': customTheme?.primaryColor || effectiveAnnouncementBg || activeCfg.primaryColor,
-          '--accent': customTheme?.secondaryColor || activeCfg.secondaryColor,
+          '--navy': effectivePrimaryColor,
+          '--accent': customTheme?.secondaryColor || siteData?.theme?.secondaryColor || activeCfg.secondaryColor,
           fontFamily: customTheme?.fontBody ? `${customTheme.fontBody}, sans-serif` : undefined,
         } as React.CSSProperties
       }
@@ -116,7 +120,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         <div
           style={{
             background: effectiveAnnouncementBg,
-            color: '#f8fafc',
+            color: builderData?.sectionStyles?.['Announcement bar']?.textColor || '#f8fafc',
             padding: '11px 20px',
             fontSize: '13px',
             display: 'flex',
@@ -146,7 +150,7 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         schoolSlug={siteData?.school?.slug || 'northfield-high'}
         schoolName={effectiveSchoolName}
         motto={effectiveMotto}
-        logoUrl={isCustomizedForTheme ? siteData?.school?.logoUrl || undefined : undefined}
+        logoUrl={siteData?.school?.logoUrl || currentSchool?.logoUrl || undefined}
         logoLetter={effectiveSchoolName.charAt(0)}
         applyButtonText={builderData?.applyButtonText || 'Apply now'}
         navigation={siteData?.navigation}
@@ -176,11 +180,9 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         email={builderData?.footerEmail || siteData?.profile?.email}
         copyright={builderData?.footerCopyright}
         footerStyle={{
-          ...(isCustomizedForTheme ? builderData?.sectionStyles?.['Footer'] : {}),
+          ...(builderData?.sectionStyles?.['Footer'] || {}),
           bg:
-            isCustomizedForTheme && builderData?.sectionStyles?.['Footer']?.bg
-              ? builderData.sectionStyles['Footer'].bg
-              : activeCfg.primaryColor,
+            builderData?.sectionStyles?.['Footer']?.bg || effectivePrimaryColor,
         }}
       />
     </div>

@@ -4,7 +4,7 @@ import type { SchoolTheme } from '@/types/theme'
 import type { View } from '@/types/studio'
 import type { HelpLang } from '@/config/help-guides'
 import { api } from '@/lib/api-client'
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { CurrentUser, CurrentSchool, StudioContextType } from './studio-context-types'
 import { autoApplyButtonAriaLabels } from './studio-accessibility'
 
@@ -159,6 +159,19 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     setView('login')
   }, [notify])
 
+  const beforePublishRef = useRef<(() => Promise<void>) | null>(null)
+  const registerBeforePublish = useCallback(
+    (fn: (() => Promise<void>) | null) => {
+      beforePublishRef.current = fn
+    },
+    [],
+  )
+  const runBeforePublish = useCallback(async () => {
+    if (beforePublishRef.current) {
+      await beforePublishRef.current()
+    }
+  }, [])
+
   useEffect(() => { refreshSchools() }, [refreshSchools])
   useEffect(() => { autoApplyButtonAriaLabels() })
 
@@ -169,7 +182,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         previewTheme, setPreviewTheme, unreadNotifications, setUnreadNotifications,
         helpDrawerOpen, setHelpDrawerOpen, helpLang, setHelpLang,
         user, currentSchool, userSchools, loadingSchools, schoolSwitchKey,
-        switchSchool, refreshSchools, logout,
+        switchSchool, refreshSchools, registerBeforePublish, runBeforePublish, logout,
       }}
     >
       {children}

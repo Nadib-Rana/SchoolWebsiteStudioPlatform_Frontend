@@ -10,7 +10,7 @@ import { loadHomepageSectionsFromBackend } from './builder-loader'
 import { useBuilderFields } from './useBuilderFields'
 
 export function useBuilderState() {
-  const { notify, setView, previewTheme, currentSchool, schoolSwitchKey } = useStudio()
+  const { notify, setView, previewTheme, currentSchool, schoolSwitchKey, registerBeforePublish } = useStudio()
   const isInitializedRef = useRef(false)
   const [device, setDevice] = useState<'monitor' | 'tablet' | 'mobile'>('monitor')
   const [selected, setSelected] = useState('Hero section')
@@ -157,6 +157,20 @@ export function useBuilderState() {
     }
     isInitializedRef.current = true
   }, [previewTheme, currentSchool?.id, schoolSwitchKey])
+
+  const latestStateRef = useRef({ stateFields, sectionStyles, customSectionsData, schoolId: currentSchool?.id })
+  latestStateRef.current = { stateFields, sectionStyles, customSectionsData, schoolId: currentSchool?.id }
+
+  useEffect(() => {
+    registerBeforePublish(async () => {
+      const latest = latestStateRef.current
+      persistBuilderStateToLocal(latest.stateFields, latest.schoolId)
+      await syncHomepageToBackend(latest.stateFields, latest.sectionStyles, latest.customSectionsData)
+    })
+    return () => {
+      registerBeforePublish(null)
+    }
+  }, [registerBeforePublish])
 
   const handleSave = async () => {
     setIsSaving(true)

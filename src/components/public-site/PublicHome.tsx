@@ -50,11 +50,7 @@ export function PublicHome({
   )
 
   const activeCfg = THEME_CONFIGS[theme] || THEME_CONFIGS.modern
-  const isLocalForTheme =
-    isPreview &&
-    localDraft &&
-    (!localDraft.appliedTheme || localDraft.appliedTheme === theme)
-  const draft = isLocalForTheme ? localDraft : null
+  const draft = isPreview && localDraft ? localDraft : null
 
   const schoolName =
     schoolData?.school?.name ||
