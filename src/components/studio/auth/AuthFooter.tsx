@@ -1,35 +1,13 @@
 'use client'
 
-import { Button } from '@/components/common/Button'
-import { useStudio } from '@/context/StudioContext'
-
 interface AuthFooterProps {
   mode: 'login' | 'register'
   onModeChange: (m: 'login' | 'register') => void
 }
 
 export function AuthFooter({ mode, onModeChange }: AuthFooterProps) {
-  const { notify } = useStudio()
-
   return (
     <>
-      <div className="or">
-        <span />
-        or continue with
-        <span />
-      </div>
-
-      <Button
-        type="button"
-        onClick={() =>
-          notify(
-            'Google OAuth is not configured. Please use your email and password.',
-          )
-        }
-      >
-        <b>G</b> Continue with Google
-      </Button>
-
       <div style={{ marginTop: '20px', textAlign: 'center' }}>
         {mode === 'login' ? (
           <>
