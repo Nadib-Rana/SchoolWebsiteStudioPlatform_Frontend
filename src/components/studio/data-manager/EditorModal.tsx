@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import type { View } from '@/types/studio'
 import { TeacherEditorForm } from './forms/TeacherEditorForm'
 import { NoticeEditorForm } from './forms/NoticeEditorForm'
@@ -108,6 +109,7 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
           mimeType: selectedFile.type, sizeBytes: selectedFile.size, url: uploaded.publicUrl,
         })
       }
+      await revalidatePublicSite(api.getActiveSchoolSlug())
       save()
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to save entry.')

@@ -33,7 +33,7 @@ export function ContentSchoolInfoTab({
           aspectRatio="square"
           fallbackInitial={(formData.schoolName || 'N').charAt(0)}
           pickerTitle="Select School Logo"
-          helperText="PNG, JPG or SVG for public navbar."
+          helperText="PNG, JPG or WebP for public navbar."
         />
         <ImageUploadControl
           label="Website Favicon"
