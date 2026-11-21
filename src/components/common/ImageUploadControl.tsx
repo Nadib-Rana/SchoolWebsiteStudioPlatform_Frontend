@@ -21,6 +21,7 @@ export function ImageUploadControl({
 }: ImageUploadControlProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDirectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +29,7 @@ export function ImageUploadControl({
     if (!file) return
 
     setIsUploading(true)
+    setUploadError(null)
     try {
       const uploadRes = await api.storage.upload(file)
       await api.gallery.createMedia({
@@ -41,7 +43,7 @@ export function ImageUploadControl({
       onChange(uploadRes.publicUrl)
     } catch (err: any) {
       console.error('Direct upload failed:', err)
-      alert(`Upload error: ${err?.message || 'Failed to upload image'}`)
+      setUploadError(err?.message || 'Failed to upload image. Please use PNG, JPG, or WebP.')
     } finally {
       setIsUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -96,6 +98,23 @@ export function ImageUploadControl({
           onRemove={() => onChange(null)}
         />
       </div>
+
+      {uploadError && (
+        <span
+          role="alert"
+          style={{
+            fontSize: '11px',
+            color: '#b91c1c',
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '6px',
+            padding: '6px 8px',
+            marginTop: '2px',
+          }}
+        >
+          {uploadError}
+        </span>
+      )}
 
       {helperText && (
         <span style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>

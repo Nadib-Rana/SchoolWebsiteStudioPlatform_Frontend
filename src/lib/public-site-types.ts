@@ -114,6 +114,8 @@ export interface PublicSiteData {
   settings?: {
     allowPublicAdmission?: boolean
     maintenanceMode?: boolean
+    showNoticeTicker?: boolean
+    showFloatingContact?: boolean
     showNoticeBoard?: boolean
     showEventsCalendar?: boolean
   }

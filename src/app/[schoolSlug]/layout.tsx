@@ -162,6 +162,8 @@ export default async function SchoolPublicLayout({
     dbSections.sectionStyles?.['Announcement bar']?.bg || primaryColor
   const footerBg = dbSections.sectionStyles?.['Footer']?.bg || primaryColor
   const allowPublicAdmission = siteData.settings?.allowPublicAdmission ?? true
+  const showNoticeTicker = siteData.settings?.showNoticeTicker ?? true
+  const showFloatingContact = siteData.settings?.showFloatingContact ?? true
 
   const schemaOrg = {
     '@context': 'https://schema.org',
@@ -243,16 +245,20 @@ export default async function SchoolPublicLayout({
           bg: headerBg,
         }}
       />
-      <PublicNoticeTicker
-        schoolSlug={schoolSlug}
-        notices={siteData.notices || []}
-      />
+      {showNoticeTicker && (
+        <PublicNoticeTicker
+          schoolSlug={schoolSlug}
+          notices={siteData.notices || []}
+        />
+      )}
       <div className="flex-1">{children}</div>
-      <PublicFloatingContact
-        schoolName={siteData.school.name}
-        phone={siteData.profile?.phone || dbSections.footerPhone}
-        whatsapp={siteData.profile?.socialLinks?.whatsapp}
-      />
+      {showFloatingContact && (
+        <PublicFloatingContact
+          schoolName={siteData.school.name}
+          phone={siteData.profile?.phone || dbSections.footerPhone}
+          whatsapp={siteData.profile?.socialLinks?.whatsapp}
+        />
+      )}
       <PublicFooter
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}

@@ -78,6 +78,8 @@ export function useSettingsState() {
   }
 
   const [allowPublicAdmission, setAllowPublicAdmission] = useState(true)
+  const [showNoticeTicker, setShowNoticeTicker] = useState(true)
+  const [showFloatingContact, setShowFloatingContact] = useState(true)
   const [maintenanceMode, setMaintenanceMode] = useState(false)
   const [searchIndexing, setSearchIndexing] = useState(true)
   const [autoImageOpt, setAutoImageOpt] = useState(true)
@@ -122,6 +124,32 @@ export function useSettingsState() {
           if (typeof settings.allowPublicAdmission === 'boolean') {
             setAllowPublicAdmission(settings.allowPublicAdmission)
           }
+          if (typeof settings.showNoticeTicker === 'boolean') {
+            setShowNoticeTicker(settings.showNoticeTicker)
+          }
+          if (typeof settings.showFloatingContact === 'boolean') {
+            setShowFloatingContact(settings.showFloatingContact)
+          }
+          if (settings.notificationPreferences && typeof settings.notificationPreferences === 'object') {
+            const savedPrefs = settings.notificationPreferences as Record<string, { email?: boolean; inApp?: boolean }>
+            setNotificationPreferences((prev) =>
+              prev.map((item) =>
+                savedPrefs[item.id]
+                  ? {
+                      ...item,
+                      email: typeof savedPrefs[item.id].email === 'boolean' ? Boolean(savedPrefs[item.id].email) : item.email,
+                      inApp: typeof savedPrefs[item.id].inApp === 'boolean' ? Boolean(savedPrefs[item.id].inApp) : item.inApp,
+                    }
+                  : item,
+              ),
+            )
+          }
+          if (settings.securityConfig && typeof settings.securityConfig === 'object') {
+            const sec = settings.securityConfig as Record<string, any>
+            if (typeof sec.twoFactorAuth === 'boolean') security.setTwoFactorAuth(sec.twoFactorAuth)
+            if (typeof sec.strongPassword === 'boolean') security.setStrongPassword(sec.strongPassword)
+            if (typeof sec.newDeviceAlerts === 'boolean') security.setNewDeviceAlerts(sec.newDeviceAlerts)
+          }
         }
       } catch (err: any) {
         console.warn('[Settings] Settings load warning:', err?.message)
@@ -151,13 +179,47 @@ export function useSettingsState() {
   const handleSaveWebsite = async () => {
     setIsSavingWebsite(true)
     try {
-      await api.settings.update({ maintenanceMode, allowPublicAdmission })
+      await api.settings.update({
+        maintenanceMode,
+        allowPublicAdmission,
+        showNoticeTicker,
+        showFloatingContact,
+      })
       await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       notify('Website preferences saved successfully')
     } catch (err: any) {
       notify(`Failed to save: ${err?.message || 'Check network connection'}`)
     } finally {
       setIsSavingWebsite(false)
+    }
+  }
+
+  const handleSaveNotifications = async () => {
+    try {
+      const prefsMap: Record<string, { email: boolean; inApp: boolean }> = {}
+      notificationPreferences.forEach((p) => {
+        prefsMap[p.id] = { email: p.email, inApp: p.inApp }
+      })
+      await api.settings.update({ notificationPreferences: prefsMap })
+      notify('Notification preferences saved successfully.')
+    } catch (err: any) {
+      notify(`Failed to save notifications: ${err?.message || 'Network error'}`)
+    }
+  }
+
+  const handleSaveSecurity = async () => {
+    try {
+      await api.settings.update({
+        securityConfig: {
+          twoFactorAuth: security.twoFactorAuth,
+          strongPassword: security.strongPassword,
+          sessionTimeout: security.sessionTimeout,
+          newDeviceAlerts: security.newDeviceAlerts,
+        },
+      })
+      notify('Security configuration saved successfully.')
+    } catch (err: any) {
+      notify(`Failed to save security settings: ${err?.message || 'Network error'}`)
     }
   }
 
@@ -186,6 +248,8 @@ export function useSettingsState() {
     isSavingAccount: account.isSavingAccount, handleSaveAccount: account.handleSaveAccount,
     permMatrixOpen, setPermMatrixOpen, notificationPreferences, toggleNotification,
     allowPublicAdmission, setAllowPublicAdmission,
+    showNoticeTicker, setShowNoticeTicker,
+    showFloatingContact, setShowFloatingContact,
     maintenanceMode, setMaintenanceMode, searchIndexing, setSearchIndexing, autoImageOpt, setAutoImageOpt,
     showAttribution, setShowAttribution, cookieBanner, setCookieBanner, isSavingWebsite,
     twoFactorAuth: security.twoFactorAuth, setTwoFactorAuth: security.setTwoFactorAuth,
@@ -198,7 +262,7 @@ export function useSettingsState() {
     handleExportContent: exportsData.handleExportContent,
     handleExportMediaArchive: exportsData.handleExportMediaArchive,
     handleExportAnalytics: exportsData.handleExportAnalytics,
-    handleSaveProfile, handleSaveWebsite,
+    handleSaveProfile, handleSaveWebsite, handleSaveNotifications, handleSaveSecurity,
     handleCycleSessionTimeout: security.handleCycleSessionTimeout,
   }
 }

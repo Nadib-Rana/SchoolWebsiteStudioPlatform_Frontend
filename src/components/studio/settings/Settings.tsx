@@ -107,7 +107,7 @@ export function Settings() {
           <NotificationsTab
             notificationPreferences={s.notificationPreferences}
             toggleNotification={s.toggleNotification}
-            onSaveNotifications={() => s.notify('Notification preferences saved successfully.')}
+            onSaveNotifications={s.handleSaveNotifications}
           />
         )}
 
@@ -115,6 +115,10 @@ export function Settings() {
           <WebsiteSettingsTab
             allowPublicAdmission={s.allowPublicAdmission}
             setAllowPublicAdmission={s.setAllowPublicAdmission}
+            showNoticeTicker={s.showNoticeTicker}
+            setShowNoticeTicker={s.setShowNoticeTicker}
+            showFloatingContact={s.showFloatingContact}
+            setShowFloatingContact={s.setShowFloatingContact}
             maintenanceMode={s.maintenanceMode}
             setMaintenanceMode={s.setMaintenanceMode}
             searchIndexing={s.searchIndexing}
@@ -143,7 +147,7 @@ export function Settings() {
             sessions={s.sessions}
             handleRevokeSession={s.handleRevokeSession}
             handleSignOutOtherDevices={s.handleSignOutOtherDevices}
-            handleSaveSecurity={() => s.notify('Security configuration saved.')}
+            handleSaveSecurity={s.handleSaveSecurity}
             notify={s.notify}
           />
         )}

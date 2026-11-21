@@ -3,59 +3,69 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import type { SeoConfigData } from './seo.types'
 import { SeoFormTab } from './SeoFormTab'
 import { SeoSearchPreviewCard } from './SeoSearchPreviewCard'
 import { SeoAuditScoreCard } from './SeoAuditScoreCard'
 
-const INITIAL_SEO: SeoConfigData = {
-  siteTitle: 'Northfield High School | Inspiring Excellence Since 1984',
-  tagline: 'A premier public secondary institution offering AP courses and STEM programs.',
-  metaDescription: 'Welcome to Northfield High School. Discover academic opportunities, athletic programs, and our community.',
-  metaKeywords: ['Northfield High', 'High School NY', 'AP Program', 'STEM Education', 'Admissions'],
-  ogImageUrl: '',
-  googleAnalyticsId: '',
-  searchConsoleTag: '',
-  canonicalUrl: '',
-  sitemapEnabled: true,
-  isIndexed: true,
+function buildDefaultSeo(schoolName?: string): SeoConfigData {
+  const name = schoolName || 'Our School'
+  return {
+    siteTitle: `${name} | Official Website`,
+    tagline: `Official academic portal and community hub of ${name}.`,
+    metaDescription: `Welcome to ${name}. Explore academic programs, faculty, notices, events, and online admissions.`,
+    metaKeywords: [name, 'School', 'Education', 'Academics', 'Admissions'],
+    ogImageUrl: '',
+    googleAnalyticsId: '',
+    searchConsoleTag: '',
+    canonicalUrl: '',
+    sitemapEnabled: true,
+    isIndexed: true,
+  }
 }
 
 export function SEOManager() {
-  const { notify } = useStudio()
-  const [seo, setSeo] = useState<SeoConfigData>(INITIAL_SEO)
+  const { notify, currentSchool, schoolSwitchKey } = useStudio()
+  const [seo, setSeo] = useState<SeoConfigData>(() =>
+    buildDefaultSeo(currentSchool?.name),
+  )
   const [isSaving, setIsSaving] = useState(false)
 
   const loadSEO = useCallback(async () => {
+    const fallback = buildDefaultSeo(currentSchool?.name)
     try {
       const res = await api.seo.get()
       const data = res?.data || res
       if (data) {
-        setSeo((prev) => ({
-          ...prev,
-          siteTitle: data.siteTitle || data.metaTitle || prev.siteTitle,
-          tagline: data.tagline || prev.tagline,
-          metaDescription: data.metaDescription || prev.metaDescription,
-          metaKeywords: Array.isArray(data.metaKeywords) ? data.metaKeywords : prev.metaKeywords,
-          ogImageUrl: data.ogImageUrl || data.ogImage || prev.ogImageUrl,
-          googleAnalyticsId: data.googleAnalyticsId || prev.googleAnalyticsId,
-          searchConsoleTag: data.searchConsoleTag || prev.searchConsoleTag,
-          canonicalUrl: data.canonicalUrl || prev.canonicalUrl,
-          sitemapEnabled: typeof data.sitemapEnabled === 'boolean' ? data.sitemapEnabled : prev.sitemapEnabled,
-          isIndexed: typeof data.isIndexed === 'boolean' ? data.isIndexed : prev.isIndexed,
-          schoolName: data.schoolName,
+        setSeo({
+          ...fallback,
+          siteTitle: data.siteTitle || data.metaTitle || fallback.siteTitle,
+          tagline: data.tagline || fallback.tagline,
+          metaDescription: data.metaDescription || fallback.metaDescription,
+          metaKeywords: Array.isArray(data.metaKeywords) && data.metaKeywords.length > 0 ? data.metaKeywords : fallback.metaKeywords,
+          ogImageUrl: data.ogImageUrl || data.ogImage || '',
+          googleAnalyticsId: data.googleAnalyticsId || '',
+          searchConsoleTag: data.searchConsoleTag || '',
+          canonicalUrl: data.canonicalUrl || '',
+          sitemapEnabled: typeof data.sitemapEnabled === 'boolean' ? data.sitemapEnabled : true,
+          isIndexed: typeof data.isIndexed === 'boolean' ? data.isIndexed : true,
+          schoolName: data.schoolName || currentSchool?.name,
           schoolLogo: data.schoolLogo,
           schoolFavicon: data.schoolFavicon,
-        }))
+        })
+      } else {
+        setSeo(fallback)
       }
     } catch (err) {
       console.warn('Failed to load SEO configuration:', err)
+      setSeo(fallback)
     }
-  }, [])
+  }, [currentSchool?.name])
 
   useEffect(() => {
     void loadSEO()
-  }, [loadSEO])
+  }, [loadSEO, currentSchool?.id, schoolSwitchKey])
 
   const handleUpdateSeo = (updates: Partial<SeoConfigData>) => {
     setSeo((prev) => ({ ...prev, ...updates }))
@@ -74,7 +84,8 @@ export function SEOManager() {
         searchConsoleTag: seo.searchConsoleTag,
         sitemapEnabled: seo.sitemapEnabled,
       })
-      notify('Search engine optimization & social card settings saved successfully!')
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
+      notify('Search engine optimization & social card settings saved and published!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save SEO settings'
       notify(`Error: ${msg}`)

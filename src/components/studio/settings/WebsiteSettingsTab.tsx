@@ -5,6 +5,10 @@ import { SettingsTitle, SettingsSave } from './SettingsHeaderSave'
 interface WebsiteSettingsTabProps {
   allowPublicAdmission: boolean
   setAllowPublicAdmission: React.Dispatch<React.SetStateAction<boolean>>
+  showNoticeTicker: boolean
+  setShowNoticeTicker: React.Dispatch<React.SetStateAction<boolean>>
+  showFloatingContact: boolean
+  setShowFloatingContact: React.Dispatch<React.SetStateAction<boolean>>
   maintenanceMode: boolean
   setMaintenanceMode: React.Dispatch<React.SetStateAction<boolean>>
   searchIndexing: boolean
@@ -22,6 +26,10 @@ interface WebsiteSettingsTabProps {
 export function WebsiteSettingsTab({
   allowPublicAdmission,
   setAllowPublicAdmission,
+  showNoticeTicker,
+  setShowNoticeTicker,
+  showFloatingContact,
+  setShowFloatingContact,
   maintenanceMode,
   setMaintenanceMode,
   searchIndexing,
@@ -41,6 +49,18 @@ export function WebsiteSettingsTab({
       desc: 'Show the /admissions page, Apply Now button, and accept online student applications',
       active: allowPublicAdmission,
       toggle: () => setAllowPublicAdmission((prev) => !prev),
+    },
+    {
+      title: 'Latest Notices ticker bar',
+      desc: 'Show the scrolling public notices bar below the header on your website',
+      active: showNoticeTicker,
+      toggle: () => setShowNoticeTicker((prev) => !prev),
+    },
+    {
+      title: 'Floating WhatsApp & Call buttons',
+      desc: 'Display quick WhatsApp chat and phone call buttons at the bottom-right corner',
+      active: showFloatingContact,
+      toggle: () => setShowFloatingContact((prev) => !prev),
     },
     {
       title: 'Maintenance mode',
