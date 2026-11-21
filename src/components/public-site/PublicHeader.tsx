@@ -39,6 +39,12 @@ export function PublicHeader({
 
   const bg = headerStyle?.bg || 'var(--header-bg, #ffffff)'
   const isDark = isDarkColor(bg)
+  const navTextColor =
+    headerStyle?.textColor || (isDark ? '#f8fafc' : '#1e293b')
+  const navAlign = headerStyle?.align || 'right'
+  const navMarginLeft = navAlign === 'left' ? '2.5vw' : 'auto'
+  const navMarginRight =
+    navAlign === 'left' || navAlign === 'center' ? 'auto' : '0'
 
   return (
     <header
@@ -57,7 +63,8 @@ export function PublicHeader({
 
       <nav
         style={{
-          marginLeft: 'auto',
+          marginLeft: navMarginLeft,
+          marginRight: navMarginRight,
           display: 'flex',
           alignItems: 'center',
           gap: '2vw',
@@ -76,7 +83,7 @@ export function PublicHeader({
                 border: 'none',
                 cursor: 'pointer',
                 font: 'inherit',
-                color: isDark ? '#f8fafc' : '#1e293b',
+                color: navTextColor,
                 padding: '6px 0',
               }}
             >
@@ -92,7 +99,7 @@ export function PublicHeader({
               }
               className="public-nav-link"
               style={{
-                color: isDark ? '#f8fafc' : '#1e293b',
+                color: navTextColor,
                 textDecoration: 'none',
                 transition: 'opacity 0.15s',
               }}

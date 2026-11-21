@@ -9,6 +9,7 @@ export interface PublicHeaderProps {
   applyButtonText?: string
   headerStyle?: {
     bg?: string
+    textColor?: string
     align?: string
     padding?: string
     border?: boolean

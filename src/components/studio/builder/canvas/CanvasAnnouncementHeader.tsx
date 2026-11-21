@@ -107,12 +107,14 @@ export function CanvasAnnouncementHeader({
           cursor: 'pointer',
           position: 'relative',
           background: headerStyle?.bg || activeCfg?.headerBg || '#ffffff',
+          color: headerStyle?.textColor || undefined,
           paddingTop: headerPad,
           paddingBottom: headerPad,
           display:
             headerStyle?.hideOnMobile && device === 'mobile'
               ? 'none'
               : 'flex',
+          alignItems: 'center',
           outline: selected === 'Header' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
           ...(headerStyle?.border ? { borderBottom: '2px solid #2563eb' } : {}),
@@ -135,23 +137,39 @@ export function CanvasAnnouncementHeader({
         >
           {logoLetter}
         </div>
-        <strong>{schoolName}</strong>
-        <div>
+        <strong style={{ color: headerStyle?.textColor || undefined }}>{schoolName}</strong>
+        <div
+          style={{
+            marginLeft: headerStyle?.align === 'left' ? '20px' : 'auto',
+            marginRight:
+              headerStyle?.align === 'left' || headerStyle?.align === 'center'
+                ? 'auto'
+                : '0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            color: headerStyle?.textColor || undefined,
+          }}
+        >
           <span>About</span>
           <span>Academics</span>
           <span>Faculty</span>
           <span>Notices</span>
           <span>Events</span>
-          <b
-            style={{
-              cursor: 'pointer',
-              background: activeCfg?.secondaryColor || '#e9b949',
-              color: '#16243a',
-            }}
-          >
-            {applyButtonText}
-          </b>
         </div>
+        <b
+          style={{
+            cursor: 'pointer',
+            background: activeCfg?.secondaryColor || '#e9b949',
+            color: '#16243a',
+            padding: '5px 10px',
+            borderRadius: '4px',
+            fontSize: '11px',
+            marginLeft: '12px',
+          }}
+        >
+          {applyButtonText}
+        </b>
       </div>
     </>
   )
