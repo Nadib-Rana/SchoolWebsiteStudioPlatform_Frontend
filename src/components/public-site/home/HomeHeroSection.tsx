@@ -94,12 +94,16 @@ export function HomeHeroSection({
     >
       {/* Crossfade Background Slides */}
       {slides.map((src, idx) => (
-        <div
+        <span
           key={`${src}-${idx}`}
           aria-hidden="true"
           style={{
             position: 'absolute',
             inset: 0,
+            width: '100%',
+            height: '100%',
+            maxWidth: 'none',
+            display: 'block',
             backgroundImage: `url(${src})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -113,11 +117,15 @@ export function HomeHeroSection({
       ))}
 
       {/* Dark Gradient Overlay */}
-      <div
+      <span
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
+          width: '100%',
+          height: '100%',
+          maxWidth: 'none',
+          display: 'block',
           background: `linear-gradient(90deg,rgba(7,24,48,${overlayAlpha}),rgba(7,24,48,${overlayAlpha * 0.25}))`,
           zIndex: 1,
           pointerEvents: 'none',
