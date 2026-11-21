@@ -3,35 +3,45 @@
 import { useState } from 'react'
 import { Icon } from '@/components/common/Icon'
 import { api } from '@/lib/api-client'
+import type { PublicSiteData } from '@/lib/public-site'
 
-export function InnerContactSection() {
+interface InnerContactSectionProps {
+  siteData?: PublicSiteData | null
+}
+
+export function InnerContactSection({ siteData }: InnerContactSectionProps) {
   const [contactSent, setContactSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const schoolName = siteData?.school?.name || 'Our School'
+  const schoolSlug = siteData?.school?.slug || api.getActiveSchoolSlug()
+  const address = siteData?.profile?.address || 'Campus Main Road'
+  const phone = siteData?.profile?.phone || 'Contact office for phone'
+  const email = siteData?.profile?.email || 'admissions@school.edu'
+  const officeHours =
+    siteData?.profile?.officeHours || 'Sunday–Thursday · 8:00 AM–4:00 PM'
 
   return (
     <section className="contact-content">
       <div>
         <span className="section-kicker">SCHOOL OFFICE</span>
-        <h2>Visit or contact Northfield.</h2>
-        <p>
-          27 Lakeview Avenue
-          <br />
-          Dhanmondi, Dhaka 1209
-        </p>
+        <h2>Visit or contact {schoolName}.</h2>
+        <p>{address}</p>
         <p>
           <strong>Phone</strong>
           <br />
-          +880 2 555 0142
+          {phone}
         </p>
         <p>
           <strong>Email</strong>
           <br />
-          hello@northfield.edu
+          {email}
         </p>
         <p>
           <strong>Office hours</strong>
           <br />
-          Sunday–Thursday · 8:00 AM–4:00 PM
+          {officeHours}
         </p>
       </div>
       {contactSent ? (
@@ -53,6 +63,7 @@ export function InnerContactSection() {
           onSubmit={async (e) => {
             e.preventDefault()
             setIsSubmitting(true)
+            setSubmitError(null)
             const target = e.currentTarget
             const nameInput = target.elements[0] as HTMLInputElement
             const emailInput = target.elements[1] as HTMLInputElement
@@ -61,17 +72,21 @@ export function InnerContactSection() {
 
             try {
               await api.publicSite.submitInquiry({
-                schoolSlug: 'northfield-high',
+                schoolSlug,
                 fullName: nameInput?.value || 'Website Visitor',
                 email: emailInput?.value || 'visitor@example.com',
                 subject: selectEl?.value || 'General inquiry',
                 message: messageInput?.value || 'No message provided',
               })
-            } catch (err) {
-              console.warn('Inquiry submission fallback:', err)
+              setContactSent(true)
+            } catch (err: unknown) {
+              setSubmitError(
+                err instanceof Error
+                  ? err.message
+                  : 'Unable to send your message right now. Please try again.',
+              )
             } finally {
               setIsSubmitting(false)
-              setContactSent(true)
             }
           }}
         >
@@ -94,6 +109,11 @@ export function InnerContactSection() {
             Message
             <textarea required placeholder="Write your message" />
           </label>
+          {submitError && (
+            <p style={{ color: '#b91c1c', fontSize: '13px', margin: 0 }}>
+              {submitError}
+            </p>
+          )}
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Sending...' : 'Send message'}{' '}
             <Icon name="arrow" size={14} />

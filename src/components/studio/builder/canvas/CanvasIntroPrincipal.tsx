@@ -12,6 +12,8 @@ interface CanvasIntroPrincipalProps {
   introKicker: string
   introTitle: string
   introDesc: string
+  introImage?: string
+  introQuote?: string
   principalPhoto: string
   principalName: string
   principalQuote: string
@@ -27,6 +29,8 @@ export function CanvasIntroPrincipal({
   introKicker,
   introTitle,
   introDesc,
+  introImage,
+  introQuote,
   principalPhoto,
   principalName,
   principalQuote,
@@ -79,18 +83,62 @@ export function CanvasIntroPrincipal({
         {selected === 'School introduction' && (
           <div className="selection-label">School introduction</div>
         )}
-        <small style={{ color: activeCfg?.secondaryColor || '#b68c33' }}>{introKicker}</small>
-        <h3 style={{ fontFamily: activeCfg?.fontHeading }}>
-          {introTitle.split('\n').map((line, idx) => (
-            <span key={idx}>
-              {line}
-              {idx < introTitle.split('\n').length - 1 && <br />}
-            </span>
-          ))}
-        </h3>
-        <p style={{ maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-          {introDesc}
-        </p>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              device === 'mobile' || !introImage ? '1fr' : 'minmax(180px, 240px) 1fr',
+            gap: '24px',
+            alignItems: 'center',
+            textAlign: introStyle?.align || (introImage ? 'left' : 'center'),
+            maxWidth: '860px',
+            margin: '0 auto',
+          }}
+        >
+          {introImage && (
+            <div style={{ position: 'relative' }}>
+              <img
+                src={introImage}
+                alt="School campus introduction"
+                style={{
+                  width: '100%',
+                  height: '200px',
+                  objectFit: 'cover',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 20px rgba(15, 23, 42, 0.12)',
+                }}
+              />
+            </div>
+          )}
+          <div>
+            <small style={{ color: activeCfg?.secondaryColor || '#b68c33' }}>{introKicker}</small>
+            <h3 style={{ fontFamily: activeCfg?.fontHeading, marginTop: '6px' }}>
+              {introTitle.split('\n').map((line, idx) => (
+                <span key={idx}>
+                  {line}
+                  {idx < introTitle.split('\n').length - 1 && <br />}
+                </span>
+              ))}
+            </h3>
+            <p style={{ maxWidth: '600px', margin: introImage ? '8px 0 0' : '8px auto 0', lineHeight: 1.6 }}>
+              {introDesc}
+            </p>
+            {introQuote && (
+              <blockquote
+                style={{
+                  marginTop: '12px',
+                  paddingLeft: '12px',
+                  borderLeft: `3px solid ${activeCfg?.secondaryColor || '#b68c33'}`,
+                  fontStyle: 'italic',
+                  fontSize: '13px',
+                  color: '#475569',
+                }}
+              >
+                {introQuote}
+              </blockquote>
+            )}
+          </div>
+        </div>
       </div>
 
       <div

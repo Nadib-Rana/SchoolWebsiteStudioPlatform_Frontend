@@ -62,7 +62,7 @@ export default async function SchoolAboutPage({ params }: PageProps) {
           </blockquote>
         </div>
         <img
-          src={siteData.albums?.[0]?.photos?.[0]?.url || campusImage}
+          src={siteData.profile?.coverUrl || siteData.albums?.[0]?.photos?.[0]?.url || campusImage}
           alt={`${schoolName} learning community`}
         />
       </section>

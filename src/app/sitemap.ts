@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/about',
         '/academics',
         '/admissions',
+        '/alumni-verify',
         '/contact',
         '/events',
         '/gallery',

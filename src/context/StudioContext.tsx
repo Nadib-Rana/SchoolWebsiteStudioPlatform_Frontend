@@ -23,7 +23,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     }
     return 'modern'
   })
-  const [unreadNotifications, setUnreadNotifications] = useState(3)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const [helpDrawerOpen, setHelpDrawerOpen] = useState(false)
   const [helpLang, setHelpLangState] = useState<HelpLang>(() => {
     if (typeof window !== 'undefined') {

@@ -110,11 +110,13 @@ export function BuilderCanvas({
           introKicker={state.introKicker}
           introTitle={state.introTitle}
           introDesc={state.introDesc}
+          introImage={state.introImage}
+          introQuote={state.introQuote}
           principalPhoto={state.principalPhoto}
           principalName={state.principalName}
           principalQuote={state.principalQuote}
           principalTitle={state.principalTitle}
-          activeCfg={activeCfg}
+          activeCfg={mergedCfg}
         />
 
         <CanvasNotices
@@ -172,7 +174,7 @@ export function BuilderCanvas({
           footerPhone={state.footerPhone}
           footerEmail={state.footerEmail}
           footerCopyright={state.footerCopyright}
-          activeCfg={activeCfg}
+          activeCfg={mergedCfg}
         />
       </div>
     </div>

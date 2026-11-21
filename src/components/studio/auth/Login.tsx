@@ -15,8 +15,8 @@ export function Login() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
 
   // Login form state
-  const [email, setEmail] = useState('admin@northfield.edu')
-  const [password, setPassword] = useState('Admin@12345')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   // Register form state
   const [regFirstName, setRegFirstName] = useState('')

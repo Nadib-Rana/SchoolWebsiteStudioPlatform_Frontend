@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Icon } from '@/components/common/Icon'
 import { heroImage } from '@/config/templates'
 import { useStudio } from '@/context/StudioContext'
+import { loadBuilderStateFromLocal } from '../builder/builder-storage'
 
 interface ThemePreviewBrowserProps {
   primaryColor: string
@@ -24,28 +25,16 @@ export function ThemePreviewBrowser({
   previewDevice,
   setPreviewDevice,
 }: ThemePreviewBrowserProps) {
-  const { notify } = useStudio()
-  const [builderData, setBuilderData] = useState<any>(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const cached = localStorage.getItem('studio_builder_homepage_data')
-      return cached ? JSON.parse(cached) : null
-    } catch {
-      return null
-    }
-  })
+  const { notify, currentSchool } = useStudio()
+  const [builderData, setBuilderData] = useState<any>(() =>
+    loadBuilderStateFromLocal(currentSchool?.id),
+  )
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const cached = localStorage.getItem('studio_builder_homepage_data')
-      if (cached) setBuilderData(JSON.parse(cached))
-    } catch (err) {
-      console.debug('Failed to load builder homepage data in theme preview:', err)
-    }
-  }, [])
+    setBuilderData(loadBuilderStateFromLocal(currentSchool?.id))
+  }, [currentSchool?.id])
 
-  const schoolName = builderData?.schoolName || 'Northfield High'
+  const schoolName = currentSchool?.name || builderData?.schoolName || 'Your School'
   const logoLetter = builderData?.logoLetter || schoolName.charAt(0).toUpperCase()
   const eyebrow = builderData?.eyebrow || 'LEARN · LEAD · MAKE A DIFFERENCE'
   const heading = builderData?.heading || 'Shaping thinkers.\nBuilding character.'

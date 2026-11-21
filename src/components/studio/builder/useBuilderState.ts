@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useStudio } from '@/context/StudioContext'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import { DEFAULT_STYLES, INITIAL_SECTIONS, type CustomSectionData, type SectionItem, type SectionStyle, type SECTION_TEMPLATES } from './builder.types'
 import { loadBuilderStateFromLocal, persistBuilderStateToLocal } from './builder-storage'
 import { syncHomepageToBackend } from './builder-sync'
@@ -9,7 +10,7 @@ import { loadHomepageSectionsFromBackend } from './builder-loader'
 import { useBuilderFields } from './useBuilderFields'
 
 export function useBuilderState() {
-  const { notify, setView, previewTheme } = useStudio()
+  const { notify, setView, previewTheme, currentSchool, schoolSwitchKey } = useStudio()
   const isInitializedRef = useRef(false)
   const [device, setDevice] = useState<'monitor' | 'tablet' | 'mobile'>('monitor')
   const [selected, setSelected] = useState('Hero section')
@@ -126,39 +127,47 @@ export function useBuilderState() {
   }
 
   const handlePreview = () => {
-    persistBuilderStateToLocal(stateFields)
+    persistBuilderStateToLocal(stateFields, currentSchool?.id)
     setView('public')
   }
 
   useEffect(() => {
-    if (isInitializedRef.current) persistBuilderStateToLocal(stateFields)
-  }, [stateFields])
+    if (isInitializedRef.current) {
+      persistBuilderStateToLocal(stateFields, currentSchool?.id)
+    }
+  }, [stateFields, currentSchool?.id])
 
   useEffect(() => {
-    const local = loadBuilderStateFromLocal()
+    const schoolId = currentSchool?.id
+    const local = loadBuilderStateFromLocal(schoolId)
     if (local) {
       applyLocalFields(local)
       if (local.sectionStyles) setSectionStyles(local.sectionStyles)
       if (local.sectionList) setSectionList(local.sectionList)
       if (local.customSectionsData) setCustomSectionsData(local.customSectionsData)
-    } else {
-      loadHomepageSectionsFromBackend(setSectionStyles, setters)
+    }
+    // Always hydrate from backend DB for the active school so multi-tenant data stays fresh
+    void loadHomepageSectionsFromBackend(setSectionStyles, setters)
+    if (currentSchool?.name) {
+      setters.setSchoolName?.(currentSchool.name)
+      setters.setLogoLetter?.(currentSchool.name.charAt(0))
     }
     if (previewTheme) {
       setters.setAppliedTheme?.(previewTheme)
     }
     isInitializedRef.current = true
-  }, [previewTheme])
+  }, [previewTheme, currentSchool?.id, schoolSwitchKey])
 
   const handleSave = async () => {
     setIsSaving(true)
-    persistBuilderStateToLocal(stateFields)
+    persistBuilderStateToLocal(stateFields, currentSchool?.id)
     try {
       await syncHomepageToBackend(stateFields, sectionStyles, customSectionsData)
-      notify('Homepage sections, content & styles successfully saved! Ready to preview.')
+      await revalidatePublicSite(currentSchool?.slug)
+      notify('Homepage sections, content & styles saved to server!')
     } catch (err: unknown) {
-      console.debug('Backend sync notice:', err)
-      notify('Homepage saved successfully! Ready to preview.')
+      const msg = err instanceof Error ? err.message : 'Unable to save to server'
+      notify(`⚠️ Failed to save homepage to server: ${msg}`)
     } finally {
       setIsSaving(false)
     }

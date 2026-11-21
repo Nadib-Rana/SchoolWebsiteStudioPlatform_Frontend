@@ -11,6 +11,8 @@ interface HomeIntroSectionProps {
   introKicker: string
   introTitle: string
   introDesc: string
+  introImage?: string
+  introQuote?: string
   schoolSlug?: string
   setPage?: (p: string) => void
 }
@@ -22,6 +24,8 @@ export function HomeIntroSection({
   introKicker,
   introTitle,
   introDesc,
+  introImage,
+  introQuote,
   schoolSlug,
   setPage,
 }: HomeIntroSectionProps) {
@@ -31,6 +35,10 @@ export function HomeIntroSection({
       : sectionStyle?.padding === 'spacious'
       ? '100px'
       : '70px'
+  const resolvedImage = introImage || campusImage
+  const resolvedQuote =
+    introQuote ||
+    '“Every child deserves to be truly known, deeply supported, and meaningfully challenged.”'
 
   return (
     <section
@@ -42,7 +50,7 @@ export function HomeIntroSection({
       }}
     >
       <div className="intro-image">
-        <img src={campusImage} alt={`${schoolName} campus`} />
+        <img src={resolvedImage} alt={`${schoolName} campus`} />
         <span>
           <strong>Since {establishedYear}</strong>
           <small>Growing together</small>
@@ -52,9 +60,7 @@ export function HomeIntroSection({
         <span className="section-kicker">{introKicker}</span>
         <h2 style={{ whiteSpace: 'pre-line' }}>{introTitle}</h2>
         <p>{introDesc}</p>
-        <blockquote>
-          “Every child deserves to be truly known, deeply supported, and meaningfully challenged.”
-        </blockquote>
+        <blockquote>{resolvedQuote}</blockquote>
         {schoolSlug ? (
           <Link href={`/${schoolSlug}/about`} className="read-link">
             Discover our story <Icon name="arrow" size={15} />

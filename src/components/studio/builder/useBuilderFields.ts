@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { loadBuilderStateFromLocal } from './builder-storage'
+import { campusImage } from '@/config/templates'
 import { THEME_CONFIGS } from '@/config/themes'
 import type { SchoolTheme } from '@/types/theme'
 
@@ -22,11 +23,13 @@ export function useBuilderFields(previewTheme?: string) {
   const [heading, setHeading] = useState(local?.heading || themeCfg.headline)
   const [description, setDescription] = useState(local?.description || themeCfg.description)
   const [buttonLabel, setButtonLabel] = useState(local?.buttonLabel || themeCfg.buttonLabel)
-  const [buttonLink, setButtonLink] = useState(local?.buttonLink || '/about-us')
+  const [buttonLink, setButtonLink] = useState(local?.buttonLink || '/about')
   const [overlayOpacity, setOverlayOpacity] = useState(local?.overlayOpacity !== undefined ? local.overlayOpacity : 65)
   const [introKicker, setIntroKicker] = useState(local?.introKicker || `WELCOME TO ${themeCfg.schoolName.toUpperCase()}`)
   const [introTitle, setIntroTitle] = useState(local?.introTitle || 'Learning with purpose.\nGrowing with confidence.')
   const [introDesc, setIntroDesc] = useState(local?.introDesc || 'We combine academic excellence with a deeply supportive culture. Our students learn to think deeply, act with integrity, and use their gifts in service of others.')
+  const [introImage, setIntroImage] = useState<string>(local?.introImage || campusImage)
+  const [introQuote, setIntroQuote] = useState(local?.introQuote || '“Every child deserves to be truly known, deeply supported, and meaningfully challenged.”')
   const [principalName, setPrincipalName] = useState(local?.principalName || 'Dr. Farhana Noor')
   const [principalTitle, setPrincipalTitle] = useState(local?.principalTitle || 'Principal & Head Administrator')
   const [principalQuote, setPrincipalQuote] = useState(local?.principalQuote || '“For more than four decades, Northfield has combined academic ambition with a culture of care, belonging, and purposeful growth.”')
@@ -76,6 +79,8 @@ export function useBuilderFields(previewTheme?: string) {
     if (saved.introKicker) setIntroKicker(saved.introKicker)
     if (saved.introTitle) setIntroTitle(saved.introTitle)
     if (saved.introDesc) setIntroDesc(saved.introDesc)
+    if (saved.introImage) setIntroImage(saved.introImage)
+    if (saved.introQuote) setIntroQuote(saved.introQuote)
     if (saved.principalName) setPrincipalName(saved.principalName)
     if (saved.principalTitle) setPrincipalTitle(saved.principalTitle)
     if (saved.principalQuote) setPrincipalQuote(saved.principalQuote)
@@ -111,7 +116,7 @@ export function useBuilderFields(previewTheme?: string) {
   const values = {
     appliedTheme, heroBg, showAnnouncement, announcementText, announcementLink,
     schoolName, logoLetter, applyButtonText, eyebrow, heading, description,
-    buttonLabel, buttonLink, overlayOpacity, introKicker, introTitle, introDesc,
+    buttonLabel, buttonLink, overlayOpacity, introKicker, introTitle, introDesc, introImage, introQuote,
     principalName, principalTitle, principalQuote, principalPhoto,
     stat1Val, stat1Label, stat2Val, stat2Label, stat3Val, stat3Label, stat4Val, stat4Label,
     noticesHeading, notice1Date, notice1Title, notice2Date, notice2Title,
@@ -122,7 +127,7 @@ export function useBuilderFields(previewTheme?: string) {
   const setters = {
     setAppliedTheme, setHeroBg, setShowAnnouncement, setAnnouncementText, setAnnouncementLink,
     setSchoolName, setLogoLetter, setApplyButtonText, setEyebrow, setHeading, setDescription,
-    setButtonLabel, setButtonLink, setOverlayOpacity, setIntroKicker, setIntroTitle, setIntroDesc,
+    setButtonLabel, setButtonLink, setOverlayOpacity, setIntroKicker, setIntroTitle, setIntroDesc, setIntroImage, setIntroQuote,
     setPrincipalName, setPrincipalTitle, setPrincipalQuote, setPrincipalPhoto,
     setStat1Val, setStat1Label, setStat2Val, setStat2Label, setStat3Val, setStat3Label, setStat4Val, setStat4Label,
     setNoticesHeading, setNotice1Date, setNotice1Title, setNotice2Date, setNotice2Title,

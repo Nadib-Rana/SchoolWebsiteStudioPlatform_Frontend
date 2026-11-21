@@ -73,7 +73,7 @@ export function PublicInnerPage({ page, setPage, siteData }: PublicInnerPageProp
       {isAdmission ? (
         <InnerAdmissionSection />
       ) : isContact ? (
-        <InnerContactSection />
+        <InnerContactSection siteData={siteData} />
       ) : isGallery ? (
         <section className="gallery-wall">
           {(() => {

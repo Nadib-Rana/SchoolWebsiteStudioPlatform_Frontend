@@ -11,7 +11,7 @@ import { TemplateGridCard } from './TemplateGridCard'
 import { applyTemplateToBuilder } from './template-apply-helper'
 
 export function Templates() {
-  const { setView, previewTheme, setPreviewTheme, notify } = useStudio()
+  const { setView, previewTheme, setPreviewTheme, notify, currentSchool } = useStudio()
   const [filter, setFilter] = useState('All templates')
   const [device, setDevice] = useState<'monitor' | 'mobile'>('monitor')
   const [query, setQuery] = useState('')
@@ -23,7 +23,10 @@ export function Templates() {
 
   const handleApplyTemplate = async (templateTheme: SchoolTheme, templateName: string) => {
     setPreviewTheme(templateTheme)
-    const appliedName = await applyTemplateToBuilder(templateTheme)
+    const appliedName = await applyTemplateToBuilder(templateTheme, {
+      schoolId: currentSchool?.id,
+      schoolName: currentSchool?.name,
+    })
     notify(`"${appliedName || templateName}" template applied to Website Builder!`)
     setView('builder')
   }

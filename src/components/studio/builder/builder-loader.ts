@@ -56,6 +56,8 @@ export async function loadHomepageSectionsFromBackend(
           if (c.kicker && setters.setIntroKicker) setters.setIntroKicker(c.kicker)
           if (c.title && setters.setIntroTitle) setters.setIntroTitle(c.title)
           if (c.description && setters.setIntroDesc) setters.setIntroDesc(c.description)
+          if (c.image && setters.setIntroImage) setters.setIntroImage(c.image)
+          if (c.quote && setters.setIntroQuote) setters.setIntroQuote(c.quote)
         } else if (sec.type === 'principal') {
           if (c.name && setters.setPrincipalName) setters.setPrincipalName(c.name)
           if (c.title && setters.setPrincipalTitle) setters.setPrincipalTitle(c.title)

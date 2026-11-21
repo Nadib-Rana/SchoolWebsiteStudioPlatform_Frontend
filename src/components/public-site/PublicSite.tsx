@@ -12,6 +12,7 @@ import { API_BASE_URL } from '@/lib/api/api-session'
 import type { PublicSiteData } from '@/lib/public-site'
 import type { SchoolTheme } from '@/types/theme'
 import { loadCustomThemeLocally, subscribeToThemeChanges } from '@/components/studio/theme/theme-sync-helper'
+import { loadBuilderStateFromLocal } from '@/components/studio/builder/builder-storage'
 import { useState, useEffect } from 'react'
 
 export interface PublicSiteProps {
@@ -19,17 +20,13 @@ export interface PublicSiteProps {
 }
 
 export function PublicSite({ initialTheme }: PublicSiteProps) {
-  const { previewTheme, setPreviewTheme } = useStudio()
+  const { previewTheme, setPreviewTheme, currentSchool } = useStudio()
   const [theme, setTheme] = useState<SchoolTheme>(initialTheme || previewTheme)
   const [page, setPage] = useState('Home')
   const [siteData, setSiteData] = useState<PublicSiteData | null>(null)
-  const [builderData, setBuilderData] = useState<any>(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const cached = localStorage.getItem('studio_builder_homepage_data')
-      return cached ? JSON.parse(cached) : null
-    } catch { return null }
-  })
+  const [builderData, setBuilderData] = useState<any>(() =>
+    loadBuilderStateFromLocal(currentSchool?.id),
+  )
   const [customTheme, setCustomTheme] = useState(() => loadCustomThemeLocally())
 
   useEffect(() => {
@@ -40,11 +37,9 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
     let isMounted = true
     const loadPreviewData = async () => {
       try {
-        if (typeof window !== 'undefined') {
-          const cached = localStorage.getItem('studio_builder_homepage_data')
-          if (cached && isMounted) {
-            setBuilderData(JSON.parse(cached))
-          }
+        const cached = loadBuilderStateFromLocal(currentSchool?.id)
+        if (cached && isMounted) {
+          setBuilderData(cached)
         }
 
         const slug = api.getActiveSchoolSlug() || 'northfield-high'
@@ -165,7 +160,8 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
           theme={theme}
           setPage={setPage}
           schoolData={siteData}
-          schoolSlug={siteData?.school?.slug || 'northfield-high'}
+          schoolSlug={siteData?.school?.slug || currentSchool?.slug || 'northfield-high'}
+          isPreview
         />
       ) : (
         <PublicInnerPage page={page} setPage={setPage} siteData={siteData} />

@@ -77,6 +77,10 @@ export function BuilderRightPanelContent({
           setIntroTitle={state.setIntroTitle}
           introDesc={state.introDesc}
           setIntroDesc={state.setIntroDesc}
+          introImage={state.introImage}
+          setIntroImage={state.setIntroImage}
+          introQuote={state.introQuote}
+          setIntroQuote={state.setIntroQuote}
         />
       )}
 

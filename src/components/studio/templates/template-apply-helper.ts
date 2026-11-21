@@ -1,24 +1,30 @@
 import { THEME_CONFIGS } from '@/config/themes'
 import { api } from '@/lib/api-client'
 import { saveCustomThemeLocally } from '../theme/theme-sync-helper'
+import {
+  loadBuilderStateFromLocal,
+  persistBuilderStateToLocal,
+} from '../builder/builder-storage'
 import type { SchoolTheme } from '@/types/theme'
 
-export async function applyTemplateToBuilder(templateTheme: SchoolTheme): Promise<string> {
+export async function applyTemplateToBuilder(
+  templateTheme: SchoolTheme,
+  options?: { schoolId?: string; schoolName?: string },
+): Promise<string> {
   const cfg = THEME_CONFIGS[templateTheme]
+  const activeSchoolId = options?.schoolId || api.getActiveSchoolId()
+  const preservedSchoolName = options?.schoolName?.trim()
+
   if (cfg && typeof window !== 'undefined') {
     try {
-      let builderData: any = {}
-      const saved = localStorage.getItem('studio_builder_homepage_data')
-      if (saved) {
-        try {
-          builderData = JSON.parse(saved)
-        } catch {}
-      }
+      const builderData = loadBuilderStateFromLocal(activeSchoolId) || {}
+      const resolvedSchoolName =
+        preservedSchoolName || builderData.schoolName || cfg.schoolName
 
       const updated = {
         ...builderData,
-        schoolName: cfg.schoolName,
-        logoLetter: cfg.schoolName.charAt(0),
+        schoolName: resolvedSchoolName,
+        logoLetter: resolvedSchoolName.charAt(0),
         eyebrow: cfg.eyebrow,
         heading: cfg.headline,
         description: cfg.description,
@@ -26,17 +32,29 @@ export async function applyTemplateToBuilder(templateTheme: SchoolTheme): Promis
         announcementText: cfg.announcementText,
         heroBg: cfg.heroImage,
         appliedTheme: templateTheme,
-        introKicker: `WELCOME TO ${cfg.schoolName.toUpperCase()}`,
+        introKicker: `WELCOME TO ${resolvedSchoolName.toUpperCase()}`,
         sectionStyles: {
           ...(builderData.sectionStyles || {}),
-          Header: { ...(builderData.sectionStyles?.Header || {}), bg: cfg.headerBg },
-          'Announcement bar': { ...(builderData.sectionStyles?.['Announcement bar'] || {}), bg: cfg.primaryColor },
-          Statistics: { ...(builderData.sectionStyles?.Statistics || {}), bg: cfg.primaryColor },
-          Footer: { ...(builderData.sectionStyles?.Footer || {}), bg: cfg.primaryColor },
+          Header: {
+            ...(builderData.sectionStyles?.Header || {}),
+            bg: cfg.headerBg,
+          },
+          'Announcement bar': {
+            ...(builderData.sectionStyles?.['Announcement bar'] || {}),
+            bg: cfg.primaryColor,
+          },
+          Statistics: {
+            ...(builderData.sectionStyles?.Statistics || {}),
+            bg: cfg.primaryColor,
+          },
+          Footer: {
+            ...(builderData.sectionStyles?.Footer || {}),
+            bg: cfg.primaryColor,
+          },
         },
       }
 
-      localStorage.setItem('studio_builder_homepage_data', JSON.stringify(updated))
+      persistBuilderStateToLocal(updated, activeSchoolId)
       localStorage.setItem('studio_selected_theme', templateTheme)
       saveCustomThemeLocally({
         primaryColor: cfg.primaryColor,

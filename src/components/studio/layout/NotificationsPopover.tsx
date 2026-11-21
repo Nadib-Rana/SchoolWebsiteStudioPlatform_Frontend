@@ -9,7 +9,11 @@ export interface NotificationsPopoverProps {
 }
 
 export function NotificationsPopover({ onClose }: NotificationsPopoverProps) {
-  const { unreadNotifications, setUnreadNotifications, notify, setView } = useStudio()
+  const { unreadNotifications, setUnreadNotifications, notify, setView, currentSchool } = useStudio()
+
+  const schoolName = currentSchool?.name || 'Your school'
+  const domainLabel = currentSchool?.customDomain || `/${currentSchool?.slug || 'school'}`
+  const isLive = currentSchool?.isPublished ?? true
 
   const handleItemClick = (targetView: View) => {
     setUnreadNotifications(Math.max(0, unreadNotifications - 1))
@@ -26,93 +30,70 @@ export function NotificationsPopover({ onClose }: NotificationsPopoverProps) {
     <div className="topbar-popover notification-panel">
       <div className="popover-head">
         <div>
-          <strong>Notifications</strong>
-          <span>{unreadNotifications} unread updates</span>
+          <strong>Workspace Alerts</strong>
+          <span>{unreadNotifications > 0 ? `${unreadNotifications} unread` : 'All caught up'}</span>
         </div>
-        <button type="button" onClick={markAllRead}>
-          Mark all read
-        </button>
+        {unreadNotifications > 0 && (
+          <button type="button" onClick={markAllRead}>
+            Mark all read
+          </button>
+        )}
       </div>
 
       <div className="notification-list">
         <button
           type="button"
-          className="unread"
+          onClick={() => handleItemClick('admissions')}
+        >
+          <span className="notice-symbol sync">
+            <Icon name="check" size={15} />
+          </span>
+          <div>
+            <strong>Admissions Registry</strong>
+            <p>Review online applications and ERP sync status for {schoolName}.</p>
+            <small>Open Admissions</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
           onClick={() => handleItemClick('inquiries')}
         >
           <span className="notice-symbol sync">
             <Icon name="help" size={15} />
           </span>
           <div>
-            <strong>New contact inquiry received</strong>
-            <p>A prospective family inquired about admissions and campus tour.</p>
-            <small>Just now</small>
+            <strong>Contact Inquiries Inbox</strong>
+            <p>Check recent messages submitted from your public Contact page.</p>
+            <small>Open Inbox</small>
           </div>
-          <i />
         </button>
 
         <button
           type="button"
-          className="unread"
           onClick={() => handleItemClick('publishing')}
         >
           <span className="notice-symbol publish">
             <Icon name="sparkle" size={15} />
           </span>
           <div>
-            <strong>Draft is ready to publish</strong>
-            <p>Five approved changes are waiting in version 2.8.</p>
-            <small>12 minutes ago</small>
+            <strong>Website Status: {isLive ? 'Live' : 'Draft'}</strong>
+            <p>{domainLabel} — review staged drafts or version history.</p>
+            <small>Open Publishing</small>
           </div>
-          <i />
         </button>
 
         <button
           type="button"
-          className="unread"
           onClick={() => handleItemClick('integrations')}
         >
-          <span className="notice-symbol sync">
+          <span className="notice-symbol domain">
             <Icon name="plug" size={15} />
           </span>
           <div>
-            <strong>ERP sync completed</strong>
-            <p>36 records synchronized. Three need your review.</p>
-            <small>28 minutes ago</small>
-          </div>
-          <i />
-        </button>
-
-        <button
-          type="button"
-          className="unread"
-          onClick={() => handleItemClick('domains')}
-        >
-          <span className="notice-symbol domain">
-            <Icon name="globe" size={15} />
-          </span>
-          <div>
-            <strong>Domain verification complete</strong>
-            <p>www.northfield.edu is active and secure.</p>
-            <small>2 hours ago</small>
-          </div>
-          <i />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            onClose()
-            setView('analytics')
-          }}
-        >
-          <span className="notice-symbol report">
-            <Icon name="chart" size={15} />
-          </span>
-          <div>
-            <strong>Weekly report is available</strong>
-            <p>Website visits increased by 18.4% this week.</p>
-            <small>Yesterday</small>
+            <strong>School ERP & Webhooks</strong>
+            <p>Manage live admission sync, classes, teachers, and alumni verify.</p>
+            <small>Open Integrations</small>
           </div>
         </button>
       </div>
@@ -122,10 +103,10 @@ export function NotificationsPopover({ onClose }: NotificationsPopoverProps) {
           type="button"
           onClick={() => {
             onClose()
-            setView('overview')
+            setView('audit-logs')
           }}
         >
-          View notification center <Icon name="arrow" size={13} />
+          View activity audit logs <Icon name="arrow" size={13} />
         </button>
       </div>
     </div>

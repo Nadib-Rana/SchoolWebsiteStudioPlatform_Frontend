@@ -41,7 +41,13 @@ export function buildSectionsPayload(
     {
       type: 'intro',
       title: 'School introduction',
-      content: { kicker: state.introKicker, title: state.introTitle, description: state.introDesc },
+      content: {
+        kicker: state.introKicker,
+        title: state.introTitle,
+        description: state.introDesc,
+        image: state.introImage || undefined,
+        quote: state.introQuote || undefined,
+      },
       settings: sectionStyles['School introduction'] || DEFAULT_STYLES['School introduction'],
       isVisible: true,
     },

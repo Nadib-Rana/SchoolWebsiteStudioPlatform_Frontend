@@ -58,7 +58,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Skip studio application core routes
+  // If a school accesses via an external custom domain, rewrite internally (including '/')
+  if (!isPlatformHost(hostname)) {
+    const cleanHost = hostname.split(':')[0].toLowerCase()
+    const targetPath = pathname === '/' ? '' : pathname
+    return NextResponse.rewrite(new URL(`/${cleanHost}${targetPath}`, request.url))
+  }
+
+  // Platform host: skip studio application core routes
   if (
     pathname === '/' ||
     pathname.startsWith('/login') ||
@@ -68,14 +75,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check if request is accessing the main platform or a custom school domain
-  if (isPlatformHost(hostname)) {
-    return NextResponse.next()
-  }
-
-  // If a school accesses via an external custom domain, rewrite internally
-  const cleanHost = hostname.split(':')[0].toLowerCase()
-  return NextResponse.rewrite(new URL(`/${cleanHost}${pathname}`, request.url))
+  return NextResponse.next()
 }
 
 export const config = {
