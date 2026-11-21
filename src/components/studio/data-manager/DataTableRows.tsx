@@ -9,6 +9,8 @@ interface DataTableRowsProps {
   deletingId: string | null
   togglingId?: string | null
   loading: boolean
+  selectedIds?: string[]
+  onToggleSelect?: (id: string) => void
   onEdit?: (item: DataItem) => void
   onToggleStatus?: (item: DataItem) => void
   onDelete: (id: string, name: string) => void
@@ -20,6 +22,8 @@ export function DataTableRows({
   deletingId,
   togglingId,
   loading,
+  selectedIds = [],
+  onToggleSelect,
   onEdit,
   onToggleStatus,
   onDelete,
@@ -31,12 +35,15 @@ export function DataTableRows({
         const isDeleting = deletingId === item.id
         const isToggling = togglingId === item.id
         const isPublished = item.status === 'PUBLISHED'
+        const isSelected = selectedIds.includes(item.id)
         return (
-          <div className="table-row" key={item.id}>
+          <div className={`table-row ${isSelected ? 'bg-slate-50/80' : ''}`} key={item.id}>
             <input
-              className="check-box"
+              className="check-box cursor-pointer"
               type="checkbox"
               aria-label={`Select ${r[0]}`}
+              checked={isSelected}
+              onChange={() => onToggleSelect?.(item.id)}
             />
             {r.map((x, j) =>
               j === 0 ? (

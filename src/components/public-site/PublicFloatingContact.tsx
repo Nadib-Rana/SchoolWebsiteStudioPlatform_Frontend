@@ -11,13 +11,27 @@ function sanitizePhoneDigits(raw?: string | null): string {
   return raw.replace(/[^\d]/g, '')
 }
 
+function sanitizeWhatsappDigits(raw?: string | null): string {
+  if (!raw) return ''
+  const digits = raw.replace(/[^\d]/g, '')
+  if (!digits) return ''
+  // Bangladesh local 11-digit mobile starting with 01 -> prefix international code 88
+  if (digits.length === 11 && digits.startsWith('01')) {
+    return `88${digits}`
+  }
+  if (digits.startsWith('008801')) {
+    return digits.slice(2)
+  }
+  return digits
+}
+
 export function PublicFloatingContact({
   schoolName,
   phone,
   whatsapp,
 }: PublicFloatingContactProps) {
   const rawWhatsapp = whatsapp || phone
-  const waDigits = sanitizePhoneDigits(rawWhatsapp)
+  const waDigits = sanitizeWhatsappDigits(rawWhatsapp)
   const telValue = phone ? phone.replace(/[^\d+]/g, '') : ''
 
   if (!waDigits && !telValue) return null

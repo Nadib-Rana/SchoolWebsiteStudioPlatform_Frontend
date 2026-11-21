@@ -1,10 +1,17 @@
 import { MetadataRoute } from 'next'
 
-const API_BASE_URL =
-  process.env.INTERNAL_API_URL ||
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://profilebackendapi.ashyshop.com/api/v1'
+function resolveSitemapApiUrl(): string {
+  const envUrl =
+    process.env.INTERNAL_API_URL ||
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL
+  if (envUrl && !envUrl.includes('localhost:4000') && !envUrl.includes('localhost:3000')) {
+    return envUrl.replace(/\/+$/, '')
+  }
+  return 'https://profilebackendapi.ashyshop.com/api/v1'
+}
+
+const API_BASE_URL = resolveSitemapApiUrl()
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL || 'https://nadib.ashyshop.com'
 

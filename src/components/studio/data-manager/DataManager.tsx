@@ -33,10 +33,30 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('All statuses')
   const [page, setPage] = useState(0)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<DataItem | null>(null)
   const statusOptions = ['All statuses', 'Published', 'Draft', 'Expired']
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }
+
+  const toggleSelectAll = () => {
+    if (shown.length === 0) return
+    const allSelected = shown.every((item) => selectedIds.includes(item.id))
+    if (allSelected) {
+      const shownIds = new Set(shown.map((x) => x.id))
+      setSelectedIds((prev) => prev.filter((id) => !shownIds.has(id)))
+    } else {
+      setSelectedIds((prev) =>
+        Array.from(new Set([...prev, ...shown.map((x) => x.id)])),
+      )
+    }
+  }
 
   const handleToggleStatus = async (item: DataItem) => {
     const nextPublished = item.status !== 'PUBLISHED'
@@ -164,9 +184,14 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
         <div className="data-table">
           <div className="table-row table-head">
             <input
-              className="check-box"
+              className="check-box cursor-pointer"
               type="checkbox"
               aria-label="Select all items"
+              checked={
+                shown.length > 0 &&
+                shown.every((item) => selectedIds.includes(item.id))
+              }
+              onChange={toggleSelectAll}
             />
             {labels.map((x) => (
               <strong key={x}>{x}</strong>
@@ -180,6 +205,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
             deletingId={deletingId}
             togglingId={togglingId}
             loading={loading}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
             onEdit={(item) => setEditingItem(item)}
             onToggleStatus={handleToggleStatus}
             onDelete={handleDelete}
