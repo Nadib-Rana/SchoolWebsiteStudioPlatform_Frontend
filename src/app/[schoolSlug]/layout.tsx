@@ -113,7 +113,9 @@ export default async function SchoolPublicLayout({
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaOrg).replace(/</g, '\\u003c'),
+        }}
       />
       <PublicAnalyticsTracker schoolSlug={schoolSlug} />
       <PublicHeader

@@ -51,7 +51,7 @@ export function MediaToolbar({
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={onFileUpload}
-        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf"
+        accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
       />
       <Button
         kind="primary"
