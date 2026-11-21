@@ -5,7 +5,13 @@ import { Icon } from '@/components/common/Icon'
 import { campusImage } from '@/config/templates'
 
 interface HomeIntroSectionProps {
-  sectionStyle?: { bg?: string; padding?: string; textColor?: string; align?: string }
+  sectionStyle?: {
+    bg?: string
+    padding?: string
+    textColor?: string
+    align?: string
+    photoPosition?: 'left' | 'right'
+  }
   schoolName: string
   establishedYear: number | string
   introKicker: string
@@ -56,14 +62,22 @@ export function HomeIntroSection({
         paddingBottom: pad,
       }}
     >
-      <div className="intro-image">
+      <div
+        className="intro-image"
+        style={{ order: sectionStyle?.photoPosition === 'right' ? 2 : 1 }}
+      >
         <img src={resolvedImage} alt={`${schoolName} campus`} />
         <span>
           <strong>{resolvedBadgeTitle}</strong>
           <small>{resolvedBadgeSubtitle}</small>
         </span>
       </div>
-      <div style={{ textAlign: (sectionStyle?.align as any) || 'left' }}>
+      <div
+        style={{
+          textAlign: (sectionStyle?.align as any) || 'left',
+          order: sectionStyle?.photoPosition === 'right' ? 1 : 2,
+        }}
+      >
         <span className="section-kicker">{introKicker}</span>
         <h2 style={{ whiteSpace: 'pre-line', color: sectionStyle?.textColor || undefined }}>{introTitle}</h2>
         <p style={{ color: sectionStyle?.textColor || undefined }}>{introDesc}</p>

@@ -1,7 +1,13 @@
 'use client'
 
 interface HomePrincipalSectionProps {
-  sectionStyle?: { bg?: string; padding?: string; textColor?: string; align?: string }
+  sectionStyle?: {
+    bg?: string
+    padding?: string
+    textColor?: string
+    align?: string
+    photoPosition?: 'left' | 'right'
+  }
   principalQuote: string
   principalName: string
   principalTitle: string
@@ -21,6 +27,7 @@ export function HomePrincipalSection({
       : sectionStyle?.padding === 'spacious'
       ? '110px'
       : '75px'
+  const photoLeft = sectionStyle?.photoPosition === 'left'
 
   return (
     <section
@@ -32,7 +39,7 @@ export function HomePrincipalSection({
         paddingBottom: pad,
       }}
     >
-      <div style={{ textAlign: (sectionStyle?.align as any) || 'left' }}>
+      <div style={{ textAlign: (sectionStyle?.align as any) || 'left', order: photoLeft ? 2 : 1 }}>
         <span className="section-kicker">A MESSAGE FROM OUR PRINCIPAL</span>
         <blockquote style={{ color: sectionStyle?.textColor || undefined }}>{principalQuote}</blockquote>
         <strong
@@ -49,7 +56,7 @@ export function HomePrincipalSection({
           {principalTitle}
         </span>
       </div>
-      <aside>
+      <aside style={{ order: photoLeft ? 1 : 2 }}>
         <img
           src={principalPhoto}
           alt={principalName}

@@ -4,6 +4,7 @@ export interface SectionStyle {
   bg: string
   textColor?: string
   align: 'left' | 'center' | 'right'
+  photoPosition?: 'left' | 'right'
   padding: 'compact' | 'normal' | 'spacious'
   border: boolean
   shadow: 'none' | 'subtle' | 'card'

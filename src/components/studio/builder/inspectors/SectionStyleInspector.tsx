@@ -4,6 +4,7 @@ import { SettingGroup } from '@/components/common/SettingGroup'
 import type { SectionStyle } from '../builder.types'
 
 interface SectionStyleInspectorProps {
+  selected?: string
   activeTab: 'style' | 'advanced'
   activeStyle: SectionStyle
   updateActiveStyle: (patch: Partial<SectionStyle>) => void
@@ -28,7 +29,12 @@ const PADDING_PRESETS = [
   { id: 'spacious' as const, label: 'Spacious' },
 ]
 
-export function SectionStyleInspector({ activeTab, activeStyle, updateActiveStyle }: SectionStyleInspectorProps) {
+export function SectionStyleInspector({ selected, activeTab, activeStyle, updateActiveStyle }: SectionStyleInspectorProps) {
+  const supportsPhotoPos =
+    selected === 'Principal message' || selected === 'School introduction'
+  const currentPhotoPos =
+    activeStyle.photoPosition ||
+    (selected === 'School introduction' ? 'left' : 'right')
   if (activeTab === 'style') {
     return (
       <>
@@ -124,6 +130,43 @@ export function SectionStyleInspector({ activeTab, activeStyle, updateActiveStyl
               ))}
             </div>
           </label>
+
+          {supportsPhotoPos && (
+            <label style={{ marginTop: '12px', display: 'block' }}>
+              Photo position
+              <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                {(
+                  [
+                    { id: 'left', label: 'Photo Left' },
+                    { id: 'right', label: 'Photo Right' },
+                  ] as const
+                ).map((pos) => (
+                  <button
+                    key={pos.id}
+                    type="button"
+                    onClick={() => updateActiveStyle({ photoPosition: pos.id })}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      border:
+                        currentPhotoPos === pos.id
+                          ? '2px solid #2563eb'
+                          : '1px solid #e2e8f0',
+                      background:
+                        currentPhotoPos === pos.id ? '#eff6ff' : '#fff',
+                      color: currentPhotoPos === pos.id ? '#2563eb' : '#475569',
+                      fontWeight: currentPhotoPos === pos.id ? 700 : 500,
+                      fontSize: '12px',
+                    }}
+                  >
+                    {pos.label}
+                  </button>
+                ))}
+              </div>
+            </label>
+          )}
 
           <label style={{ marginTop: '12px', display: 'block' }}>
             Vertical padding (Spacing)

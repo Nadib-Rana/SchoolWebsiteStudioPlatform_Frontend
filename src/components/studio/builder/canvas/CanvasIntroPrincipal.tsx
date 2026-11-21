@@ -43,6 +43,8 @@ export function CanvasIntroPrincipal({
 }: CanvasIntroPrincipalProps) {
   const introStyle = sectionStyles['School introduction']
   const principalStyle = sectionStyles['Principal message']
+  const introPhotoRight = introStyle?.photoPosition === 'right'
+  const principalPhotoLeft = principalStyle?.photoPosition === 'left'
   const introPad =
     introStyle?.padding === 'compact'
       ? '18px'
@@ -92,7 +94,11 @@ export function CanvasIntroPrincipal({
           style={{
             display: 'grid',
             gridTemplateColumns:
-              device === 'mobile' || !introImage ? '1fr' : 'minmax(180px, 240px) 1fr',
+              device === 'mobile' || !introImage
+                ? '1fr'
+                : introPhotoRight
+                ? '1fr minmax(180px, 240px)'
+                : 'minmax(180px, 240px) 1fr',
             gap: '24px',
             alignItems: 'center',
             textAlign: introStyle?.align || (introImage ? 'left' : 'center'),
@@ -101,7 +107,7 @@ export function CanvasIntroPrincipal({
           }}
         >
           {introImage && (
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', order: introPhotoRight ? 2 : 1 }}>
               <img
                 src={introImage}
                 alt="School campus introduction"
@@ -150,7 +156,7 @@ export function CanvasIntroPrincipal({
               </span>
             </div>
           )}
-          <div>
+          <div style={{ order: introPhotoRight ? 1 : 2 }}>
             <small style={{ color: activeCfg?.secondaryColor || '#b68c33' }}>{introKicker}</small>
             <h3 style={{ fontFamily: activeCfg?.fontHeading, marginTop: '6px' }}>
               {introTitle.split('\n').map((line, idx) => (
@@ -196,7 +202,12 @@ export function CanvasIntroPrincipal({
             principalStyle?.hideOnMobile && device === 'mobile'
               ? 'none'
               : 'grid',
-          gridTemplateColumns: device === 'mobile' ? '1fr' : '1fr 140px',
+          gridTemplateColumns:
+            device === 'mobile'
+              ? '1fr'
+              : principalPhotoLeft
+              ? '140px 1fr'
+              : '1fr 140px',
           gap: '24px',
           alignItems: 'center',
           cursor: 'pointer',
@@ -217,7 +228,7 @@ export function CanvasIntroPrincipal({
         {selected === 'Principal message' && (
           <div className="selection-label">Principal message</div>
         )}
-        <div>
+        <div style={{ order: principalPhotoLeft ? 2 : 1 }}>
           <span
             style={{
               fontSize: '11px',
@@ -269,7 +280,13 @@ export function CanvasIntroPrincipal({
             objectFit: 'cover',
             borderRadius: '10px',
             boxShadow: '0 4px 12px rgba(15,23,42,0.1)',
-            justifySelf: device === 'mobile' ? 'center' : 'end',
+            order: principalPhotoLeft ? 1 : 2,
+            justifySelf:
+              device === 'mobile'
+                ? 'center'
+                : principalPhotoLeft
+                ? 'start'
+                : 'end',
           }}
         />
       </div>

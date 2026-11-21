@@ -86,6 +86,7 @@ export function BuilderRightPanel({
 
       {(activeTab === 'style' || activeTab === 'advanced') && (
         <SectionStyleInspector
+          selected={selected}
           activeTab={activeTab}
           activeStyle={activeStyle}
           updateActiveStyle={updateActiveStyle}
