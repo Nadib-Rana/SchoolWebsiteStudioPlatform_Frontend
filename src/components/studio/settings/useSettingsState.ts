@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import type { NotificationPref } from './NotificationsTab'
 import { useSettingsExports } from './useSettingsExports'
 import { useSettingsMembers } from './useSettingsMembers'
@@ -76,6 +77,7 @@ export function useSettingsState() {
     )
   }
 
+  const [allowPublicAdmission, setAllowPublicAdmission] = useState(true)
   const [maintenanceMode, setMaintenanceMode] = useState(false)
   const [searchIndexing, setSearchIndexing] = useState(true)
   const [autoImageOpt, setAutoImageOpt] = useState(true)
@@ -117,6 +119,9 @@ export function useSettingsState() {
           if (typeof settings.maintenanceMode === 'boolean') {
             setMaintenanceMode(settings.maintenanceMode)
           }
+          if (typeof settings.allowPublicAdmission === 'boolean') {
+            setAllowPublicAdmission(settings.allowPublicAdmission)
+          }
         }
       } catch (err: any) {
         console.warn('[Settings] Settings load warning:', err?.message)
@@ -146,7 +151,8 @@ export function useSettingsState() {
   const handleSaveWebsite = async () => {
     setIsSavingWebsite(true)
     try {
-      await api.settings.update({ maintenanceMode })
+      await api.settings.update({ maintenanceMode, allowPublicAdmission })
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       notify('Website preferences saved successfully')
     } catch (err: any) {
       notify(`Failed to save: ${err?.message || 'Check network connection'}`)
@@ -179,6 +185,7 @@ export function useSettingsState() {
     confirmPassword: account.confirmPassword, setConfirmPassword: account.setConfirmPassword,
     isSavingAccount: account.isSavingAccount, handleSaveAccount: account.handleSaveAccount,
     permMatrixOpen, setPermMatrixOpen, notificationPreferences, toggleNotification,
+    allowPublicAdmission, setAllowPublicAdmission,
     maintenanceMode, setMaintenanceMode, searchIndexing, setSearchIndexing, autoImageOpt, setAutoImageOpt,
     showAttribution, setShowAttribution, cookieBanner, setCookieBanner, isSavingWebsite,
     twoFactorAuth: security.twoFactorAuth, setTwoFactorAuth: security.setTwoFactorAuth,

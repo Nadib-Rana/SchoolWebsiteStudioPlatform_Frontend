@@ -12,6 +12,9 @@ interface AdmissionStepGuardianProps {
   onBack: () => void
 }
 
+const INPUT_CLASS =
+  'w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/15 focus:border-slate-800 text-sm transition shadow-xs'
+
 export function AdmissionStepGuardian({
   formData,
   handleInputChange,
@@ -20,98 +23,111 @@ export function AdmissionStepGuardian({
 }: AdmissionStepGuardianProps) {
   return (
     <form onSubmit={onNext} className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Guardian Full Name *
-          </label>
-          <input
-            type="text"
-            name="guardianName"
-            required
-            placeholder="e.g. Arthur Vance"
-            value={formData.guardianName}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
-          />
+      <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-200/70 pb-3">
+          <div>
+            <h4 className="text-sm font-bold text-slate-900">Parent / Legal Guardian Contact</h4>
+            <p className="text-xs text-slate-500 mt-0.5">
+              We will use these details for interview updates and admission notifications.
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold text-slate-500">Step 2 of 3</span>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Relationship to Student *
-          </label>
-          <select
-            name="guardianRelationship"
-            value={formData.guardianRelationship}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm bg-white"
-          >
-            <option value="Father">Father</option>
-            <option value="Mother">Mother</option>
-            <option value="Legal Guardian">Legal Guardian</option>
-            <option value="Relative">Relative</option>
-          </select>
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Guardian Full Name <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="guardianName"
+              required
+              placeholder="e.g. Kamal Rahman"
+              value={formData.guardianName}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Contact Phone Number *
-          </label>
-          <input
-            type="tel"
-            name="guardianPhone"
-            required
-            placeholder="e.g. +1 (555) 345-6789"
-            value={formData.guardianPhone}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
-          />
-        </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Relationship to Student <span className="text-rose-500">*</span>
+            </label>
+            <select
+              name="guardianRelationship"
+              value={formData.guardianRelationship}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            >
+              <option value="Father">Father</option>
+              <option value="Mother">Mother</option>
+              <option value="Legal Guardian">Legal Guardian</option>
+              <option value="Relative">Relative</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Contact Email Address *
-          </label>
-          <input
-            type="email"
-            name="guardianEmail"
-            required
-            placeholder="e.g. arthur.vance@example.com"
-            value={formData.guardianEmail}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
-          />
-        </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Contact Phone Number <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="tel"
+              name="guardianPhone"
+              required
+              placeholder="e.g. 01711000001"
+              value={formData.guardianPhone}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
 
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-            Residential Address *
-          </label>
-          <textarea
-            name="address"
-            rows={3}
-            required
-            placeholder="Street address, City, State/Province, Postal Code"
-            value={formData.address}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
-          />
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Contact Email Address <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="email"
+              name="guardianEmail"
+              required
+              placeholder="e.g. parent@example.com"
+              value={formData.guardianEmail}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Residential Address <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              name="address"
+              rows={3}
+              required
+              placeholder="House/Street, Area, City, Postal Code"
+              value={formData.address}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="pt-4 flex justify-between">
+      <div className="pt-2 flex justify-between items-center gap-3">
         <button
           type="button"
           onClick={onBack}
-          className="px-5 py-2.5 border border-slate-300 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 transition"
+          className="px-5 py-2.5 border border-slate-200 bg-white text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 transition"
         >
-          Back to Student Info
+          ← Back to Student Info
         </button>
         <button
           type="submit"
-          className="px-6 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition flex items-center gap-2"
+          className="px-7 py-3 text-white text-sm font-semibold rounded-xl hover:opacity-95 transition flex items-center gap-2 shadow-sm"
+          style={{ background: 'var(--navy, #102f58)' }}
         >
-          Next: Review & Submit <Icon name="arrow" size={15} />
+          Review & Submit <Icon name="arrow" size={15} />
         </button>
       </div>
     </form>

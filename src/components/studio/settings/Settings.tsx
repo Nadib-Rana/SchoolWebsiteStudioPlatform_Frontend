@@ -113,6 +113,8 @@ export function Settings() {
 
         {s.active === 'Website' && (
           <WebsiteSettingsTab
+            allowPublicAdmission={s.allowPublicAdmission}
+            setAllowPublicAdmission={s.setAllowPublicAdmission}
             maintenanceMode={s.maintenanceMode}
             setMaintenanceMode={s.setMaintenanceMode}
             searchIndexing={s.searchIndexing}

@@ -233,7 +233,39 @@ export function PublicAdmissionForm({
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-12 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto my-12 bg-white rounded-3xl shadow-2xl shadow-slate-900/10 border border-slate-200/80 overflow-hidden">
+      {/* Branded Admission Portal Header */}
+      <div
+        className="px-6 sm:px-10 py-6 text-white flex flex-wrap items-center justify-between gap-4"
+        style={{
+          background:
+            'linear-gradient(135deg, var(--navy, #102f58) 0%, #0f172a 100%)',
+        }}
+      >
+        <div>
+          <span
+            className="text-[11px] font-bold uppercase tracking-[0.2em] block"
+            style={{ color: 'var(--accent, #e3ad3f)' }}
+          >
+            Official Online Admissions Portal
+          </span>
+          <h3 className="text-xl sm:text-2xl font-bold mt-1 text-white">
+            Apply to {schoolName}
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-slate-100">
+            Session {new Date().getFullYear()}–{new Date().getFullYear() + 1}
+          </span>
+          {isErpConnected && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              ERP Live
+            </span>
+          )}
+        </div>
+      </div>
+
       <AdmissionNavTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === 'apply' && (

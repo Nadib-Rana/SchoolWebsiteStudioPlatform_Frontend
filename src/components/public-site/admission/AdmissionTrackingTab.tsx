@@ -78,7 +78,8 @@ export function AdmissionTrackingTab({
           <button
             type="submit"
             disabled={isTracking}
-            className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm hover:opacity-95"
+            style={{ background: 'var(--navy, #102f58)' }}
           >
             {isTracking ? (
               <>

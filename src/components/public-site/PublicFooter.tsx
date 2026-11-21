@@ -10,6 +10,7 @@ export interface PublicFooterProps {
   phone?: string
   email?: string
   copyright?: string
+  showAdmissions?: boolean
   footerStyle?: {
     bg?: string
     align?: string
@@ -30,18 +31,22 @@ export function PublicFooter({
   phone = '+880 2 555 0142',
   email = 'hello@northfield.edu',
   copyright,
+  showAdmissions = true,
   footerStyle,
   setPage,
 }: PublicFooterProps) {
   const initial = (schoolName || 'N').charAt(0).toUpperCase()
 
-  const links = [
+  const allLinks = [
     { label: 'About', path: '/about', page: 'About School' },
     { label: 'Academics', path: '/academics', page: 'Academic Programs' },
     { label: 'Admissions', path: '/admissions', page: 'Admission Information' },
     { label: 'Notices', path: '/notices', page: 'Notices' },
     { label: 'Contact', path: '/contact', page: 'Contact Us' },
   ]
+  const links = showAdmissions
+    ? allLinks
+    : allLinks.filter((link) => link.path !== '/admissions')
 
   return (
     <footer

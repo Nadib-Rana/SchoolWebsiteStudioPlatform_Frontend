@@ -17,6 +17,71 @@ export default async function AdmissionsPage({ params }: PageProps) {
   }
 
   const schoolName = siteData.school.name
+  const allowPublicAdmission = siteData.settings?.allowPublicAdmission ?? true
+
+  if (!allowPublicAdmission) {
+    return (
+      <main className="inner-page">
+        <section className="inner-hero">
+          <span>ENROLLMENT & ADMISSIONS</span>
+          <h1>Admissions are currently closed.</h1>
+          <p>
+            Online student admissions for {schoolName} are temporarily closed and will reopen for the upcoming academic session.
+          </p>
+          <div className="breadcrumb">
+            <Link href={`/${schoolSlug}`} className="hover:underline">
+              Home
+            </Link>{' '}
+            <Icon name="chevron" size={11} /> Admissions
+          </div>
+        </section>
+
+        <section className="max-w-2xl mx-auto px-6 py-16">
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-900/5 p-8 sm:p-10 text-center">
+            <div
+              className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-md"
+              style={{ background: 'var(--navy, #102f58)' }}
+            >
+              <Icon name="calendar" size={26} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Admission Portal Temporarily Unavailable
+            </h2>
+            <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
+              Thank you for your interest in {schoolName}. The admissions window is currently closed by the school administration. Please check back later or reach out to our office for upcoming admission dates.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
+              <Link
+                href={`/${schoolSlug}`}
+                className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: 'var(--navy, #102f58)' }}
+              >
+                Back to Home
+              </Link>
+              <Link
+                href={`/${schoolSlug}/contact`}
+                className="px-6 py-3 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Contact Admissions Office
+              </Link>
+            </div>
+            {siteData.profile?.email && (
+              <p className="text-xs text-slate-500 mt-6">
+                Admissions Desk:{' '}
+                <a
+                  href={`mailto:${siteData.profile.email}`}
+                  className="font-semibold text-slate-700 underline"
+                >
+                  {siteData.profile.email}
+                </a>
+                {siteData.profile?.phone ? ` · ${siteData.profile.phone}` : ''}
+              </p>
+            )}
+          </div>
+        </section>
+      </main>
+    )
+  }
 
   return (
     <main className="inner-page">

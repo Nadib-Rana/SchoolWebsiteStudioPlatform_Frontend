@@ -7,6 +7,7 @@ export interface PublicHeaderProps {
   navigation?: Array<{ label: string; url: string }>
   setPage?: (p: string) => void
   applyButtonText?: string
+  showAdmissions?: boolean
   headerStyle?: {
     bg?: string
     textColor?: string

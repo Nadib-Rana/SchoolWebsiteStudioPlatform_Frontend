@@ -24,11 +24,12 @@ export function PublicHeader({
   navigation,
   setPage,
   applyButtonText,
+  showAdmissions = true,
   headerStyle,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const navItems =
+  const rawNavItems =
     navigation && navigation.length > 0
       ? navigation.map((n) => ({
           label: n.label,
@@ -36,6 +37,12 @@ export function PublicHeader({
           page: n.label,
         }))
       : DEFAULT_HEADER_NAV
+
+  const navItems = showAdmissions
+    ? rawNavItems
+    : rawNavItems.filter(
+        (item) => !item.path.toLowerCase().startsWith('/admissions'),
+      )
 
   const bg = headerStyle?.bg || 'var(--header-bg, #ffffff)'
   const isDark = isDarkColor(bg)
@@ -110,12 +117,14 @@ export function PublicHeader({
         )}
       </nav>
 
-      <PublicApplyButton
-        schoolSlug={schoolSlug}
-        isDark={isDark}
-        setPage={setPage}
-        applyButtonText={applyButtonText}
-      />
+      {showAdmissions && (
+        <PublicApplyButton
+          schoolSlug={schoolSlug}
+          isDark={isDark}
+          setPage={setPage}
+          applyButtonText={applyButtonText}
+        />
+      )}
 
       <button
         type="button"

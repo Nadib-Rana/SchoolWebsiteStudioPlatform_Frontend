@@ -3,6 +3,8 @@
 import { SettingsTitle, SettingsSave } from './SettingsHeaderSave'
 
 interface WebsiteSettingsTabProps {
+  allowPublicAdmission: boolean
+  setAllowPublicAdmission: React.Dispatch<React.SetStateAction<boolean>>
   maintenanceMode: boolean
   setMaintenanceMode: React.Dispatch<React.SetStateAction<boolean>>
   searchIndexing: boolean
@@ -18,6 +20,8 @@ interface WebsiteSettingsTabProps {
 }
 
 export function WebsiteSettingsTab({
+  allowPublicAdmission,
+  setAllowPublicAdmission,
   maintenanceMode,
   setMaintenanceMode,
   searchIndexing,
@@ -32,6 +36,12 @@ export function WebsiteSettingsTab({
   isSavingWebsite,
 }: WebsiteSettingsTabProps) {
   const toggleItems = [
+    {
+      title: 'Public admissions portal',
+      desc: 'Show the /admissions page, Apply Now button, and accept online student applications',
+      active: allowPublicAdmission,
+      toggle: () => setAllowPublicAdmission((prev) => !prev),
+    },
     {
       title: 'Maintenance mode',
       desc: 'Temporarily hide the public website from visitors',

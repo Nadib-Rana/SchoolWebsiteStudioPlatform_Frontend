@@ -91,6 +91,7 @@ export default async function SchoolPublicLayout({
   const announcementBg =
     dbSections.sectionStyles?.['Announcement bar']?.bg || primaryColor
   const footerBg = dbSections.sectionStyles?.['Footer']?.bg || primaryColor
+  const allowPublicAdmission = siteData.settings?.allowPublicAdmission ?? true
 
   const schemaOrg = {
     '@context': 'https://schema.org',
@@ -145,7 +146,7 @@ export default async function SchoolPublicLayout({
           }}
         >
           <span>{dbSections.announcementText}</span>
-          {dbSections.announcementLink && (
+          {allowPublicAdmission && dbSections.announcementLink && (
             <Link
               href={`/${schoolSlug}/admissions`}
               style={{
@@ -165,6 +166,7 @@ export default async function SchoolPublicLayout({
         motto={siteData.profile?.motto || themeCfg.eyebrow}
         logoUrl={siteData.school.logoUrl || undefined}
         applyButtonText={dbSections.applyButtonText || 'Apply now'}
+        showAdmissions={allowPublicAdmission}
         navigation={siteData.navigation}
         headerStyle={{
           ...(dbSections.sectionStyles?.['Header'] || {}),
@@ -180,6 +182,7 @@ export default async function SchoolPublicLayout({
         phone={siteData.profile?.phone || dbSections.footerPhone}
         email={siteData.profile?.email || dbSections.footerEmail}
         copyright={dbSections.footerCopyright}
+        showAdmissions={allowPublicAdmission}
         footerStyle={{
           ...(dbSections.sectionStyles?.['Footer'] || {}),
           bg: footerBg,
