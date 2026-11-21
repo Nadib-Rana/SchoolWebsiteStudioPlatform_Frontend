@@ -15,6 +15,7 @@ import { MediaUploadForm } from './forms/MediaUploadForm'
 
 export interface EditorModalProps {
   type: View
+  initialData?: any
   close: () => void
   save: () => void
 }
@@ -28,27 +29,67 @@ const titles: Record<string, string> = {
   events: 'Create event',
 }
 
-export function EditorModal({ type, close, save }: EditorModalProps) {
+const editTitles: Record<string, string> = {
+  pages: 'Edit page',
+  teachers: 'Edit teacher',
+  notices: 'Edit notice',
+  events: 'Edit event',
+}
+
+function toDateInput(val?: string | null): string {
+  if (!val) return new Date().toISOString().split('T')[0]
+  try {
+    return new Date(val).toISOString().split('T')[0]
+  } catch {
+    return new Date().toISOString().split('T')[0]
+  }
+}
+
+export function EditorModal({ type, initialData, close, save }: EditorModalProps) {
+  const isEditing = Boolean(initialData?.id)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const [teacher, setTeacher] = useState({
-    name: '', designation: '', department: 'Science', qualification: '',
-    email: '', phone: '', bio: '', photoUrl: '', order: 1, status: 'ACTIVE',
+    name: initialData?.name || '',
+    designation: initialData?.designation || '',
+    department: initialData?.department || 'Science',
+    qualification: initialData?.qualification || '',
+    email: initialData?.email || '',
+    phone: initialData?.phone || '',
+    bio: initialData?.bio || '',
+    photoUrl: initialData?.photoUrl || '',
+    order: initialData?.order || 1,
+    status: initialData?.status || 'ACTIVE',
   })
   const [notice, setNotice] = useState({
-    title: '', category: 'General', description: '', fileUrl: '',
-    isPinned: false, priority: 'NORMAL', status: 'PUBLISHED',
-    publishDate: new Date().toISOString().split('T')[0],
+    title: initialData?.title || '',
+    category: initialData?.category || 'General',
+    description: initialData?.description || '',
+    fileUrl: initialData?.fileUrl || '',
+    isPinned: Boolean(initialData?.isPinned),
+    priority: initialData?.priority || 'NORMAL',
+    status: initialData?.status || 'PUBLISHED',
+    publishDate: toDateInput(initialData?.publishDate || initialData?.publishedAt),
   })
   const [event, setEvent] = useState({
-    title: '', category: 'Academic', eventDate: new Date().toISOString().split('T')[0],
-    time: '09:00 AM - 03:00 PM', venue: 'Main Auditorium', description: '',
-    status: 'PUBLISHED', registrationUrl: '',
+    title: initialData?.title || '',
+    category: initialData?.category || 'Academic',
+    eventDate: toDateInput(initialData?.eventDate),
+    time: initialData?.time || '09:00 AM - 03:00 PM',
+    venue: initialData?.venue || initialData?.location || 'Main Auditorium',
+    description: initialData?.description || '',
+    status: initialData?.status || 'PUBLISHED',
+    registrationUrl: initialData?.registrationUrl || '',
   })
   const [page, setPage] = useState({
-    title: '', slug: '', navLabel: '', status: 'PUBLISHED',
-    metaTitle: '', metaDescription: '', featuredImage: '',
+    title: initialData?.title || '',
+    slug: initialData?.slug || '',
+    navLabel: initialData?.navLabel || '',
+    status: initialData?.status || 'PUBLISHED',
+    metaTitle: initialData?.metaTitle || '',
+    metaDescription: initialData?.metaDescription || '',
+    featuredImage: initialData?.featuredImage || '',
   })
   const [album, setAlbum] = useState({
     title: '', slug: '', description: '', category: 'Activities', coverUrl: '',
@@ -65,25 +106,45 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
       if (type === 'teachers') {
         if (!teacher.name.trim()) throw new Error('Teacher name is required.')
         if (!teacher.designation.trim()) throw new Error('Designation is required.')
-        await api.teachers.create({ ...teacher, order: Number(teacher.order) || 1 })
+        const payload = {
+          ...teacher,
+          order: Number(teacher.order) || 1,
+          status: publishNow ? 'ACTIVE' : 'INACTIVE',
+        }
+        if (isEditing) {
+          await api.teachers.update(initialData.id, payload)
+        } else {
+          await api.teachers.create(payload)
+        }
       } else if (type === 'notices') {
         if (!notice.title.trim()) throw new Error('Notice title is required.')
         if (!notice.description.trim()) throw new Error('Description is required.')
-        await api.notices.create({
+        const payload = {
           ...notice,
+          fileUrl: notice.fileUrl.trim() || undefined,
           status: publishNow ? 'PUBLISHED' : 'DRAFT',
           publishDate: new Date(notice.publishDate).toISOString(),
-        })
+        }
+        if (isEditing) {
+          await api.notices.update(initialData.id, payload)
+        } else {
+          await api.notices.create(payload)
+        }
       } else if (type === 'events') {
         if (!event.title.trim()) throw new Error('Event title is required.')
-        await api.events.create({
+        const payload = {
           ...event,
           status: publishNow ? 'PUBLISHED' : 'DRAFT',
           eventDate: new Date(event.eventDate).toISOString(),
-        })
+        }
+        if (isEditing) {
+          await api.events.update(initialData.id, payload)
+        } else {
+          await api.events.create(payload)
+        }
       } else if (type === 'pages') {
         if (!page.title.trim()) throw new Error('Page title is required.')
-        await api.pages.create({
+        const payload = {
           title: page.title,
           slug: page.slug.trim() || handleSlugify(page.title),
           navLabel: page.navLabel || page.title,
@@ -91,7 +152,12 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
           metaTitle: page.metaTitle || page.title,
           metaDescription: page.metaDescription,
           featuredImage: page.featuredImage || undefined,
-        })
+        }
+        if (isEditing) {
+          await api.pages.update(initialData.id, payload)
+        } else {
+          await api.pages.create(payload)
+        }
       } else if (type === 'gallery') {
         if (!album.title.trim()) throw new Error('Album title is required.')
         await api.gallery.createAlbum({
@@ -123,8 +189,8 @@ export function EditorModal({ type, close, save }: EditorModalProps) {
       <div className="editor-modal detailed" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <div>
-            <span>NEW ENTRY</span>
-            <h2>{titles[type] || 'Create event'}</h2>
+            <span>{isEditing ? 'EDIT ENTRY' : 'NEW ENTRY'}</span>
+            <h2>{(isEditing && editTitles[type]) || titles[type] || 'Create item'}</h2>
           </div>
           <button type="button" onClick={close} aria-label="Close modal">
             <Icon name="close" />

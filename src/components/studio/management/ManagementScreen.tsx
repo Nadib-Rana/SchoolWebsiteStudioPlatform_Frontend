@@ -61,7 +61,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
               Preview draft
             </Button>
           )}
-          {!['analytics', 'integrations'].includes(view) && (
+          {['navigation', 'pages', 'teachers', 'notices', 'events', 'gallery', 'media'].includes(view) && (
             <Button
               kind="primary"
               icon={meta.action?.includes('Save') ? 'check' : 'plus'}

@@ -6,4 +6,6 @@ export interface DataManagerProps {
 export interface DataItem {
   id: string
   cells: string[]
+  status?: string
+  raw?: any
 }

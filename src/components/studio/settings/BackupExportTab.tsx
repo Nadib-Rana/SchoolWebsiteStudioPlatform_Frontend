@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
+import { useStudio } from '@/context/StudioContext'
 import { SettingsTitle } from './SettingsHeaderSave'
 
 interface BackupExportTabProps {
@@ -15,34 +16,27 @@ export function BackupExportTab({
   onExportContent,
   onExportMediaArchive,
   onExportAnalytics,
-  onSelectRestoreBackup,
 }: BackupExportTabProps) {
-  const backups = [
-    ['Today, 03:15 AM', 'Automatic backup', '2.8 GB'],
-    ['Yesterday, 03:14 AM', 'Automatic backup', '2.8 GB'],
-    ['May 10, 10:42 AM', 'Before version 2.7 publish', '2.7 GB'],
-  ]
+  const { setView } = useStudio()
 
   return (
     <div className="settings-content-stack">
       <div className="card settings-form">
         <SettingsTitle
           title="Backup & export"
-          description="Download your content or restore a previous backup."
+          description="Download real-time JSON/CSV exports of your school data or manage snapshots in Publishing."
         />
         <div className="backup-status">
           <span>
             <Icon name="check" />
           </span>
           <div>
-            <strong>Automatic backups are active</strong>
-            <p>Content and configuration are securely backed up every day.</p>
+            <strong>Version snapshots are managed in Publishing</strong>
+            <p>Every published version creates a real PostgreSQL snapshot you can restore anytime.</p>
           </div>
-          <small>
-            Last backup
-            <br />
-            <strong>Today, 03:15 AM</strong>
-          </small>
+          <Button kind="primary" onClick={() => setView('publishing')}>
+            Open Version History
+          </Button>
         </div>
         <div className="export-grid">
           <button type="button" onClick={onExportContent}>
@@ -75,35 +69,6 @@ export function BackupExportTab({
               Generate report <Icon name="arrow" size={13} />
             </em>
           </button>
-        </div>
-      </div>
-
-      <div className="card settings-form">
-        <SettingsTitle
-          title="Backup history"
-          description="Daily backups are retained for 30 days."
-        />
-        <div className="backup-list">
-          {backups.map((x) => (
-            <div key={x[0]}>
-              <span>
-                <Icon name="clock" />
-              </span>
-              <div>
-                <strong>{x[0]}</strong>
-                <small>
-                  {x[1]} · {x[2]}
-                </small>
-              </div>
-              <span className="state-badge published">
-                <i />
-                Complete
-              </span>
-              <Button onClick={() => onSelectRestoreBackup(x[0])}>
-                Restore
-              </Button>
-            </div>
-          ))}
         </div>
       </div>
     </div>

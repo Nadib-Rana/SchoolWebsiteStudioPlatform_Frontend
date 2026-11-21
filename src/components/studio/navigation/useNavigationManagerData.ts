@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import {
   type NavItem,
   defaultHeaderItems,
@@ -66,7 +67,8 @@ export function useNavigationManagerData() {
         order: idx + 1, target: item.target || '_self', isExternal: item.isExternal || item.url.startsWith('http'),
       }))
       await api.navigation.update(activeTab, formattedItems, activeId)
-      notify(`${activeTab === 'HEADER' ? 'Header' : 'Footer'} navigation saved successfully!`)
+      await revalidatePublicSite(activeSlug)
+      notify(`${activeTab === 'HEADER' ? 'Header' : 'Footer'} navigation saved and published!`)
       setHasUnsavedChanges(false)
     } catch (err) {
       console.error('Failed to save navigation:', err)

@@ -64,33 +64,9 @@ export function WebsiteSettingsTab({
     },
     {
       title: 'Maintenance mode',
-      desc: 'Temporarily hide the public website from visitors',
+      desc: 'Temporarily hide the public website from visitors and display a maintenance screen',
       active: maintenanceMode,
       toggle: () => setMaintenanceMode((prev) => !prev),
-    },
-    {
-      title: 'Search engine indexing',
-      desc: 'Allow approved pages to appear in search results',
-      active: searchIndexing,
-      toggle: () => setSearchIndexing((prev) => !prev),
-    },
-    {
-      title: 'Automatic image optimization',
-      desc: 'Resize and compress uploaded images for performance',
-      active: autoImageOpt,
-      toggle: () => setAutoImageOpt((prev) => !prev),
-    },
-    {
-      title: 'Show “Powered by SchoolCanvas”',
-      desc: 'Display platform attribution in the public footer',
-      active: showAttribution,
-      toggle: () => setShowAttribution((prev) => !prev),
-    },
-    {
-      title: 'Cookie preference banner',
-      desc: 'Show visitors privacy and analytics choices',
-      active: cookieBanner,
-      toggle: () => setCookieBanner((prev) => !prev),
     },
   ]
 
@@ -98,38 +74,8 @@ export function WebsiteSettingsTab({
     <div className="card settings-form">
       <SettingsTitle
         title="Website preferences"
-        description="Configure default behavior for the public website."
+        description="Control live visibility features for your public school website. Changes apply immediately on save."
       />
-      <div className="form-grid">
-        <label>
-          Default homepage
-          <select defaultValue="Home">
-            <option>Home</option>
-          </select>
-        </label>
-        <label>
-          Default template
-          <select defaultValue="Aster Academy">
-            <option>Aster Academy</option>
-            <option>Heritage</option>
-            <option>Clarity</option>
-          </select>
-        </label>
-        <label>
-          Default page status
-          <select defaultValue="Draft">
-            <option>Draft</option>
-            <option>Published</option>
-          </select>
-        </label>
-        <label>
-          Media optimization
-          <select defaultValue="Automatic">
-            <option>Automatic</option>
-            <option>Original quality</option>
-          </select>
-        </label>
-      </div>
 
       {toggleItems.map((x) => (
         <div className="toggle-row" key={x.title}>

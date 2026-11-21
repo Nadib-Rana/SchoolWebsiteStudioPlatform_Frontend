@@ -3,16 +3,19 @@
 import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
+import type { View } from '@/types/studio'
 import { useState } from 'react'
-import type { DataManagerProps } from './data-manager.types'
+import type { DataItem, DataManagerProps } from './data-manager.types'
 import { useDataManagerData } from './useDataManagerData'
 import { DataManagerSummary } from './DataManagerSummary'
 import { DataTableRows } from './DataTableRows'
+import { EditorModal } from './EditorModal'
 
 export type { DataManagerProps }
 
 export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
-  const { notify } = useStudio()
+  const { notify, currentSchool } = useStudio()
   const labels =
     type === 'pages'
       ? ['Page', 'URL', 'Status', 'Last updated']
@@ -22,12 +25,54 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
       ? ['Notice', 'Category', 'Publication date', 'Status']
       : ['Event', 'Date', 'Location', 'Status']
 
-  const { items, setItems, loading } = useDataManagerData(type, refreshKey)
+  const [localRefresh, setLocalRefresh] = useState(0)
+  const { items, setItems, loading } = useDataManagerData(
+    type,
+    refreshKey + localRefresh,
+  )
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('All statuses')
   const [page, setPage] = useState(0)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [editingItem, setEditingItem] = useState<DataItem | null>(null)
   const statusOptions = ['All statuses', 'Published', 'Draft', 'Expired']
+
+  const handleToggleStatus = async (item: DataItem) => {
+    const nextPublished = item.status !== 'PUBLISHED'
+    setTogglingId(item.id)
+    try {
+      if (type === 'notices') {
+        await api.notices.update(item.id, {
+          status: nextPublished ? 'PUBLISHED' : 'DRAFT',
+        })
+      } else if (type === 'events') {
+        await api.events.update(item.id, {
+          status: nextPublished ? 'PUBLISHED' : 'DRAFT',
+        })
+      } else if (type === 'pages') {
+        await api.pages.update(item.id, {
+          status: nextPublished ? 'PUBLISHED' : 'DRAFT',
+        })
+      } else if (type === 'teachers') {
+        await api.teachers.update(item.id, {
+          status: nextPublished ? 'ACTIVE' : 'INACTIVE',
+        })
+      }
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
+      setLocalRefresh((k) => k + 1)
+      notify(
+        nextPublished
+          ? `"${item.cells[0]}" is now Published live!`
+          : `"${item.cells[0]}" moved to Draft (hidden from public site).`,
+      )
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update status.'
+      notify(`Error: ${msg}`)
+    } finally {
+      setTogglingId(null)
+    }
+  }
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}"?`)) return
@@ -44,6 +89,7 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
         await api.pages.delete(id)
       }
 
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       setItems((prev) => prev.filter((item) => item.id !== id))
       notify(`"${name}" was deleted successfully.`)
     } catch (err: unknown) {
@@ -132,7 +178,10 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
             shown={shown}
             type={type}
             deletingId={deletingId}
+            togglingId={togglingId}
             loading={loading}
+            onEdit={(item) => setEditingItem(item)}
+            onToggleStatus={handleToggleStatus}
             onDelete={handleDelete}
           />
         </div>
@@ -166,6 +215,20 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
           </div>
         </div>
       </div>
+
+      {editingItem && (
+        <EditorModal
+          type={type as View}
+          initialData={editingItem.raw}
+          close={() => setEditingItem(null)}
+          save={() => {
+            const label = editingItem.cells[0]
+            setEditingItem(null)
+            setLocalRefresh((k) => k + 1)
+            notify(`"${label}" updated and published!`)
+          }}
+        />
+      )}
     </>
   )
 }
