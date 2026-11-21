@@ -223,10 +223,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Customize Hero Slider, Intro Photo & Styles', bn: 'হিরো স্লাইডার, ইন্ট্রো ছবি ও স্টাইল কাস্টমাইজ করুন' },
+        title: { en: 'Customize Hero Slider, Intro Photo, Colors & Nav Alignment', bn: 'হিরো স্লাইডার, ছবি, টেক্সট কালার ও মেনু অ্যালাইনমেন্ট' },
         detail: {
-          en: 'In Hero section, add 2–6 images to activate an automatic crossfade Hero Background Slider with custom speed (3s–12s). In School Introduction, upload your campus image and highlight quote.',
-          bn: 'Hero সেকশনে ২–৬টি ছবি যোগ করলে অটোমেটিক ক্রসফেড স্লাইডার (৩–১২ সেকেন্ড) চালু হবে। School Introduction সেকশনে ক্যাম্পাসের ছবি ও কোট আপলোড করা যাবে।',
+          en: 'In Hero section, add 2–6 images for an automatic crossfade slider (3s–12s). In any section Style tab, set custom Background Color, Text Color, and Header Navigation Alignment (Left / Center / Right).',
+          bn: 'Hero সেকশনে ২–৬টি ছবি দিয়ে অটো-স্লাইডার (৩–১২ সেকেন্ড) চালু করুন। যেকোনো সেকশনের Style ট্যাব থেকে কাস্টম Background Color, Text Color এবং Header মেনুর Left/Center/Right অ্যালাইনমেন্ট সেট করা যাবে।',
         },
       },
       {
@@ -414,10 +414,17 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Pin important circulars', bn: 'গুরুত্বপূর্ণ নোটিশ পিন করুন' },
+        title: { en: 'Pin important circulars & Notice Ticker', bn: 'জরুরি নোটিশ পিন ও চলমান নোটিশ বার' },
         detail: {
-          en: 'Enable "Pinned" to keep critical notices (like Admission Open or Exam Schedule) at the top of the public notice board.',
-          bn: 'ভর্তি বা পরীক্ষার রুটিনের মতো জরুরি নোটিশ সবার উপরে রাখতে "Pinned" চালু করুন।',
+          en: 'Enable "Pinned" to keep critical notices at the top. Published notices automatically scroll in the public "Latest Notices" ticker bar (toggleable ON/OFF in Settings → Website).',
+          bn: 'জরুরি নোটিশ সবার উপরে রাখতে "Pinned" চালু করুন। পাবলিশ করা নোটিশগুলো অটোমেটিক পাবলিক সাইটের "Latest Notices" চলমান বারে দেখাবে (Settings → Website থেকে On/Off করা যাবে)।',
+        },
+      },
+      {
+        title: { en: 'Public Download Center (/{schoolSlug}/downloads)', bn: 'পাবলিক ডাউনলোড সেন্টার (রুটিন/সিলেবাস PDF)' },
+        detail: {
+          en: 'Any PUBLISHED notice with a PDF/file attachment automatically appears in the public Download Center with category filters and search. Private ERP notices or DRAFT notices are never shown publicly.',
+          bn: 'PDF বা ফাইল যুক্ত যেকোনো PUBLISHED নোটিশ অটোমেটিক পাবলিক Download Center (/{schoolSlug}/downloads)-এ ক্যাটাগরি ফিল্টার ও সার্চসহ দেখাবে। DRAFT বা ERP-এর প্রাইভেট নোটিশ কখনোই পাবলিক হয় না।',
         },
       },
     ],
@@ -547,10 +554,17 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Public admission & tracking portal', bn: 'পাবলিক অ্যাডমিশন ও ট্র্যাকিং পোর্টাল' },
+        title: { en: 'Public admission portal & Printable PDF Receipt', bn: 'পাবলিক অ্যাডমিশন ও PDF রিসিট প্রিন্ট' },
         detail: {
-          en: 'Parents apply at /{schoolSlug}/admissions and immediately receive a unique application number (ADM-YYYY-XXXX) to track status.',
-          bn: 'অভিভাবকরা /{schoolSlug}/admissions পেজ থেকে আবেদন করলে সাথে সাথে একটি ইউনিক নম্বর (ADM-YYYY-XXXX) পাবেন।',
+          en: 'Parents apply at /{schoolSlug}/admissions, immediately receive a unique reference number (ADM-YYYY-XXXX), and can download/print an official A4 Admission Receipt (PDF) or Status Slip anytime.',
+          bn: 'অভিভাবকরা /{schoolSlug}/admissions পেজ থেকে আবেদন করলে ইউনিক রেফারেন্স নম্বর (ADM-YYYY-XXXX) পাবেন এবং সাথে সাথেই অফিশিয়াল A4 Admission Receipt (PDF) বা Status Slip প্রিন্ট করতে পারবেন।',
+        },
+      },
+      {
+        title: { en: '1-Click Hide / Open Admissions Page', bn: '১ ক্লিকে অ্যাডমিশন পেজ Hide / Open করুন' },
+        detail: {
+          en: 'Use the top visibility banner here (or Settings → Website) to hide the /admissions page, Apply Now button, and pause new applications between admission seasons — then reopen in 1 click when admissions start again.',
+          bn: 'এই পেজের একদম উপরের ব্যানার (বা Settings → Website) থেকে ১ ক্লিকে অ্যাডমিশন পেজ ও Apply Now বাটন হাইড/বন্ধ করে রাখতে পারবেন, আর নতুন সেশন শুরু হলে আবার ১ ক্লিকে চালু করে দিতে পারবেন।',
         },
       },
       {
@@ -631,10 +645,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Sync Teachers, Notices & Queued Admissions', bn: '৪. টিচার, নোটিশ ও কিউড অ্যাডমিশন সিঙ্ক করুন' },
+        title: { en: 'Sync Teachers, Notices (Private Drafts) & Queued Admissions', bn: '৪. টিচার, নোটিশ (ড্রাফট) ও কিউড অ্যাডমিশন সিঙ্ক করুন' },
         detail: {
-          en: 'Click "Sync ERP now" anytime to pull latest classes, faculty profiles, published notices, and flush any offline queued admissions.',
-          bn: '"Sync ERP now" ক্লিক করলেই ক্লাস, টিচার, নোটিশ এবং অফলাইনে জমা হওয়া আবেদন ERP-র সাথে সিঙ্ক হয়ে যাবে।',
+          en: 'Click "Sync ERP now" to pull classes, faculty profiles, and flush offline queued admissions. ERP-synced notices are safely imported as DRAFT (private) so internal ERP notices never auto-publish without admin approval.',
+          bn: '"Sync ERP now" ক্লিক করলে ক্লাস, টিচার ও অফলাইনে জমা হওয়া আবেদন সিঙ্ক হবে। ERP থেকে আসা নোটিশ নিরাপদে DRAFT (প্রাইভেট) হিসেবে সেভ হয়—অ্যাডমিন পাবলিশ না করা পর্যন্ত পাবলিক সাইটে যায় না।',
         },
         tip: {
           en: 'Once verified, your public Alumni Verification portal is automatically live at /{schoolSlug}/alumni-verify.',
@@ -796,10 +810,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Toggle Public Admissions or Maintenance Mode', bn: 'পাবলিক অ্যাডমিশন বা মেইনটেন্যান্স মোড' },
+        title: { en: 'Control Admissions, Notice Ticker, Floating WhatsApp & Maintenance Mode', bn: 'অ্যাডমিশন, নোটিশ বার, WhatsApp ও মেইনটেন্যান্স কন্ট্রোল' },
         detail: {
-          en: 'Use Website Settings to open/close online admission applications anytime.',
-          bn: 'Website Settings থেকে যেকোনো সময় অনলাইন ভর্তি ফর্ম চালু বা বন্ধ করতে পারবেন।',
+          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp & Call Buttons, or Maintenance Mode ON/OFF anytime — changes apply live immediately.',
+          bn: 'Website Preferences থেকে ১ ক্লিকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp/Call বাটন এবং Maintenance Mode অন/অফ করতে পারবেন—সেভ করলেই সাথে সাথে লাইভ সাইটে আপডেট হবে।',
         },
       },
     ],
