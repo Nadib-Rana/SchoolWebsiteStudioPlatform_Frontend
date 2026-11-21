@@ -39,7 +39,7 @@ export const getPublicSiteData = cache(
       const res = await fetch(
         `${API_BASE_URL}/public/site?slug=${encodeURIComponent(normalizedSlug)}`,
         {
-          next: { revalidate: 60 },
+          cache: 'no-store',
         },
       )
       if (!res.ok) {
@@ -60,7 +60,7 @@ export const getPublicNotice = cache(
     try {
       const res = await fetch(
         `${API_BASE_URL}/public/${encodeURIComponent(slug)}/notices/${encodeURIComponent(noticeId)}`,
-        { next: { revalidate: 60 } },
+        { cache: 'no-store' },
       )
       if (!res.ok) return null
       const json = await res.json()
@@ -76,7 +76,7 @@ export const getPublicEvent = cache(
     try {
       const res = await fetch(
         `${API_BASE_URL}/public/${encodeURIComponent(slug)}/events/${encodeURIComponent(eventId)}`,
-        { next: { revalidate: 60 } },
+        { cache: 'no-store' },
       )
       if (!res.ok) return null
       const json = await res.json()
@@ -92,7 +92,7 @@ export const getPublicTeacher = cache(
     try {
       const res = await fetch(
         `${API_BASE_URL}/public/${encodeURIComponent(slug)}/teachers/${encodeURIComponent(teacherId)}`,
-        { next: { revalidate: 60 } },
+        { cache: 'no-store' },
       )
       if (!res.ok) return null
       const json = await res.json()
@@ -108,7 +108,7 @@ export const getPublicAlbum = cache(
     try {
       const res = await fetch(
         `${API_BASE_URL}/public/${encodeURIComponent(slug)}/albums/${encodeURIComponent(albumId)}`,
-        { next: { revalidate: 60 } },
+        { cache: 'no-store' },
       )
       if (!res.ok) return null
       const json = await res.json()

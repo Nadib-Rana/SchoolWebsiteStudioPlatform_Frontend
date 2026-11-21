@@ -116,6 +116,21 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         theme={theme}
         setTheme={handleThemeChange}
       />
+      {siteData?.settings?.maintenanceMode && (
+        <div
+          style={{
+            background: '#fffbeb',
+            borderBottom: '1px solid #fde68a',
+            color: '#92400e',
+            padding: '8px 16px',
+            fontSize: '12px',
+            fontWeight: 600,
+            textAlign: 'center',
+          }}
+        >
+          ⚠️ Maintenance Mode is active — Public visitors currently see the Scheduled Maintenance screen on the live URL.
+        </div>
+      )}
       {showAnnouncement && (
         <div
           style={{
