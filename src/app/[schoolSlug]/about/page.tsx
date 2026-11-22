@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPublicSiteData } from '@/lib/public-site'
+import { parseHomepageSections } from '@/lib/homepage-sections-parser'
 import { Icon } from '@/components/common/Icon'
 import { campusImage } from '@/config/templates'
 
@@ -16,13 +17,21 @@ export default async function SchoolAboutPage({ params }: PageProps) {
     notFound()
   }
 
+  const dbSections = parseHomepageSections(siteData)
   const schoolName = siteData.school.name
   const establishedYear = siteData.profile?.established || 1983
-  const principalName = siteData.profile?.principalName || 'Dr. Farhana Noor'
-  const principalTitle = siteData.profile?.principalTitle || 'Principal & Head of School'
+  const principalName =
+    siteData.profile?.principalName || dbSections.principalName || 'Dr. Farhana Noor'
+  const principalTitle =
+    siteData.profile?.principalTitle || dbSections.principalTitle || 'Principal & Head of School'
+  const principalPhoto =
+    siteData.profile?.principalPhotoUrl || dbSections.principalPhoto
+  const principalQuote =
+    dbSections.principalQuote ||
+    '“The true measure of a school is not only what students achieve, but who they become along the way.”'
   const principalBio =
     siteData.profile?.principalBio ||
-    'At our school, we pair high expectations with genuine care. Our students learn to think deeply, act with integrity, and use their gifts in service of others.'
+    `At ${schoolName}, we pair high expectations with genuine care. Our students learn to think deeply, act with integrity, and use their gifts in service of others.`
 
   return (
     <main className="inner-page">
@@ -70,17 +79,15 @@ export default async function SchoolAboutPage({ params }: PageProps) {
       <section className="principal-home bg-slate-50 border-y border-slate-200">
         <div>
           <span className="section-kicker">FROM OUR PRINCIPAL</span>
-          <blockquote>
-            “The true measure of a school is not only what students achieve, but who they become along the way.”
-          </blockquote>
+          <blockquote>{principalQuote}</blockquote>
           <p>{principalBio}</p>
         </div>
-        <aside>
-          {siteData.profile?.principalPhotoUrl ? (
+        <aside className="flex flex-col items-center text-center">
+          {principalPhoto ? (
             <img
-              src={siteData.profile.principalPhotoUrl}
+              src={principalPhoto}
               alt={principalName}
-              className="principal-portrait-img rounded-full w-24 h-24 object-cover mb-2"
+              className="principal-portrait-img w-44 h-52 sm:w-48 sm:h-56 rounded-2xl object-cover shadow-lg border-4 border-white ring-1 ring-slate-200/80 mx-auto mb-3"
             />
           ) : (
             <div className="principal-portrait">
@@ -91,8 +98,12 @@ export default async function SchoolAboutPage({ params }: PageProps) {
                 .join('')}
             </div>
           )}
-          <strong>{principalName}</strong>
-          <span>{principalTitle}</span>
+          <strong className="text-lg font-bold text-slate-900 mt-2 block">
+            {principalName}
+          </strong>
+          <span className="text-xs font-medium text-slate-500 mt-1 block">
+            {principalTitle}
+          </span>
         </aside>
       </section>
 
