@@ -164,6 +164,24 @@ export default async function SchoolPublicLayout({
   const allowPublicAdmission = siteData.settings?.allowPublicAdmission ?? true
   const showNoticeTicker = siteData.settings?.showNoticeTicker ?? true
   const showFloatingContact = siteData.settings?.showFloatingContact ?? true
+  const floatingCfg = siteData.settings?.notificationPreferences?._floatingContact
+  const showWhatsappButton =
+    typeof floatingCfg?.showWhatsappButton === 'boolean'
+      ? floatingCfg.showWhatsappButton
+      : showFloatingContact
+  const showCallButton =
+    typeof floatingCfg?.showCallButton === 'boolean'
+      ? floatingCfg.showCallButton
+      : showFloatingContact
+  const effectiveCallPhone =
+    floatingCfg?.callNumber ||
+    siteData.settings?.supportPhone ||
+    siteData.profile?.phone ||
+    dbSections.footerPhone
+  const effectiveWhatsappPhone =
+    floatingCfg?.whatsappNumber ||
+    siteData.profile?.socialLinks?.whatsapp ||
+    effectiveCallPhone
 
   const schemaOrg = {
     '@context': 'https://schema.org',
@@ -252,11 +270,13 @@ export default async function SchoolPublicLayout({
         />
       )}
       <div className="flex-1">{children}</div>
-      {showFloatingContact && (
+      {(showWhatsappButton || showCallButton) && (
         <PublicFloatingContact
           schoolName={siteData.school.name}
-          phone={siteData.profile?.phone || dbSections.footerPhone}
-          whatsapp={siteData.profile?.socialLinks?.whatsapp}
+          phone={effectiveCallPhone}
+          whatsapp={effectiveWhatsappPhone}
+          showWhatsapp={showWhatsappButton}
+          showCall={showCallButton}
         />
       )}
       <PublicFooter

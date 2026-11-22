@@ -4,6 +4,8 @@ interface PublicFloatingContactProps {
   schoolName: string
   phone?: string | null
   whatsapp?: string | null
+  showWhatsapp?: boolean
+  showCall?: boolean
 }
 
 function sanitizePhoneDigits(raw?: string | null): string {
@@ -29,10 +31,12 @@ export function PublicFloatingContact({
   schoolName,
   phone,
   whatsapp,
+  showWhatsapp = true,
+  showCall = true,
 }: PublicFloatingContactProps) {
   const rawWhatsapp = whatsapp || phone
-  const waDigits = sanitizeWhatsappDigits(rawWhatsapp)
-  const telValue = phone ? phone.replace(/[^\d+]/g, '') : ''
+  const waDigits = showWhatsapp ? sanitizeWhatsappDigits(rawWhatsapp) : ''
+  const telValue = showCall && phone ? phone.replace(/[^\d+]/g, '') : ''
 
   if (!waDigits && !telValue) return null
 

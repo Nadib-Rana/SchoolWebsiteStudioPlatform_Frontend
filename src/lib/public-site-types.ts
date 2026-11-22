@@ -116,6 +116,16 @@ export interface PublicSiteData {
     maintenanceMode?: boolean
     showNoticeTicker?: boolean
     showFloatingContact?: boolean
+    supportPhone?: string | null
+    notificationPreferences?: {
+      _floatingContact?: {
+        showWhatsappButton?: boolean
+        showCallButton?: boolean
+        whatsappNumber?: string
+        callNumber?: string
+      }
+      [key: string]: unknown
+    } | null
     showNoticeBoard?: boolean
     showEventsCalendar?: boolean
   }

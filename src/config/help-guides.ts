@@ -817,10 +817,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Control Admissions, Notice Ticker, Floating WhatsApp & Maintenance Mode', bn: 'অ্যাডমিশন, নোটিশ বার, WhatsApp ও মেইনটেন্যান্স কন্ট্রোল' },
+        title: { en: 'Control Admissions, Notice Ticker, Separate WhatsApp / Call Buttons & Maintenance Mode', bn: 'অ্যাডমিশন, নোটিশ বার, আলাদা WhatsApp ও Call বাটন এবং মেইনটেন্যান্স কন্ট্রোল' },
         detail: {
-          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp & Call Buttons (auto-formats local 01XXXXXXXXX numbers with 88 country code), or Maintenance Mode ON/OFF anytime. When Maintenance Mode is active, visitors immediately see a branded Scheduled Maintenance screen and public forms are paused while you can still preview inside Studio.',
-          bn: 'Website Preferences থেকে ১ ক্লিকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp/Call বাটন (লোকাল 01XXXXXXXXX নম্বরে অটো 88 যুক্ত হয়) এবং Maintenance Mode অন/অফ করতে পারবেন। Maintenance Mode চালু করলে ভিজিটররা সাথে সাথে (০ সেকেন্ড ডিলেতে) স্কুলের লোগো ও জরুরি যোগাযোগের তথ্যসহ "Scheduled Maintenance" স্ক্রিন দেখবেন, তবে আপনি স্টুডিওর ভেতরে প্রিভিউ দেখে কাজ চালিয়ে যেতে পারবেন।',
+          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp Button (with editable WhatsApp number), Floating Phone Call Button (with editable Call Office phone number), or Maintenance Mode ON/OFF independently anytime.',
+          bn: 'Website Preferences থেকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp বাটন এবং Floating Phone Call বাটন আলাদাভাবে On/Off করতে পারবেন এবং দুটির জন্যই আলাদা ফোন নম্বর সরাসরি বসিয়ে বা পরিবর্তন করে সেভ করতে পারবেন।',
         },
       },
     ],

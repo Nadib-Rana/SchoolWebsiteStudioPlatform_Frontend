@@ -119,6 +119,14 @@ export function Settings() {
             setShowNoticeTicker={s.setShowNoticeTicker}
             showFloatingContact={s.showFloatingContact}
             setShowFloatingContact={s.setShowFloatingContact}
+            showWhatsappButton={s.showWhatsappButton}
+            setShowWhatsappButton={s.setShowWhatsappButton}
+            showCallButton={s.showCallButton}
+            setShowCallButton={s.setShowCallButton}
+            whatsappNumber={s.whatsappNumber}
+            setWhatsappNumber={s.setWhatsappNumber}
+            callNumber={s.callNumber}
+            setCallNumber={s.setCallNumber}
             maintenanceMode={s.maintenanceMode}
             setMaintenanceMode={s.setMaintenanceMode}
             searchIndexing={s.searchIndexing}

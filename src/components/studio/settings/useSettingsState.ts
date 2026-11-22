@@ -80,6 +80,10 @@ export function useSettingsState() {
   const [allowPublicAdmission, setAllowPublicAdmission] = useState(true)
   const [showNoticeTicker, setShowNoticeTicker] = useState(true)
   const [showFloatingContact, setShowFloatingContact] = useState(true)
+  const [showWhatsappButton, setShowWhatsappButton] = useState(true)
+  const [showCallButton, setShowCallButton] = useState(true)
+  const [whatsappNumber, setWhatsappNumber] = useState('')
+  const [callNumber, setCallNumber] = useState('')
   const [maintenanceMode, setMaintenanceMode] = useState(false)
   const [searchIndexing, setSearchIndexing] = useState(true)
   const [autoImageOpt, setAutoImageOpt] = useState(true)
@@ -106,6 +110,12 @@ export function useSettingsState() {
           if (school.name) setSchoolName(school.name)
           if (school.logoUrl) setSchoolLogo(school.logoUrl)
           if (school.faviconUrl) setSchoolFavicon(school.faviconUrl)
+          if (school.profile?.phone) {
+            setCallNumber((prev) => prev || school.profile.phone)
+            setWhatsappNumber(
+              (prev) => prev || school.profile?.socialLinks?.whatsapp || school.profile.phone,
+            )
+          }
         }
       } catch (err: any) {
         console.warn('[Settings] School load warning:', err?.message)
@@ -129,9 +139,22 @@ export function useSettingsState() {
           }
           if (typeof settings.showFloatingContact === 'boolean') {
             setShowFloatingContact(settings.showFloatingContact)
+            setShowWhatsappButton(settings.showFloatingContact)
+            setShowCallButton(settings.showFloatingContact)
+          }
+          if (settings.supportPhone) {
+            setCallNumber(settings.supportPhone)
+            setWhatsappNumber((prev) => prev || settings.supportPhone)
           }
           if (settings.notificationPreferences && typeof settings.notificationPreferences === 'object') {
-            const savedPrefs = settings.notificationPreferences as Record<string, { email?: boolean; inApp?: boolean }>
+            const savedPrefs = settings.notificationPreferences as Record<string, any>
+            if (savedPrefs._floatingContact && typeof savedPrefs._floatingContact === 'object') {
+              const fc = savedPrefs._floatingContact
+              if (typeof fc.showWhatsappButton === 'boolean') setShowWhatsappButton(fc.showWhatsappButton)
+              if (typeof fc.showCallButton === 'boolean') setShowCallButton(fc.showCallButton)
+              if (typeof fc.whatsappNumber === 'string' && fc.whatsappNumber) setWhatsappNumber(fc.whatsappNumber)
+              if (typeof fc.callNumber === 'string' && fc.callNumber) setCallNumber(fc.callNumber)
+            }
             setNotificationPreferences((prev) =>
               prev.map((item) =>
                 savedPrefs[item.id]
@@ -179,14 +202,29 @@ export function useSettingsState() {
   const handleSaveWebsite = async () => {
     setIsSavingWebsite(true)
     try {
+      const prefsMap: Record<string, any> = {}
+      notificationPreferences.forEach((p) => {
+        prefsMap[p.id] = { email: p.email, inApp: p.inApp }
+      })
+      prefsMap._floatingContact = {
+        showWhatsappButton,
+        showCallButton,
+        whatsappNumber: whatsappNumber.trim(),
+        callNumber: callNumber.trim(),
+      }
+      const anyFloating = showWhatsappButton || showCallButton
+      setShowFloatingContact(anyFloating)
+
       await api.settings.update({
         maintenanceMode,
         allowPublicAdmission,
         showNoticeTicker,
-        showFloatingContact,
+        showFloatingContact: anyFloating,
+        supportPhone: callNumber.trim() || undefined,
+        notificationPreferences: prefsMap,
       })
       await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
-      notify('Website preferences saved successfully')
+      notify('Website preferences & contact numbers saved successfully')
     } catch (err: any) {
       notify(`Failed to save: ${err?.message || 'Check network connection'}`)
     } finally {
@@ -196,10 +234,16 @@ export function useSettingsState() {
 
   const handleSaveNotifications = async () => {
     try {
-      const prefsMap: Record<string, { email: boolean; inApp: boolean }> = {}
+      const prefsMap: Record<string, any> = {}
       notificationPreferences.forEach((p) => {
         prefsMap[p.id] = { email: p.email, inApp: p.inApp }
       })
+      prefsMap._floatingContact = {
+        showWhatsappButton,
+        showCallButton,
+        whatsappNumber: whatsappNumber.trim(),
+        callNumber: callNumber.trim(),
+      }
       await api.settings.update({ notificationPreferences: prefsMap })
       notify('Notification preferences saved successfully.')
     } catch (err: any) {
@@ -250,6 +294,10 @@ export function useSettingsState() {
     allowPublicAdmission, setAllowPublicAdmission,
     showNoticeTicker, setShowNoticeTicker,
     showFloatingContact, setShowFloatingContact,
+    showWhatsappButton, setShowWhatsappButton,
+    showCallButton, setShowCallButton,
+    whatsappNumber, setWhatsappNumber,
+    callNumber, setCallNumber,
     maintenanceMode, setMaintenanceMode, searchIndexing, setSearchIndexing, autoImageOpt, setAutoImageOpt,
     showAttribution, setShowAttribution, cookieBanner, setCookieBanner, isSavingWebsite,
     twoFactorAuth: security.twoFactorAuth, setTwoFactorAuth: security.setTwoFactorAuth,
