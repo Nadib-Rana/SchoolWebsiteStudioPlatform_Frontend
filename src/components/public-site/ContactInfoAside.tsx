@@ -36,109 +36,211 @@ export function ContactInfoAside({
     profile?.officeHours || 'Sunday – Thursday · 8:00 AM – 4:00 PM'
   const whatsappRaw = profile?.socialLinks?.whatsapp || phone
   const waUrl = formatWhatsappUrl(whatsappRaw, schoolName)
+  const cleanTel = phone.replace(/[^0-9+]/g, '')
   const mapQuery = encodeURIComponent(`${schoolName}, ${address}`)
   const mapEmbedUrl = `https://maps.google.com/maps?q=${mapQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`
   const mapExternalUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`
 
   return (
-    <div>
-      <span className="section-kicker">SCHOOL OFFICE & CAMPUS</span>
-      <h2
-        className="text-3xl sm:text-4xl font-normal text-slate-900 mt-2 mb-3 leading-tight"
-        style={{
-          fontFamily: "var(--font-heading, 'DM Serif Display', serif)",
-          color: 'var(--navy, #102f58)',
-        }}
-      >
-        Visit or contact {schoolName}.
-      </h2>
-      <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-        We welcome inquiries from prospective parents, current families, and visitors. Reach our administrative office directly or send a message using the form.
-      </p>
+    <div className="space-y-6">
+      {/* Editorial Intro */}
+      <div>
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-teal-700">
+          <span className="w-2 h-2 rounded-full bg-teal-600" />
+          SCHOOL OFFICE & CAMPUS
+        </span>
+        <h2
+          className="text-3xl sm:text-4xl font-normal text-slate-900 mt-2 mb-3 leading-tight"
+          style={{
+            fontFamily: "var(--font-heading, 'DM Serif Display', serif)",
+            color: 'var(--navy, #0b2545)',
+          }}
+        >
+          Visit or contact {schoolName}.
+        </h2>
+        <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+          Connect directly with our administrative reception, admissions desk, or plan a visit to our campus during working hours.
+        </p>
+      </div>
 
-      {/* Clean Editorial Directory List (No boxy cards) */}
-      <dl className="mt-7 divide-y divide-slate-200 border-y border-slate-200 text-sm">
-        <div className="py-4 flex items-start justify-between gap-4">
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Campus Address
-            </dt>
-            <dd className="text-slate-800 font-medium mt-1 whitespace-pre-line leading-relaxed">
+      {/* 4 Interactive Contact Cards (Address, Phone, Email, Office Hours) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
+        {/* 1. Address Card */}
+        <div className="group bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-600/40 transition-all flex items-start gap-4">
+          <span
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            style={{
+              background: 'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
+            }}
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Campus Address
+              </span>
+              <a
+                href={mapExternalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline shrink-0"
+              >
+                Get Directions ↗
+              </a>
+            </div>
+            <p className="text-sm font-semibold text-slate-900 mt-1 whitespace-pre-line leading-snug">
               {address}
-            </dd>
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Phone Card */}
+        <div className="group bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-600/40 transition-all flex items-start gap-4">
+          <span
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            style={{
+              background: 'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Phone & Reception
+              </span>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <a
+                  href={`tel:${cleanTel}`}
+                  className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline"
+                >
+                  Call Now ↗
+                </a>
+                {waUrl && (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-bold text-emerald-700 hover:text-emerald-900 hover:underline"
+                  >
+                    WhatsApp ↗
+                  </a>
+                )}
+              </div>
+            </div>
+            <a
+              href={`tel:${cleanTel}`}
+              className="text-sm font-bold text-slate-900 hover:text-teal-800 block mt-1"
+            >
+              {phone}
+            </a>
+            {profile?.emergencyPhone && (
+              <span className="block text-xs font-medium text-rose-700 mt-0.5">
+                Emergency Hotline: {profile.emergencyPhone}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 3. Email Card */}
+        <div className="group bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-600/40 transition-all flex items-start gap-4">
+          <span
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            style={{
+              background: 'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Official Email
+              </span>
+              <a
+                href={`mailto:${email}`}
+                className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline shrink-0"
+              >
+                Send Email ↗
+              </a>
+            </div>
+            <a
+              href={`mailto:${email}`}
+              className="text-sm font-bold text-slate-900 hover:text-teal-800 block mt-1 break-all"
+            >
+              {email}
+            </a>
+          </div>
+        </div>
+
+        {/* 4. Office Hours Card */}
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-start gap-4">
+          <span
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            style={{
+              background: 'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Office & Visiting Hours
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
+                Campus Open
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-slate-900 mt-1">
+              {officeHours}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Professional Campus Map Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50/60">
+          <div className="min-w-0">
+            <strong className="text-xs font-bold uppercase tracking-wider text-slate-800 block">
+              Campus Location Map
+            </strong>
+            <span className="text-xs text-slate-500 truncate block">
+              {address}
+            </span>
           </div>
           <a
             href={mapExternalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-blue-800 hover:underline shrink-0 mt-1"
+            className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-teal-800 hover:bg-teal-50 hover:border-teal-300 transition-colors shrink-0 shadow-2xs"
           >
-            Directions ↗
+            Open Maps ↗
           </a>
         </div>
-
-        <div className="py-4 flex items-start justify-between gap-4">
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Telephone & Reception
-            </dt>
-            <dd className="mt-1">
-              <a
-                href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
-                className="text-slate-900 font-semibold hover:text-blue-800 hover:underline"
-              >
-                {phone}
-              </a>
-              {profile?.emergencyPhone && (
-                <span className="block text-xs text-rose-700 mt-0.5">
-                  Emergency: {profile.emergencyPhone}
-                </span>
-              )}
-            </dd>
-          </div>
-          {waUrl && (
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-semibold text-emerald-700 hover:underline shrink-0 mt-1"
-            >
-              WhatsApp ↗
-            </a>
-          )}
+        <div className="w-full h-56 bg-slate-100">
+          <iframe
+            title={`Campus Map for ${schoolName}`}
+            src={mapEmbedUrl}
+            className="w-full h-full border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
-
-        <div className="py-4">
-          <dt className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Official Email
-          </dt>
-          <dd className="mt-1">
-            <a
-              href={`mailto:${email}`}
-              className="text-slate-900 font-semibold hover:text-blue-800 hover:underline break-all"
-            >
-              {email}
-            </a>
-          </dd>
-        </div>
-
-        <div className="py-4">
-          <dt className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Office & Visiting Hours
-          </dt>
-          <dd className="text-slate-700 font-medium mt-1">{officeHours}</dd>
-        </div>
-      </dl>
-
-      {/* Clean Integrated Map Preview */}
-      <div className="mt-6 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 h-48">
-        <iframe
-          title={`Campus Map for ${schoolName}`}
-          src={mapEmbedUrl}
-          className="w-full h-full border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
       </div>
     </div>
   )
