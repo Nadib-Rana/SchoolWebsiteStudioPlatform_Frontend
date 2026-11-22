@@ -230,6 +230,13 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
+        title: { en: 'Show / Hide Statistics or Any Section (Desktop & Mobile)', bn: 'Statistics বা যেকোনো সেকশন ১ ক্লিকে Show / Hide করুন' },
+        detail: {
+          en: 'Select "Statistics" and toggle "Show statistics section on website" in the Content tab, or open the Advanced tab on any section to check "Hide this section completely (All devices)" or "Hide on mobile devices". Hidden sections show a "Hidden" badge in the left sidebar so you can re-enable them anytime.',
+          bn: '"Statistics" সিলেক্ট করে Content ট্যাব থেকে "Show statistics section on website" অন/অফ করুন, অথবা যেকোনো সেকশনের Advanced ট্যাব থেকে সব ডিভাইসে (Desktop + Mobile) বা শুধু মোবাইলে হাইড করুন। হাইড করা সেকশনের পাশে বাম সাইডবারে "Hidden" ব্যাজ দেখাবে, যেখান থেকে যেকোনো সময় আবার চালু করা যাবে।',
+        },
+      },
+      {
         title: { en: 'One-click Publish (Auto-saves Builder changes)', bn: '১ ক্লিকে Publish (অটো-সেভসহ)' },
         detail: {
           en: 'Click "Preview" anytime to inspect live colors/styles, "Save draft" to keep changes private, or click topbar "Publish" directly — it automatically saves your latest Builder edits and publishes live immediately.',
@@ -295,10 +302,10 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Create a new page', bn: 'নতুন পেজ তৈরি করুন' },
+        title: { en: 'Create, Edit, or Toggle Publish / Draft in 1 Click', bn: 'নতুন পেজ তৈরি, Edit ও ১ ক্লিকে Publish / Unpublish' },
         detail: {
-          en: 'Click "New page", enter title, URL slug, and meta description, then choose Draft or Published status.',
-          bn: '"New page" ক্লিক করে টাইটেল, URL স্লাগ ও বিবরণ দিন এবং Draft বা Published সিলেক্ট করুন।',
+          en: 'Click "New page" to create a page, or use the "Edit" and "Publish / Unpublish" action buttons on any table row to update details or move a page between Live and Draft instantly.',
+          bn: '"New page" ক্লিক করে পেজ তৈরি করুন, অথবা টেবিলের যেকোনো রো-তে থাকা "Edit" এবং "Publish / Unpublish" বাটনে ক্লিক করে পেজের তথ্য আপডেট বা ড্রাফট/লাইভ করুন।',
         },
       },
       {
@@ -505,10 +512,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Copy URL or Delete unused files', bn: 'URL কপি করুন অথবা অপ্রয়োজনীয় ফাইল ডিলিট করুন' },
+        title: { en: 'Copy URL or Delete files with Icon Buttons', bn: 'Copy ও Trash আইকন দিয়ে URL কপি বা ফাইল ডিলিট করুন' },
         detail: {
-          en: 'Copy any uploaded asset URL to reuse in Builder, Notices, or Teachers. Delete unused images anytime from the Media Library or directly inside the Media Picker modal (✕ button) to free storage.',
-          bn: 'আপলোড করা ফাইলের URL কপি করে বিল্ডার, নোটিশ বা টিচার প্রোফাইলে ব্যবহার করুন। স্টোরেজ খালি করতে Media Library বা Media Picker মডালের (✕) বাটন থেকে ছবি ডিলিট করতে পারবেন।',
+          en: 'Use the Copy icon button on any media card to copy its public URL for Builder, Notices, or Teachers. Click the red Trash icon button on any card (or top-left inside the Media Picker modal and Gallery albums) to permanently delete unused files and free storage.',
+          bn: 'যেকোনো মিডিয়া কার্ডের Copy আইকনে ক্লিক করে ফাইলের URL কপি করুন। অপ্রয়োজনীয় ছবি বা ফাইল মুছে স্টোরেজ খালি করতে লাল Trash (ডিলিট) আইকন বাটনে ক্লিক করুন (Media Library, Media Picker পপ-আপ এবং Gallery অ্যালবাম—সব জায়গায় এই আইকন রয়েছে)।',
         },
       },
     ],
@@ -812,8 +819,8 @@ export const HELP_GUIDES: HelpGuide[] = [
       {
         title: { en: 'Control Admissions, Notice Ticker, Floating WhatsApp & Maintenance Mode', bn: 'অ্যাডমিশন, নোটিশ বার, WhatsApp ও মেইনটেন্যান্স কন্ট্রোল' },
         detail: {
-          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp & Call Buttons, or Maintenance Mode ON/OFF anytime — changes apply live immediately.',
-          bn: 'Website Preferences থেকে ১ ক্লিকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp/Call বাটন এবং Maintenance Mode অন/অফ করতে পারবেন—সেভ করলেই সাথে সাথে লাইভ সাইটে আপডেট হবে।',
+          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp & Call Buttons (auto-formats local 01XXXXXXXXX numbers with 88 country code), or Maintenance Mode ON/OFF anytime. When Maintenance Mode is active, visitors immediately see a branded Scheduled Maintenance screen and public forms are paused while you can still preview inside Studio.',
+          bn: 'Website Preferences থেকে ১ ক্লিকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp/Call বাটন (লোকাল 01XXXXXXXXX নম্বরে অটো 88 যুক্ত হয়) এবং Maintenance Mode অন/অফ করতে পারবেন। Maintenance Mode চালু করলে ভিজিটররা সাথে সাথে (০ সেকেন্ড ডিলেতে) স্কুলের লোগো ও জরুরি যোগাযোগের তথ্যসহ "Scheduled Maintenance" স্ক্রিন দেখবেন, তবে আপনি স্টুডিওর ভেতরে প্রিভিউ দেখে কাজ চালিয়ে যেতে পারবেন।',
         },
       },
     ],
