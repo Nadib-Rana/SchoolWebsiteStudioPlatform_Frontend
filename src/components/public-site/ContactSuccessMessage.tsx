@@ -35,10 +35,7 @@ export function ContactSuccessMessage({
         {mailtoUrl && (
           <a
             href={mailtoUrl}
-            style={{
-              background:
-                'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
-            }}
+            style={{ background: 'var(--navy, #102f58)' }}
             className="px-6 py-3 rounded-xl text-white text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-all shadow-sm"
           >
             Open Email App Again ↗

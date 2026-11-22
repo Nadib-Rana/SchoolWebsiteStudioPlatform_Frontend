@@ -24,31 +24,15 @@ export default async function ContactPage({ params }: PageProps) {
     floatingCfg?.whatsappNumber || siteData.profile?.socialLinks?.whatsapp || customPhone
 
   return (
-    <main className="inner-page bg-slate-50">
-      <section
-        className="inner-hero relative overflow-hidden"
-        style={{
-          background:
-            'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0f3d5e 58%, #0d6e6e 100%)',
-          color: '#ffffff',
-        }}
-      >
-        <span
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-3"
-          style={{
-            background: 'rgba(20, 184, 166, 0.2)',
-            color: '#5eead4',
-            border: '1px solid rgba(94, 234, 212, 0.3)',
-          }}
-        >
-          GET IN TOUCH
-        </span>
-        <h1 className="text-white">We would love to hear from you.</h1>
-        <p className="text-slate-200 max-w-2xl">
+    <main className="inner-page bg-slate-50/70">
+      <section className="inner-hero">
+        <span>GET IN TOUCH</span>
+        <h1>We would love to hear from you.</h1>
+        <p>
           Reach out to our admissions department, schedule a campus visit, or contact our administrative office with any questions.
         </p>
-        <div className="breadcrumb text-slate-300">
-          <Link href={`/${schoolSlug}`} className="text-white hover:underline">
+        <div className="breadcrumb">
+          <Link href={`/${schoolSlug}`} className="hover:underline">
             Home
           </Link>{' '}
           <Icon name="chevron" size={11} /> Contact Us

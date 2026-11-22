@@ -165,12 +165,12 @@ export function PublicContactForm({
             />
           ) : (
             <div className="bg-white rounded-2xl border border-slate-200/90 shadow-md overflow-hidden">
-              {/* Top Navy-Teal Accent Bar */}
+              {/* Top Theme Primary & Accent Bar */}
               <div
                 className="h-2 w-full"
                 style={{
                   background:
-                    'linear-gradient(90deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
+                    'linear-gradient(90deg, var(--navy, #102f58) 0%, var(--accent, #e3ad3f) 100%)',
                 }}
               />
 
@@ -181,15 +181,13 @@ export function PublicContactForm({
               >
                 <div className="flex flex-wrap items-start justify-between gap-3 pb-6 mb-6 border-b border-slate-100">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-teal-700 block">
-                      ONLINE INQUIRY FORM
-                    </span>
+                    <span className="section-kicker">ONLINE INQUIRY FORM</span>
                     <h3
                       className="text-2xl sm:text-3xl font-normal text-slate-900 mt-1"
                       style={{
                         fontFamily:
                           "var(--font-heading, 'DM Serif Display', serif)",
-                        color: 'var(--navy, #0b2545)',
+                        color: 'var(--navy, #102f58)',
                       }}
                     >
                       Send us a message.
@@ -198,8 +196,14 @@ export function PublicContactForm({
                       Fill in your details below — submitting saves your inquiry and opens your email client pre-filled.
                     </p>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-teal-600" />
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold"
+                    style={{ color: 'var(--navy, #102f58)' }}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: 'var(--navy, #102f58)' }}
+                    />
                     1–2 Day Response
                   </span>
                 </div>
@@ -386,11 +390,8 @@ export function PublicContactForm({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  style={{
-                    background:
-                      'linear-gradient(135deg, var(--navy, #0b2545) 0%, #0d6e6e 100%)',
-                  }}
-                  className="w-full py-3.5 px-6 rounded-xl text-white font-bold text-sm tracking-wide hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  style={{ background: 'var(--navy, #102f58)' }}
+                  className="w-full py-3.5 px-6 rounded-xl text-white font-bold text-sm tracking-wide hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? 'Preparing & Sending...' : 'Send Message & Open Email'}{' '}
                   <Icon name="arrow" size={14} />
@@ -408,7 +409,8 @@ export function PublicContactForm({
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="text-teal-700 shrink-0 mt-0.5 sm:mt-0"
+                      style={{ color: 'var(--navy, #102f58)' }}
+                      className="shrink-0 mt-0.5 sm:mt-0"
                     >
                       <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -417,7 +419,10 @@ export function PublicContactForm({
                       <strong>Privacy Note:</strong> Your details are kept confidential and used only by {schoolName} to respond to your inquiry.
                     </span>
                   </p>
-                  <div className="flex items-center gap-3 shrink-0 font-semibold text-teal-800">
+                  <div
+                    className="flex items-center gap-3 shrink-0 font-semibold"
+                    style={{ color: 'var(--navy, #102f58)' }}
+                  >
                     <a
                       href={`tel:${officialPhone.replace(/[^0-9+]/g, '')}`}
                       className="hover:underline"
