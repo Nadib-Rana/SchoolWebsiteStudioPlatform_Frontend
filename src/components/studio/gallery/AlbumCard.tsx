@@ -68,11 +68,11 @@ export function AlbumCard({
           <button
             type="button"
             onClick={() => onDeleteAlbum(album.id, album.title)}
-            className="ml-auto text-slate-400 hover:text-rose-600 transition-colors p-1"
+            className="ml-auto w-7 h-7 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
             aria-label={`Delete ${album.title}`}
             title="Delete album"
           >
-            <Icon name="close" size={14} />
+            <Icon name="trash" size={15} />
           </button>
         </div>
       </section>

@@ -60,6 +60,7 @@ export type IconName =
   | 'close'
   | 'download'
   | 'copy'
+  | 'trash'
 
 export type NavItem = readonly [id: View, icon: IconName, label: string]
 

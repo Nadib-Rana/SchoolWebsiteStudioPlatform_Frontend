@@ -143,21 +143,20 @@ export function MediaPickerLibraryTab({
                       position: 'absolute',
                       top: '6px',
                       left: '6px',
-                      width: '22px',
-                      height: '22px',
-                      borderRadius: '50%',
-                      border: '1px solid rgba(255,255,255,0.6)',
-                      backgroundColor: 'rgba(185, 28, 28, 0.88)',
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '7px',
+                      border: '1px solid rgba(255,255,255,0.7)',
+                      backgroundColor: 'rgba(225, 29, 72, 0.92)',
                       color: '#fff',
                       display: 'grid',
                       placeItems: 'center',
-                      fontSize: '11px',
-                      fontWeight: 700,
                       cursor: 'pointer',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
                       opacity: asset.id && deletingId === asset.id ? 0.5 : 1,
                     }}
                   >
-                    ✕
+                    <Icon name="trash" size={13} />
                   </button>
                 )}
                 {isSelected && (

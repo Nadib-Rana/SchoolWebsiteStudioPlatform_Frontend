@@ -159,7 +159,7 @@ export function AlbumInspectorModal({
                           className="w-7 h-7 bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center justify-center text-xs shadow-md transition-transform hover:scale-105 disabled:opacity-50"
                           title="Delete photo from album and storage"
                         >
-                          <Icon name="close" size={13} />
+                          <Icon name="trash" size={14} />
                         </button>
                       </div>
                     </div>
