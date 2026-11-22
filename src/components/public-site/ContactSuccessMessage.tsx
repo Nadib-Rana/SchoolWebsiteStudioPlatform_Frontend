@@ -12,22 +12,31 @@ export function ContactSuccessMessage({
   onReset,
 }: ContactSuccessMessageProps) {
   return (
-    <div className="contact-success bg-emerald-50 border border-emerald-200 p-8 rounded-2xl text-center">
-      <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-4">
-        <Icon name="check" size={24} />
+    <div className="bg-white border border-emerald-200 p-10 sm:p-12 rounded-3xl shadow-lg text-center">
+      <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-5 shadow-sm">
+        <Icon name="check" size={30} />
       </div>
-      <strong className="text-xl font-serif text-slate-900 block mb-2">
-        Thank you for getting in touch.
+      <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2">
+        Inquiry Received
+      </span>
+      <strong
+        className="text-2xl sm:text-3xl font-bold text-slate-900 block mb-3"
+        style={{ fontFamily: 'var(--font-heading, serif)' }}
+      >
+        Thank you for reaching out!
       </strong>
-      <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed mb-6">
-        Your inquiry has been directly delivered to the {schoolName} administration team. We will review your message and reply within 1–2 business days.
+      <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto leading-relaxed mb-8">
+        Your message has been delivered directly to the{' '}
+        <span className="font-semibold text-slate-800">{schoolName}</span>{' '}
+        administration desk. Our team will review your inquiry and respond within 1–2 business days.
       </p>
       <button
         type="button"
         onClick={onReset}
-        className="px-5 py-2.5 rounded-lg bg-blue-900 text-white text-xs font-bold hover:bg-blue-950 transition-colors"
+        style={{ background: 'var(--navy, #102f58)' }}
+        className="px-6 py-3 rounded-xl text-white text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-all shadow-md cursor-pointer"
       >
-        Send another inquiry
+        Send Another Inquiry
       </button>
     </div>
   )
