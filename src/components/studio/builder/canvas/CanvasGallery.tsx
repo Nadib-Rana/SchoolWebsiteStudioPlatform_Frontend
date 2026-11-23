@@ -36,11 +36,12 @@ export function CanvasGallery({
             ? '55px 30px'
             : '30px',
         background: galleryStyle?.bg || '#ffffff',
+        color: galleryStyle?.textColor || undefined,
         textAlign: galleryStyle?.align || 'center',
         cursor: 'pointer',
         position: 'relative',
         display:
-          galleryStyle?.hideOnMobile && device === 'mobile'
+          galleryStyle?.isHidden || (galleryStyle?.hideOnMobile && device === 'mobile')
             ? 'none'
             : 'block',
         outline: selected === 'Gallery' ? '2px solid #2563eb' : 'none',

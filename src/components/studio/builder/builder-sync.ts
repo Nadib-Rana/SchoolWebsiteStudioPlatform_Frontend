@@ -18,7 +18,7 @@ export function buildSectionsPayload(
       title: 'Announcement bar',
       content: { text: state.announcementText, link: state.announcementLink, show: state.showAnnouncement },
       settings: sectionStyles['Announcement bar'] || DEFAULT_STYLES['Announcement bar'],
-      isVisible: state.showAnnouncement,
+      isVisible: true,
     },
     {
       type: 'header',
@@ -115,15 +115,20 @@ export function buildSectionsPayload(
   Object.values(customSectionsData).forEach((cs) => {
     all.push({
       type: cs.type,
-      title: cs.title,
-      content: { title: cs.title, subtitle: cs.subtitle, items: cs.items, buttonText: cs.buttonText, buttonLink: cs.buttonLink },
+      title: cs.label || cs.title,
+      content: { label: cs.label, title: cs.title, subtitle: cs.subtitle, items: cs.items, buttonText: cs.buttonText, buttonLink: cs.buttonLink },
       settings: sectionStyles[cs.label] || DEFAULT_STYLES['School introduction'],
-      isVisible: true,
+      isVisible: !sectionStyles[cs.label]?.isHidden,
     })
   })
 
   return all
 }
+
+const STANDARD_SECTION_TYPES = new Set([
+  'announcement', 'header', 'hero', 'intro', 'programs', 'principal',
+  'stats', 'news', 'events', 'gallery', 'footer',
+])
 
 export async function syncHomepageToBackend(
   state: any,
@@ -146,11 +151,18 @@ export async function syncHomepageToBackend(
     const pageData = (detailsRes as any)?.data || detailsRes
     const existingSections: any[] = pageData?.sections || []
     const all = buildSectionsPayload(state, sectionStyles, customSectionsData)
+    const usedIds = new Set<string>()
 
     for (let i = 0; i < all.length; i++) {
       const item = all[i]
-      const existing = existingSections.find((s: any) => s.type === item.type)
+      const isStandard = STANDARD_SECTION_TYPES.has(item.type)
+      const existing = existingSections.find((s: any) =>
+        isStandard
+          ? s.type === item.type && !usedIds.has(s.id)
+          : s.type === item.type && (s.title === item.title || s.content?.label === item.title) && !usedIds.has(s.id)
+      )
       if (existing?.id) {
+        usedIds.add(existing.id)
         await api.sections.update(homePage.id, existing.id, {
           title: item.title, content: item.content, settings: item.settings, isVisible: item.isVisible, order: i + 1,
         })
@@ -158,6 +170,15 @@ export async function syncHomepageToBackend(
         await api.sections.create(homePage.id, {
           type: item.type, title: item.title, content: item.content, settings: item.settings, isVisible: item.isVisible, order: i + 1,
         })
+      }
+    }
+
+    // Remove custom sections from DB that were deleted in the Builder
+    for (const s of existingSections) {
+      if (!STANDARD_SECTION_TYPES.has(s.type) && !usedIds.has(s.id)) {
+        try {
+          await api.sections.delete(homePage.id, s.id)
+        } catch {}
       }
     }
   }

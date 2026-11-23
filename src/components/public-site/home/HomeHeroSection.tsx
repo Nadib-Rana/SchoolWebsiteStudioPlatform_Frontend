@@ -9,7 +9,17 @@ interface HomeHeroSectionProps {
   currentHeroImage: string
   heroImages?: string[]
   sliderIntervalSec?: number
-  sectionStyle?: { align?: string; padding?: string; textColor?: string }
+  sectionStyle?: {
+    align?: string
+    padding?: string
+    textColor?: string
+    border?: boolean
+    shadow?: string
+    hideOnMobile?: boolean
+    isHidden?: boolean
+    customId?: string
+    customClass?: string
+  }
   motto: string
   heroHeading: string
   heroDesc: string
@@ -65,6 +75,10 @@ export function HomeHeroSection({
     return () => window.clearInterval(timer)
   }, [slides.length, paused, sliderIntervalSec])
 
+  if (sectionStyle?.isHidden) {
+    return null
+  }
+
   const pad =
     sectionStyle?.padding === 'compact'
       ? '60px'
@@ -81,7 +95,8 @@ export function HomeHeroSection({
 
   return (
     <section
-      className="public-hero"
+      id={sectionStyle?.customId || undefined}
+      className={`public-hero ${sectionStyle?.hideOnMobile ? 'hidden sm:flex' : ''} ${sectionStyle?.customClass || ''}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       style={{
@@ -92,6 +107,8 @@ export function HomeHeroSection({
         textAlign: (sectionStyle?.align as any) || 'left',
         paddingTop: pad,
         paddingBottom: pad,
+        ...(sectionStyle?.border ? { borderBottom: '2px solid #2563eb' } : {}),
+        ...(sectionStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : sectionStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
       }}
     >
       {/* Crossfade Background Slides */}

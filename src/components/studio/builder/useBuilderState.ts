@@ -147,7 +147,7 @@ export function useBuilderState() {
       if (local.customSectionsData) setCustomSectionsData(local.customSectionsData)
     }
     // Always hydrate from backend DB for the active school so multi-tenant data stays fresh
-    void loadHomepageSectionsFromBackend(setSectionStyles, setters)
+    void loadHomepageSectionsFromBackend(setSectionStyles, setters, setSectionList, setCustomSectionsData)
     if (currentSchool?.name) {
       setters.setSchoolName?.(currentSchool.name)
       setters.setLogoLetter?.(currentSchool.name.charAt(0))

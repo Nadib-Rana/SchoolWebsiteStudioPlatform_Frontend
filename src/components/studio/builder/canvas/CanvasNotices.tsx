@@ -41,11 +41,12 @@ export function CanvasNotices({
             ? '55px 30px'
             : '30px',
         background: noticesStyle?.bg || '#ffffff',
+        color: noticesStyle?.textColor || undefined,
         textAlign: noticesStyle?.align || 'left',
         cursor: 'pointer',
         position: 'relative',
         display:
-          noticesStyle?.hideOnMobile && device === 'mobile'
+          noticesStyle?.isHidden || (noticesStyle?.hideOnMobile && device === 'mobile')
             ? 'none'
             : 'block',
         outline:

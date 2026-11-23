@@ -68,7 +68,6 @@ const STANDARD_TYPES = new Set([
   'news',
   'events',
   'gallery',
-  'facilities',
   'footer',
 ])
 
@@ -83,7 +82,6 @@ const TYPE_TO_STYLE_LABEL: Record<string, string> = {
   news: 'Latest notices',
   events: 'Upcoming events',
   gallery: 'Gallery',
-  facilities: 'Gallery',
   footer: 'Footer',
 }
 
@@ -176,7 +174,7 @@ export function parseHomepageSections(
       if (c.event2Date) result.event2Date = c.event2Date
       if (c.event2Title) result.event2Title = c.event2Title
       if (c.event2Venue) result.event2Venue = c.event2Venue
-    } else if (type === 'gallery' || type === 'facilities') {
+    } else if (type === 'gallery') {
       if (c.heading) result.galleryHeading = c.heading
       if (c.subtitle) result.gallerySub = c.subtitle
     } else if (type === 'footer') {
@@ -185,10 +183,14 @@ export function parseHomepageSections(
       if (c.email) result.footerEmail = c.email
       if (c.copyright) result.footerCopyright = c.copyright
     } else if (!STANDARD_TYPES.has(type)) {
+      const csLabel = c.label || sec.title || c.title || type
+      if (sec.settings && typeof sec.settings === 'object') {
+        result.sectionStyles[csLabel] = sec.settings
+      }
       result.customSections.push({
         id: sec.id || `custom-${result.customSections.length}`,
         type,
-        label: sec.title || c.title || type,
+        label: csLabel,
         title: c.title || sec.title || '',
         subtitle: c.subtitle || '',
         items: Array.isArray(c.items) ? c.items : [],

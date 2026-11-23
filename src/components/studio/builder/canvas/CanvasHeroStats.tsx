@@ -106,7 +106,7 @@ export function CanvasHeroStats({
           textAlign: (heroStyle?.align as any) || 'left',
           paddingTop: heroPad,
           paddingBottom: heroPad,
-          display: heroStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'flex',
+          display: heroStyle?.isHidden || (heroStyle?.hideOnMobile && device === 'mobile') ? 'none' : 'flex',
           cursor: 'pointer',
           position: 'relative',
           outline: selected === 'Hero section' ? '2px solid #2563eb' : 'none',

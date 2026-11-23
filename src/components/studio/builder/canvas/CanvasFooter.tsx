@@ -45,12 +45,12 @@ export function CanvasFooter({
       style={{
         padding: footerPad,
         background: footerStyle?.bg || activeCfg?.primaryColor || '#091a30',
-        color: '#d4deea',
+        color: footerStyle?.textColor || '#d4deea',
         textAlign: footerStyle?.align || 'left',
         cursor: 'pointer',
         position: 'relative',
         display:
-          footerStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'block',
+          footerStyle?.isHidden || (footerStyle?.hideOnMobile && device === 'mobile') ? 'none' : 'block',
         outline: selected === 'Footer' ? '2px solid #2563eb' : 'none',
         outlineOffset: '-2px',
         ...(footerStyle?.border

@@ -11,6 +11,12 @@ interface HomeIntroSectionProps {
     textColor?: string
     align?: string
     photoPosition?: 'left' | 'right'
+    border?: boolean
+    shadow?: string
+    hideOnMobile?: boolean
+    isHidden?: boolean
+    customId?: string
+    customClass?: string
   }
   schoolName: string
   establishedYear: number | string
@@ -39,6 +45,10 @@ export function HomeIntroSection({
   schoolSlug,
   setPage,
 }: HomeIntroSectionProps) {
+  if (sectionStyle?.isHidden) {
+    return null
+  }
+
   const pad =
     sectionStyle?.padding === 'compact'
       ? '40px'
@@ -54,12 +64,15 @@ export function HomeIntroSection({
 
   return (
     <section
-      className="public-intro"
+      id={sectionStyle?.customId || undefined}
+      className={`public-intro ${sectionStyle?.hideOnMobile ? 'hidden sm:grid' : ''} ${sectionStyle?.customClass || ''}`}
       style={{
         background: sectionStyle?.bg || undefined,
         color: sectionStyle?.textColor || undefined,
         paddingTop: pad,
         paddingBottom: pad,
+        ...(sectionStyle?.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),
+        ...(sectionStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : sectionStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
       }}
     >
       <div

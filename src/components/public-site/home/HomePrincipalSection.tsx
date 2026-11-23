@@ -7,6 +7,12 @@ interface HomePrincipalSectionProps {
     textColor?: string
     align?: string
     photoPosition?: 'left' | 'right'
+    border?: boolean
+    shadow?: string
+    hideOnMobile?: boolean
+    isHidden?: boolean
+    customId?: string
+    customClass?: string
   }
   principalQuote: string
   principalName: string
@@ -21,6 +27,10 @@ export function HomePrincipalSection({
   principalTitle,
   principalPhoto,
 }: HomePrincipalSectionProps) {
+  if (sectionStyle?.isHidden) {
+    return null
+  }
+
   const pad =
     sectionStyle?.padding === 'compact'
       ? '40px'
@@ -31,12 +41,15 @@ export function HomePrincipalSection({
 
   return (
     <section
-      className="principal-home"
+      id={sectionStyle?.customId || undefined}
+      className={`principal-home ${sectionStyle?.hideOnMobile ? 'hidden sm:grid' : ''} ${sectionStyle?.customClass || ''}`}
       style={{
         background: sectionStyle?.bg || undefined,
         color: sectionStyle?.textColor || undefined,
         paddingTop: pad,
         paddingBottom: pad,
+        ...(sectionStyle?.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),
+        ...(sectionStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : sectionStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
       }}
     >
       <div style={{ textAlign: (sectionStyle?.align as any) || 'left', order: photoLeft ? 2 : 1 }}>

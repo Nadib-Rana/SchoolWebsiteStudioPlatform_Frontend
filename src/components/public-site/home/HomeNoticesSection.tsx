@@ -12,6 +12,18 @@ interface NoticeItem {
 }
 
 interface HomeNoticesSectionProps {
+  sectionStyle?: {
+    bg?: string
+    padding?: string
+    textColor?: string
+    align?: string
+    border?: boolean
+    shadow?: string
+    hideOnMobile?: boolean
+    isHidden?: boolean
+    customId?: string
+    customClass?: string
+  }
   noticesHeading: string
   schoolSlug?: string
   setPage?: (p: string) => void
@@ -24,6 +36,7 @@ interface HomeNoticesSectionProps {
 }
 
 export function HomeNoticesSection({
+  sectionStyle,
   noticesHeading,
   schoolSlug,
   setPage,
@@ -34,12 +47,37 @@ export function HomeNoticesSection({
   notice2Date,
   notice2Title,
 }: HomeNoticesSectionProps) {
+  if (sectionStyle?.isHidden) {
+    return null
+  }
+
+  const pad =
+    sectionStyle?.padding === 'compact'
+      ? '45px'
+      : sectionStyle?.padding === 'spacious'
+      ? '120px'
+      : undefined
+  const customBg =
+    sectionStyle?.bg && sectionStyle.bg !== '#ffffff' ? sectionStyle.bg : undefined
+
   return (
-    <section className="home-news">
+    <section
+      id={sectionStyle?.customId || undefined}
+      className={`home-news ${sectionStyle?.hideOnMobile ? 'hidden sm:grid' : ''} ${sectionStyle?.customClass || ''}`}
+      style={{
+        background: customBg,
+        color: sectionStyle?.textColor || undefined,
+        textAlign: (sectionStyle?.align as any) || undefined,
+        paddingTop: pad,
+        paddingBottom: pad,
+        ...(sectionStyle?.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),
+        ...(sectionStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : sectionStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
+      }}
+    >
       <div>
         <span className="section-kicker">LATEST UPDATES</span>
-        <h2>{noticesHeading}</h2>
-        <p>
+        <h2 style={{ color: sectionStyle?.textColor || undefined }}>{noticesHeading}</h2>
+        <p style={{ color: sectionStyle?.textColor || undefined }}>
           Stay connected with important announcements and circulars across our community.
         </p>
         {schoolSlug ? (

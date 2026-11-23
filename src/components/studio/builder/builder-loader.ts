@@ -1,10 +1,12 @@
 import { api } from '@/lib/api-client'
-import { DEFAULT_STYLES } from './builder.types'
+import { DEFAULT_STYLES, SECTION_TEMPLATES, type CustomSectionData, type SectionItem } from './builder.types'
 import { saveCustomThemeLocally } from '../theme/theme-sync-helper'
 
 export async function loadHomepageSectionsFromBackend(
   setSectionStyles: React.Dispatch<React.SetStateAction<any>>,
-  setters: Record<string, (val: any) => void>
+  setters: Record<string, (val: any) => void>,
+  setSectionList?: React.Dispatch<React.SetStateAction<SectionItem[]>>,
+  setCustomSectionsData?: React.Dispatch<React.SetStateAction<Record<string, CustomSectionData>>>
 ) {
   try {
     const pagesRes = await api.pages.list()
@@ -22,15 +24,22 @@ export async function loadHomepageSectionsFromBackend(
       announcement: 'Announcement bar', header: 'Header', hero: 'Hero section',
       intro: 'School introduction', programs: 'School introduction', principal: 'Principal message',
       stats: 'Statistics', news: 'Latest notices', events: 'Upcoming events',
-      gallery: 'Gallery', facilities: 'Gallery', footer: 'Footer', cta: 'Announcement bar',
+      gallery: 'Gallery', footer: 'Footer',
     }
+
+    const loadedCustomMap: Record<string, CustomSectionData> = {}
+    const loadedCustomItems: SectionItem[] = []
 
     sections.forEach((sec: any) => {
       const label = typeToLabel[sec.type]
       if (label && sec.settings && typeof sec.settings === 'object') {
         setSectionStyles((prev: any) => ({
           ...prev,
-          [label]: { ...(prev[label] || DEFAULT_STYLES[label]), ...sec.settings },
+          [label]: {
+            ...(prev[label] || DEFAULT_STYLES[label]),
+            ...sec.settings,
+            ...(sec.type !== 'announcement' && sec.isVisible === false ? { isHidden: true } : {}),
+          },
         }))
       }
 
@@ -96,7 +105,7 @@ export async function loadHomepageSectionsFromBackend(
           if (c.event2Date && setters.setEvent2Date) setters.setEvent2Date(c.event2Date)
           if (c.event2Title && setters.setEvent2Title) setters.setEvent2Title(c.event2Title)
           if (c.event2Venue && setters.setEvent2Venue) setters.setEvent2Venue(c.event2Venue)
-        } else if (sec.type === 'gallery' || sec.type === 'facilities') {
+        } else if (sec.type === 'gallery') {
           if (c.heading && setters.setGalleryHeading) setters.setGalleryHeading(c.heading)
           if (c.subtitle && setters.setGallerySub) setters.setGallerySub(c.subtitle)
         } else if (sec.type === 'footer') {
@@ -104,9 +113,54 @@ export async function loadHomepageSectionsFromBackend(
           if (c.phone && setters.setFooterPhone) setters.setFooterPhone(c.phone)
           if (c.email && setters.setFooterEmail) setters.setFooterEmail(c.email)
           if (c.copyright && setters.setFooterCopyright) setters.setFooterCopyright(c.copyright)
+        } else if (!label) {
+          const tpl = SECTION_TEMPLATES.find((t) => t.type === sec.type)
+          const csLabel = c.label || sec.title || tpl?.label || `Custom (${sec.type})`
+          const csId = sec.id || `sec-${csLabel}`
+          loadedCustomMap[csLabel] = {
+            id: csId,
+            type: sec.type,
+            label: csLabel,
+            title: c.title || sec.title || tpl?.title || csLabel,
+            subtitle: c.subtitle || '',
+            items: Array.isArray(c.items) ? c.items : [],
+            buttonText: c.buttonText,
+            buttonLink: c.buttonLink,
+          }
+          loadedCustomItems.push({
+            id: csId,
+            icon: tpl?.icon || 'sparkle',
+            label: csLabel,
+            type: sec.type,
+            isCustom: true,
+          })
+          if (sec.settings && typeof sec.settings === 'object') {
+            setSectionStyles((prev: any) => ({
+              ...prev,
+              [csLabel]: {
+                ...(prev[csLabel] || DEFAULT_STYLES['School introduction']),
+                ...sec.settings,
+                ...(sec.isVisible === false ? { isHidden: true } : {}),
+              },
+            }))
+          }
         }
       }
     })
+
+    if (loadedCustomItems.length > 0 && setCustomSectionsData && setSectionList) {
+      setCustomSectionsData((prev) => ({ ...prev, ...loadedCustomMap }))
+      setSectionList((prev) => {
+        const base = prev.filter((s) => !s.isCustom)
+        const existingCustomLabels = new Set(loadedCustomItems.map((i) => i.label))
+        const localOnlyCustom = prev.filter((s) => s.isCustom && !existingCustomLabels.has(s.label))
+        const allCustom = [...loadedCustomItems, ...localOnlyCustom]
+        const footerIdx = base.findIndex((s) => s.label === 'Footer')
+        return footerIdx >= 0
+          ? [...base.slice(0, footerIdx), ...allCustom, ...base.slice(footerIdx)]
+          : [...base, ...allCustom]
+      })
+    }
 
     try {
       const themeRes = await api.theme.get()

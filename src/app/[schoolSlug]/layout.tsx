@@ -156,7 +156,9 @@ export default async function SchoolPublicLayout({
     primaryColor
   const showAnnouncement =
     dbSections.showAnnouncement !== undefined
-      ? dbSections.showAnnouncement && Boolean(dbSections.announcementText)
+      ? dbSections.showAnnouncement &&
+        Boolean(dbSections.announcementText) &&
+        !dbSections.sectionStyles?.['Announcement bar']?.isHidden
       : false
   const announcementBg =
     dbSections.sectionStyles?.['Announcement bar']?.bg || primaryColor
@@ -250,19 +252,22 @@ export default async function SchoolPublicLayout({
           )}
         </div>
       )}
-      <PublicHeader
-        schoolSlug={schoolSlug}
-        schoolName={siteData.school.name}
-        motto={siteData.profile?.motto || themeCfg.eyebrow}
-        logoUrl={siteData.school.logoUrl || undefined}
-        applyButtonText={dbSections.applyButtonText || 'Apply now'}
-        showAdmissions={allowPublicAdmission}
-        navigation={siteData.navigation}
-        headerStyle={{
-          ...(dbSections.sectionStyles?.['Header'] || {}),
-          bg: headerBg,
-        }}
-      />
+      {!dbSections.sectionStyles?.['Header']?.isHidden && (
+        <PublicHeader
+          schoolSlug={schoolSlug}
+          schoolName={siteData.school.name}
+          motto={siteData.profile?.motto || themeCfg.eyebrow}
+          logoUrl={siteData.school.logoUrl || undefined}
+          logoLetter={dbSections.logoLetter}
+          applyButtonText={dbSections.applyButtonText || 'Apply now'}
+          showAdmissions={allowPublicAdmission}
+          navigation={siteData.navigation}
+          headerStyle={{
+            ...(dbSections.sectionStyles?.['Header'] || {}),
+            bg: headerBg,
+          }}
+        />
+      )}
       {showNoticeTicker && (
         <PublicNoticeTicker
           schoolSlug={schoolSlug}
@@ -279,20 +284,22 @@ export default async function SchoolPublicLayout({
           showCall={showCallButton}
         />
       )}
-      <PublicFooter
-        schoolSlug={schoolSlug}
-        schoolName={siteData.school.name}
-        motto={siteData.profile?.motto || themeCfg.eyebrow}
-        address={siteData.profile?.address || dbSections.footerAddress}
-        phone={siteData.profile?.phone || dbSections.footerPhone}
-        email={siteData.profile?.email || dbSections.footerEmail}
-        copyright={dbSections.footerCopyright}
-        showAdmissions={allowPublicAdmission}
-        footerStyle={{
-          ...(dbSections.sectionStyles?.['Footer'] || {}),
-          bg: footerBg,
-        }}
-      />
+      {!dbSections.sectionStyles?.['Footer']?.isHidden && (
+        <PublicFooter
+          schoolSlug={schoolSlug}
+          schoolName={siteData.school.name}
+          motto={siteData.profile?.motto || themeCfg.eyebrow}
+          address={dbSections.footerAddress || siteData.profile?.address}
+          phone={dbSections.footerPhone || siteData.profile?.phone}
+          email={dbSections.footerEmail || siteData.profile?.email}
+          copyright={dbSections.footerCopyright}
+          showAdmissions={allowPublicAdmission}
+          footerStyle={{
+            ...(dbSections.sectionStyles?.['Footer'] || {}),
+            bg: footerBg,
+          }}
+        />
+      )}
     </div>
   )
 }

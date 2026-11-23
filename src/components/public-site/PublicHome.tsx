@@ -64,9 +64,9 @@ export function PublicHome({
     activeCfg.eyebrow
   const establishedYear = schoolData?.profile?.established || 1983
   const address =
-    schoolData?.profile?.address ||
     draft?.footerAddress ||
     dbSections.footerAddress ||
+    schoolData?.profile?.address ||
     '27 Lakeview Avenue, Riverdale, NY 10471'
 
   const heroHeading =
@@ -225,6 +225,7 @@ export function PublicHome({
         principalPhoto={principalPhoto}
       />
       <HomeNoticesSection
+        sectionStyle={sectionStyles['Latest notices']}
         noticesHeading={draft?.noticesHeading || dbSections.noticesHeading || 'Latest notices & circulars'}
         schoolSlug={schoolSlug}
         setPage={setPage}
@@ -236,6 +237,7 @@ export function PublicHome({
         notice2Title={draft?.notice2Title || dbSections.notice2Title || 'Annual Inter-School Science & Tech Fair 2026 Registration'}
       />
       <HomeEventsSection
+        sectionStyle={sectionStyles['Upcoming events']}
         eventsHeading={draft?.eventsHeading || dbSections.eventsHeading || 'Upcoming events & calendar'}
         schoolSlug={schoolSlug}
         setPage={setPage}
@@ -249,6 +251,7 @@ export function PublicHome({
         event2Venue={draft?.event2Venue || dbSections.event2Venue || 'Auditorium Hall'}
       />
       <HomeGallerySection
+        sectionStyle={sectionStyles['Gallery']}
         schoolName={schoolName}
         galleryHeading={draft?.galleryHeading || dbSections.galleryHeading || 'Campus life & moments'}
         gallerySub={draft?.gallerySub || dbSections.gallerySub || 'Explore our modern STEM labs, creative arts studios, and athletic facilities.'}
@@ -260,6 +263,7 @@ export function PublicHome({
       <HomeCustomSections
         customSections={customSections}
         sectionStyles={sectionStyles}
+        schoolSlug={schoolSlug}
         setPage={setPage}
       />
       <HomeContactSection

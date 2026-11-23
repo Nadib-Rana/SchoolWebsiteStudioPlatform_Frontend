@@ -89,7 +89,9 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
   const effectiveSchoolName =
     siteData?.school?.name || currentSchool?.name || builderData?.schoolName || activeCfg.schoolName
   const effectiveMotto = builderData?.eyebrow || siteData?.profile?.motto || activeCfg.eyebrow
-  const showAnnouncement = builderData?.showAnnouncement !== undefined ? builderData.showAnnouncement : true
+  const showAnnouncement =
+    (builderData?.showAnnouncement !== undefined ? builderData.showAnnouncement : true) &&
+    !builderData?.sectionStyles?.['Announcement bar']?.isHidden
   const announcementText = builderData?.announcementText || activeCfg.announcementText
   const announcementLink = builderData?.announcementLink || 'Apply now'
   const effectivePrimaryColor =
@@ -160,20 +162,22 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
           </span>
         </div>
       )}
-      <PublicHeader
-        setPage={setPage}
-        schoolSlug={siteData?.school?.slug || 'northfield-high'}
-        schoolName={effectiveSchoolName}
-        motto={effectiveMotto}
-        logoUrl={siteData?.school?.logoUrl || currentSchool?.logoUrl || undefined}
-        logoLetter={effectiveSchoolName.charAt(0)}
-        applyButtonText={builderData?.applyButtonText || 'Apply now'}
-        navigation={siteData?.navigation}
-        headerStyle={{
-          ...(builderData?.sectionStyles?.['Header'] || {}),
-          bg: effectiveHeaderBg,
-        }}
-      />
+      {!builderData?.sectionStyles?.['Header']?.isHidden && (
+        <PublicHeader
+          setPage={setPage}
+          schoolSlug={siteData?.school?.slug || 'northfield-high'}
+          schoolName={effectiveSchoolName}
+          motto={effectiveMotto}
+          logoUrl={siteData?.school?.logoUrl || currentSchool?.logoUrl || undefined}
+          logoLetter={builderData?.logoLetter || effectiveSchoolName.charAt(0)}
+          applyButtonText={builderData?.applyButtonText || 'Apply now'}
+          navigation={siteData?.navigation}
+          headerStyle={{
+            ...(builderData?.sectionStyles?.['Header'] || {}),
+            bg: effectiveHeaderBg,
+          }}
+        />
+      )}
       {page === 'Home' ? (
         <PublicHome
           theme={theme}

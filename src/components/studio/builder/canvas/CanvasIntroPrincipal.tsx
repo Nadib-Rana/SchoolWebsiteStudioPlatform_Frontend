@@ -73,7 +73,7 @@ export function CanvasIntroPrincipal({
           paddingTop: introPad,
           paddingBottom: introPad,
           display:
-            introStyle?.hideOnMobile && device === 'mobile' ? 'none' : 'block',
+            introStyle?.isHidden || (introStyle?.hideOnMobile && device === 'mobile') ? 'none' : 'block',
           outline:
             selected === 'School introduction' ? '2px solid #2563eb' : 'none',
           outlineOffset: '-2px',
@@ -199,7 +199,7 @@ export function CanvasIntroPrincipal({
           borderTop: '1px solid #e2e8f0',
           borderBottom: '1px solid #e2e8f0',
           display:
-            principalStyle?.hideOnMobile && device === 'mobile'
+            principalStyle?.isHidden || (principalStyle?.hideOnMobile && device === 'mobile')
               ? 'none'
               : 'grid',
           gridTemplateColumns:

@@ -19,6 +19,8 @@ export interface PublicFooterProps {
     border?: boolean
     shadow?: string
     hideOnMobile?: boolean
+    isHidden?: boolean
+    customId?: string
     customClass?: string
   }
   setPage?: (p: string) => void
@@ -36,6 +38,9 @@ export function PublicFooter({
   footerStyle,
   setPage,
 }: PublicFooterProps) {
+  if (footerStyle?.isHidden) {
+    return null
+  }
   const initial = (schoolName || 'N').charAt(0).toUpperCase()
 
   const allLinks = [
@@ -52,7 +57,8 @@ export function PublicFooter({
 
   return (
     <footer
-      className={`public-footer ${footerStyle?.customClass || ''}`}
+      id={footerStyle?.customId || undefined}
+      className={`public-footer ${footerStyle?.hideOnMobile ? 'hidden sm:flex' : ''} ${footerStyle?.customClass || ''}`}
       style={{
         background: footerStyle?.bg || 'var(--navy, #102f58)',
         paddingTop:

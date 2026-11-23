@@ -11,6 +11,18 @@ interface EventItem {
 }
 
 interface HomeEventsSectionProps {
+  sectionStyle?: {
+    bg?: string
+    padding?: string
+    textColor?: string
+    align?: string
+    border?: boolean
+    shadow?: string
+    hideOnMobile?: boolean
+    isHidden?: boolean
+    customId?: string
+    customClass?: string
+  }
   eventsHeading: string
   schoolSlug?: string
   setPage?: (p: string) => void
@@ -41,6 +53,7 @@ function parseEventDateParts(raw: string): { day: string; month: string } {
 }
 
 export function HomeEventsSection({
+  sectionStyle,
   eventsHeading,
   schoolSlug,
   setPage,
@@ -53,15 +66,37 @@ export function HomeEventsSection({
   event2Title,
   event2Venue,
 }: HomeEventsSectionProps) {
+  if (sectionStyle?.isHidden) {
+    return null
+  }
+
   const displayDbEvents = hasDbEvents ? publishedEvents.slice(0, 3) : []
   const itemCount = hasDbEvents ? displayDbEvents.length : 2
+  const pad =
+    sectionStyle?.padding === 'compact'
+      ? '45px'
+      : sectionStyle?.padding === 'spacious'
+      ? '120px'
+      : undefined
 
   return (
-    <section className="home-events">
+    <section
+      id={sectionStyle?.customId || undefined}
+      className={`home-events ${sectionStyle?.hideOnMobile ? 'hidden sm:block' : ''} ${sectionStyle?.customClass || ''}`}
+      style={{
+        background: sectionStyle?.bg || undefined,
+        color: sectionStyle?.textColor || undefined,
+        textAlign: (sectionStyle?.align as any) || undefined,
+        paddingTop: pad,
+        paddingBottom: pad,
+        ...(sectionStyle?.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),
+        ...(sectionStyle?.shadow === 'subtle' ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' } : sectionStyle?.shadow === 'card' ? { boxShadow: '0 10px 25px rgba(0,0,0,0.12)' } : {}),
+      }}
+    >
       <div className="section-heading">
         <div>
           <span className="section-kicker">SAVE THE DATE</span>
-          <h2>{eventsHeading}</h2>
+          <h2 style={{ color: sectionStyle?.textColor || undefined }}>{eventsHeading}</h2>
         </div>
         {schoolSlug ? (
           <Link href={`/${schoolSlug}/events`}>

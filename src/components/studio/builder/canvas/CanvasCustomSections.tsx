@@ -50,10 +50,10 @@ export function CanvasCustomSections({
                 textAlign: st.align,
                 cursor: 'pointer',
                 position: 'relative',
-                color: st.bg === '#163d72' || st.bg === '#091a30' ? '#ffffff' : '#0f172a',
+                color: st.textColor || (st.bg === '#163d72' || st.bg === '#091a30' ? '#ffffff' : '#0f172a'),
                 outline: isSelected ? '2px solid #2563eb' : 'none',
                 outlineOffset: '-2px',
-                display: st.hideOnMobile && device === 'mobile' ? 'none' : 'block',
+                display: st.isHidden || (st.hideOnMobile && device === 'mobile') ? 'none' : 'block',
                 ...(st.border ? { borderTop: '2px solid #2563eb', borderBottom: '2px solid #2563eb' } : {}),
                 ...(st.shadow === 'subtle'
                   ? { boxShadow: '0 4px 15px rgba(0,0,0,0.06)' }

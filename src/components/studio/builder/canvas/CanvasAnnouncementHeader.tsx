@@ -48,7 +48,7 @@ export function CanvasAnnouncementHeader({
 
   return (
     <>
-      {showAnnouncement && (
+      {showAnnouncement && !annoStyle?.isHidden && (
         <div
           id={annoStyle?.customId || 'canvas-announcement-bar'}
           onClick={() => setSelected('Announcement bar')}
@@ -111,7 +111,7 @@ export function CanvasAnnouncementHeader({
           paddingTop: headerPad,
           paddingBottom: headerPad,
           display:
-            headerStyle?.hideOnMobile && device === 'mobile'
+            headerStyle?.isHidden || (headerStyle?.hideOnMobile && device === 'mobile')
               ? 'none'
               : 'flex',
           alignItems: 'center',
