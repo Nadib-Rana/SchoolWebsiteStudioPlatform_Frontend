@@ -136,16 +136,29 @@ export function useOnboardingForm() {
     setIsPublishing(true)
     try {
       const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      const selectedTpl = templates[selectedTemplateIndex] || templates[0]
+      const themePreset = `theme-${selectedTpl.theme || 'modern'}`
+
       const payload = {
         name: schoolName.trim(),
         slug: cleanSlug,
-        templateId: templates[selectedTemplateIndex]?.name || 'Aster Academy',
-        themePreset: 'theme-classic',
+        templateId: selectedTpl.name || 'Aster Academy',
+        themePreset,
         primaryColor,
         principalName: principalName.trim() || 'Principal',
         contactEmail: contactEmail.trim().toLowerCase(),
         contactPhone: contactPhone.trim(),
-        selectedPages: ['home', 'about', 'academics', 'admissions', 'teachers', 'contact'],
+        selectedPages: [
+          'home',
+          'about',
+          'academics',
+          'admissions',
+          'teachers',
+          'notices',
+          'events',
+          'gallery',
+          'contact',
+        ],
       }
       const res = await api.schools.onboarding(payload)
       const data = (res as any)?.data || res
@@ -153,11 +166,47 @@ export function useOnboardingForm() {
       const newSchoolSlug = data?.slug || cleanSlug
 
       if (newSchoolId) {
-        if (uploadedLogoUrl) {
-          try { await api.schools.update(newSchoolId, { logoUrl: uploadedLogoUrl }) } catch {}
-        }
         api.setActiveSchoolId(newSchoolId)
         api.setActiveSchoolSlug(newSchoolSlug)
+
+        const estNum = parseInt(establishedYear, 10) || 1995
+        await Promise.allSettled([
+          ...(uploadedLogoUrl
+            ? [api.schools.update(newSchoolId, { logoUrl: uploadedLogoUrl })]
+            : []),
+          api.content.update(
+            {
+              schoolName: schoolName.trim(),
+              schoolType,
+              logoUrl: uploadedLogoUrl || undefined,
+              address: schoolAddress.trim(),
+              phone: contactPhone.trim(),
+              email: contactEmail.trim().toLowerCase(),
+              established: estNum,
+              establishedYear: estNum,
+              shortBio: description.trim(),
+              principalName: principalName.trim() || 'Principal',
+              principalTitle: principalDesignation.trim() || 'Principal',
+              academics: {
+                curriculum: academicOverview.trim(),
+              },
+            },
+            newSchoolId,
+          ),
+          api.theme
+            .saveDraft(
+              {
+                activeTheme: themePreset,
+                selectedTemplate: selectedTpl.name || 'Aster Academy',
+                primaryColor,
+                secondaryColor: accentColor,
+                accentColor,
+              },
+              newSchoolId,
+            )
+            .then(() => api.theme.publish(newSchoolId)),
+        ])
+
         await refreshSchools(newSchoolId)
       }
       setCreatedSchool({ id: newSchoolId, name: schoolName, slug: newSchoolSlug })

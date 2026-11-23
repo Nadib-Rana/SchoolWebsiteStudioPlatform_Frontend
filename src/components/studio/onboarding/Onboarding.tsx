@@ -67,7 +67,14 @@ export function Onboarding() {
             />
           )}
           {form.step === 3 && (
-            <OnboardingStepTemplate selectedTemplateIndex={form.selectedTemplateIndex} setSelectedTemplateIndex={form.setSelectedTemplateIndex} />
+            <OnboardingStepTemplate
+              selectedTemplateIndex={form.selectedTemplateIndex}
+              setSelectedTemplateIndex={form.setSelectedTemplateIndex}
+              onSelectTemplateColors={(primary, accent) => {
+                form.setPrimaryColor(primary)
+                form.setAccentColor(accent)
+              }}
+            />
           )}
           {form.step === 4 && (
             <OnboardingStepContent
