@@ -230,10 +230,17 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Show / Hide Statistics or Any Section (Desktop & Mobile)', bn: 'Statistics বা যেকোনো সেকশন ১ ক্লিকে Show / Hide করুন' },
+        title: { en: 'Show / Hide Any Section & Sync All Homepage Styles Live', bn: 'যেকোনো সেকশন Show / Hide ও লাইভ স্টাইল সিঙ্ক করুন' },
         detail: {
-          en: 'Select "Statistics" and toggle "Show statistics section on website" in the Content tab, or open the Advanced tab on any section to check "Hide this section completely (All devices)" or "Hide on mobile devices". Hidden sections show a "Hidden" badge in the left sidebar so you can re-enable them anytime.',
-          bn: '"Statistics" সিলেক্ট করে Content ট্যাব থেকে "Show statistics section on website" অন/অফ করুন, অথবা যেকোনো সেকশনের Advanced ট্যাব থেকে সব ডিভাইসে (Desktop + Mobile) বা শুধু মোবাইলে হাইড করুন। হাইড করা সেকশনের পাশে বাম সাইডবারে "Hidden" ব্যাজ দেখাবে, যেখান থেকে যেকোনো সময় আবার চালু করা যাবে।',
+          en: 'Select any section (Announcement, Header, Hero, Statistics, School Introduction, Principal Message, Latest Notices, Upcoming Events, Gallery, Custom Sections, or Footer) to customize Background Color, Text Color, Padding, Border, Shadow, Header Logo Letter, Footer contacts, or toggle "Hide completely (All devices)" / "Hide on mobile" — everything syncs live to your public homepage.',
+          bn: 'Builder-এর যেকোনো সেকশন (Header, Hero, Statistics, School Introduction, Principal, Latest Notices, Upcoming Events, Gallery, Custom Section বা Footer) থেকে Background Color, Text Color, Padding, Border, Shadow, Logo Letter ও Footer তথ্য পরিবর্তন বা "Hide completely / Hide on mobile" অন/অফ করলে সাথে সাথেই লাইভ ওয়েবসাইটে দেখাবে।',
+        },
+      },
+      {
+        title: { en: 'Add, Style & Delete Custom Sections (FAQ, Facilities, CTA)', bn: 'Custom Section যোগ, স্টাইল ও ডিলিট করুন' },
+        detail: {
+          en: 'Click "+ Add section" or switch to the Components tab to add FAQ, Testimonials, Campus Facilities, Admission Call-to-Action (with live button link), or Rich Text blocks. Custom sections save to the database, reload across devices, and cleanly delete from the live website when removed.',
+          bn: '"+ Add section" বা Components ট্যাব থেকে FAQ, Testimonials, Campus Facilities, Admission CTA বা Rich Text ব্লক যোগ করুন। এগুলো ডাটাবেজে সেভ থাকে এবং Builder থেকে রিমুভ করলে লাইভ সাইট থেকেও মুছে যায়।',
         },
       },
       {
@@ -339,8 +346,8 @@ export const HELP_GUIDES: HelpGuide[] = [
       {
         title: { en: 'Update contact & principal profile', bn: 'যোগাযোগ ও প্রিন্সিপালের তথ্য দিন' },
         detail: {
-          en: 'Keep address, phone, email, and office hours accurate — they appear automatically in your public header, footer, and Contact page.',
-          bn: 'ঠিকানা, ফোন, ইমেইল ও অফিস সময় ঠিক রাখুন—এগুলো অটোমেটিক পাবলিক ফুটার ও Contact পেজে দেখাবে।',
+          en: 'Keep address, phone, email, and office hours accurate — they automatically power your redesigned Contact page (/{schoolSlug}/contact) with interactive contact cards, quick-action buttons (Directions, Call, WhatsApp, Email), embedded campus map, and theme primary-color styling.',
+          bn: 'ঠিকানা, ফোন, ইমেইল ও অফিস সময় ঠিক রাখুন—এগুলো অটোমেটিক আপনার থিমের প্রাইমারি কালারে সাজানো নতুন Contact পেজ (/{schoolSlug}/contact)-এর ইন্টারেক্টিভ কার্ড, কুইক-অ্যাকশন লিংক (Directions, Call, WhatsApp, Email) এবং Google Map কার্ডে দেখাবে।',
         },
       },
     ],
@@ -458,8 +465,8 @@ export const HELP_GUIDES: HelpGuide[] = [
       {
         title: { en: 'Publish to Events page & Homepage', bn: 'ইভেন্ট পাবলিশ করুন' },
         detail: {
-          en: 'Published upcoming events appear automatically on both the Homepage and Events directory.',
-          bn: 'পাবলিশ করা ইভেন্টগুলো হোমপেজ ও Events পেজে অটোমেটিক দেখাবে।',
+          en: 'Published upcoming events automatically replace the Builder sample events on your Homepage with crisp Day/Month date badges and a balanced 2- or 3-column grid alongside the full Events directory.',
+          bn: 'পাবলিশ করা ইভেন্টগুলো হোমপেজ ও Events পেজে অটোমেটিক দেখাবে (পরিষ্কার Day/Month ব্যাজ ও ২ বা ৩ কলামের ব্যালেন্সড কার্ড গ্রিডসহ)।',
         },
       },
     ],
@@ -561,10 +568,10 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Public admission portal & Printable PDF Receipt', bn: 'পাবলিক অ্যাডমিশন ও PDF রিসিট প্রিন্ট' },
+        title: { en: 'Public admission portal, Student Photo & Printable PDF Receipt', bn: 'পাবলিক অ্যাডমিশন, স্টুডেন্ট ফটো ও PDF রিসিট' },
         detail: {
-          en: 'Parents apply at /{schoolSlug}/admissions, immediately receive a unique reference number (ADM-YYYY-XXXX), and can download/print an official A4 Admission Receipt (PDF) or Status Slip anytime.',
-          bn: 'অভিভাবকরা /{schoolSlug}/admissions পেজ থেকে আবেদন করলে ইউনিক রেফারেন্স নম্বর (ADM-YYYY-XXXX) পাবেন এবং সাথে সাথেই অফিশিয়াল A4 Admission Receipt (PDF) বা Status Slip প্রিন্ট করতে পারবেন।',
+          en: 'Parents apply at /{schoolSlug}/admissions, can optionally upload a passport-size student photo (automatically resized to 512px WebP <= 1.5 MB for the ERP Student Profile & Smart ID Card), receive a unique reference number (ADM-YYYY-XXXX), and can print/download an A4 Admission Receipt or Status Slip anytime.',
+          bn: 'অভিভাবকরা /{schoolSlug}/admissions থেকে আবেদন করার সময় ঐচ্ছিকভাবে শিক্ষার্থীর পাসপোর্ট সাইজ ছবি আপলোড করতে পারবেন (যা ব্রাউজারে অটো রিসাইজ হয়ে সরাসরি ERP Student Profile ও Smart ID Card-এ যুক্ত হবে), সাথে সাথে ADM-YYYY-XXXX নম্বর ও প্রিন্টযোগ্য A4 Admission Receipt (PDF) পাবেন।',
         },
       },
       {
@@ -603,17 +610,17 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Review new inquiries', bn: 'নতুন ইনকোয়ারি দেখুন' },
+        title: { en: 'Receive validated public Contact inquiries', bn: 'Contact পেজ থেকে ভ্যালিডেটেড ইনকোয়ারি দেখুন' },
         detail: {
-          en: 'Open any NEW inquiry to view parent contact details and message.',
-          bn: 'যেকোনো NEW ইনকোয়ারিতে ক্লিক করে অভিভাবকের ফোন, ইমেইল ও মেসেজ দেখুন।',
+          en: 'The redesigned /{schoolSlug}/contact page validates fields cleanly, saves each inquiry into this inbox (and opens the visitor’s email app pre-filled), and automatically pauses submissions during Maintenance Mode.',
+          bn: 'নতুন ডিজাইন করা /{schoolSlug}/contact পেজ থেকে ভ্যালিডেশনসহ পাঠানো প্রতিটি প্রশ্ন এই ইনবক্সে সেভ হয় (এবং ভিজিটরের ইমেইল অ্যাপও খোলে)। Maintenance Mode চালু থাকলে ইনকোয়ারি ফর্ম অটোমেটিক বন্ধ থাকে।',
         },
       },
       {
-        title: { en: 'Mark as Responded with notes', bn: 'নোটসহ Responded মার্ক করুন' },
+        title: { en: 'Review & mark as Responded with notes', bn: 'রিভিউ ও নোটসহ Responded মার্ক করুন' },
         detail: {
-          en: 'Add internal follow-up notes and update status to READ, RESPONDED, or ARCHIVED.',
-          bn: 'ফলো-আপ নোট লিখে স্ট্যাটাস READ, RESPONDED বা ARCHIVED করুন।',
+          en: 'Open any NEW inquiry to view parent contact details, add internal follow-up notes, and update status to READ, RESPONDED, or ARCHIVED.',
+          bn: 'যেকোনো NEW ইনকোয়ারিতে ক্লিক করে অভিভাবকের ফোন, ইমেইল ও মেসেজ দেখুন, ফলো-আপ নোট লিখুন এবং স্ট্যাটাস READ, RESPONDED বা ARCHIVED করুন।',
         },
       },
     ],
@@ -622,44 +629,62 @@ export const HELP_GUIDES: HelpGuide[] = [
     id: 'integrations',
     view: 'integrations',
     category: 'admissions-erp',
-    estimatedTime: '4 min',
+    estimatedTime: '3 min',
     roles: ADMIN_ROLES,
     title: { en: 'School ERP & Alumni Integration', bn: 'School ERP ও Alumni ইন্টিগ্রেশন' },
     summary: {
-      en: 'Connect your external School ERP using x-website-key for live classes, admissions, status webhooks, teachers/notices sync, and Alumni Verification.',
-      bn: 'x-website-key দিয়ে আপনার School ERP কানেক্ট করে লাইভ ক্লাস, অ্যাডমিশন, ওয়েবহুক, টিচার/নোটিশ সিঙ্ক ও Alumni Verify চালু করুন।',
+      en: 'Connect your School ERP with just your Website API Key (x-website-key) for live open classes, admissions with student photoUrl sync, status webhooks, faculty/notices sync, and Alumni Verification.',
+      bn: 'শুধুমাত্র Website API Key (x-website-key) দিয়ে School ERP কানেক্ট করে লাইভ ক্লাস, ফটোসহ অ্যাডমিশন, ওয়েবহুক, টিচার/নোটিশ সিঙ্ক ও Alumni Verify চালু করুন।',
     },
     steps: [
       {
-        title: { en: 'Generate API Key in your ERP', bn: '১. ERP ড্যাশবোর্ড থেকে API Key নিন' },
+        title: { en: 'Copy Website API Key from your ERP', bn: '১. ERP ড্যাশবোর্ড থেকে Website API Key কপি করুন' },
         detail: {
-          en: 'In your ERP Dashboard, go to System → Website Integration and copy your sk_web_... Website API Key.',
-          bn: 'ERP Dashboard → System → Website Integration থেকে আপনার sk_web_... Website API Key কপি করুন।',
+          en: 'In your ERP Dashboard, open System → Website Integration, make sure "Enable External Website Integration" is checked, and copy your sk_web_... Website API Key. No ERP Base URL is needed — it is pre-configured securely on our server.',
+          bn: 'ERP Dashboard → System → Website Integration থেকে "Enable External Website Integration" চালু রেখে sk_web_... Website API Key কপি করুন। আলাদা কোনো Base URL দেওয়ার প্রয়োজন নেই—তা সার্ভারেই সুরক্ষিতভাবে সেট করা আছে।',
         },
       },
       {
-        title: { en: 'Save & Test Live Connection here', bn: '২. এখানে Save করে Test Live Connection দিন' },
+        title: { en: 'Save Key & Test Live Connection here', bn: '২. শুধু API Key বসিয়ে Save ও Test করুন' },
         detail: {
-          en: 'Paste your Website API Key (x-website-key) into the Integrations form, check "Enable Live ERP", and click "Test Live Connection". Keys are encrypted server-side.',
-          bn: 'Integrations ফর্মে শুধু আপনার Website API Key (x-website-key) দিয়ে "Test Live Connection" ক্লিক করুন। কী সার্ভারে এনক্রিপ্টেড অবস্থায় সেভ হয়।',
+          en: 'Paste your sk_web_... Website API Key into Integrations, keep "Enable Live ERP" checked, click "Save ERP Settings", and then click "Test Live Connection" to verify your ERP school & open classes immediately.',
+          bn: 'Integrations ফর্মে শুধু Website API Key (x-website-key) পেস্ট করে "Save ERP Settings" এবং তারপর "Test Live Connection" ক্লিক করলে সাথে সাথেই আপনার স্কুল ও ওপেন ক্লাস ভেরিফাই হয়ে যাবে।',
         },
       },
       {
-        title: { en: 'Copy Webhook URL into ERP', bn: '৩. Webhook URL কপি করে ERP-তে দিন' },
+        title: { en: 'Copy Webhook URL into ERP for Real-Time Status', bn: '৩. রিয়েল-টাইম স্ট্যাটাসের জন্য Webhook URL দিন' },
         detail: {
-          en: 'Click "Copy" on the ERP Status Webhook URL and paste it in ERP Website Integration settings (with optional HMAC secret) for real-time status updates.',
-          bn: 'ERP Status Webhook URL-এর Copy বাটনে ক্লিক করে ERP সেটিংসে পেস্ট করুন, যাতে স্ট্যাটাস আপডেট রিয়েল-টাইমে চলে আসে।',
+          en: 'Copy the ERP Status Webhook URL shown here and paste it into ERP Website Integration settings (with optional HMAC Signing Secret for X-ERP-Signature verification) so ERP admission status changes update your website instantly.',
+          bn: 'এখানে থাকা ERP Status Webhook URL কপি করে ERP-র Webhook সেটিংসে দিন (চাইলে HMAC Signing Secret সহ)—তাহলে ERP থেকে স্ট্যাটাস পরিবর্তন করলেই ওয়েবসাইটে অটো আপডেট হয়ে যাবে।',
         },
       },
       {
-        title: { en: 'Sync Teachers, Notices (Private Drafts) & Queued Admissions', bn: '৪. টিচার, নোটিশ (ড্রাফট) ও কিউড অ্যাডমিশন সিঙ্ক করুন' },
+        title: { en: 'Live Admissions Photo, Alumni Verify & Draft Sync', bn: '৪. অ্যাডমিশন ফটো, Alumni Verify ও সিঙ্ক সুবিধা' },
         detail: {
-          en: 'Click "Sync ERP now" to pull classes, faculty profiles, and flush offline queued admissions. ERP-synced notices are safely imported as DRAFT (private) so internal ERP notices never auto-publish without admin approval.',
-          bn: '"Sync ERP now" ক্লিক করলে ক্লাস, টিচার ও অফলাইনে জমা হওয়া আবেদন সিঙ্ক হবে। ERP থেকে আসা নোটিশ নিরাপদে DRAFT (প্রাইভেট) হিসেবে সেভ হয়—অ্যাডমিন পাবলিশ না করা পর্যন্ত পাবলিক সাইটে যায় না।',
+          en: 'Student passport photos uploaded on the admission form auto-sync as photoUrl for ERP Enrollment & Smart ID Cards. Alumni Verification at /{schoolSlug}/alumni-verify works directly with your Website API Key, and "Sync ERP now" imports faculty profiles, flushes queued admissions, and brings ERP notices in safely as private DRAFTs.',
+          bn: 'অ্যাডমিশন ফর্মে আপলোড করা শিক্ষার্থীর ছবি photoUrl হিসেবে সরাসরি ERP-তে যায়। কানেকশন সক্রিয় থাকলেই /{schoolSlug}/alumni-verify পেজ কাজ করবে, এবং "Sync ERP now" চাপলে টিচার, কিউড আবেদন ও প্রাইভেট নোটিশ (DRAFT) সিঙ্ক হবে।',
         },
-        tip: {
-          en: 'Once verified, your public Alumni Verification portal is automatically live at /{schoolSlug}/alumni-verify.',
-          bn: 'কানেকশন ভেরিফাই হলেই /{schoolSlug}/alumni-verify পেজে Alumni Verification অটো চালু হয়ে যাবে।',
+      },
+    ],
+    troubleshooting: [
+      {
+        q: {
+          en: 'What if "Test Live Connection" returns a 401 or 403 error?',
+          bn: '"Test Live Connection" ক্লিক করলে 401 বা 403 এরর দেখালে কী করব?',
+        },
+        a: {
+          en: 'Confirm your sk_web_... key was not rotated or revoked in ERP, ensure "Enable External Website Integration" is turned ON, and verify "Allowed Website Domains" in ERP either includes this backend API host or is left blank.',
+          bn: 'ERP-তে গিয়ে নিশ্চিত হন কী-টি Rotate/Revoke করা হয়নি, "Enable External Website Integration" অন আছে এবং Allowed Website Domains খালি আছে বা সঠিক ডোমেইন দেওয়া আছে।',
+        },
+      },
+      {
+        q: {
+          en: 'What if I see "ERP server connection is not yet enabled on this platform"?',
+          bn: '"ERP server connection is not yet enabled" বার্তা দেখালে কী করব?',
+        },
+        a: {
+          en: 'Contact the platform system administrator so the server-side ERP connection environment variable is configured and restarted.',
+          bn: 'প্ল্যাটফর্মের সিস্টেম অ্যাডমিনকে জানান যেন সার্ভারের .env ফাইলে ERP_BASE_URL সেট করে ব্যাকএন্ড রিস্টার্ট করা হয়।',
         },
       },
     ],
@@ -819,8 +844,8 @@ export const HELP_GUIDES: HelpGuide[] = [
       {
         title: { en: 'Control Admissions, Notice Ticker, Separate WhatsApp / Call Buttons & Maintenance Mode', bn: 'অ্যাডমিশন, নোটিশ বার, আলাদা WhatsApp ও Call বাটন এবং মেইনটেন্যান্স কন্ট্রোল' },
         detail: {
-          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp Button (with editable WhatsApp number), Floating Phone Call Button (with editable Call Office phone number), or Maintenance Mode ON/OFF independently anytime.',
-          bn: 'Website Preferences থেকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp বাটন এবং Floating Phone Call বাটন আলাদাভাবে On/Off করতে পারবেন এবং দুটির জন্যই আলাদা ফোন নম্বর সরাসরি বসিয়ে বা পরিবর্তন করে সেভ করতে পারবেন।',
+          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp Button (with editable WhatsApp number), Floating Phone Call Button (with editable Call Office phone number), or Maintenance Mode ON/OFF independently anytime. Maintenance Mode applies immediately (0-second live switch), warns admins inside Studio Preview, and blocks public Admission & Contact submissions.',
+          bn: 'Website Preferences থেকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp বাটন (আলাদা নম্বরের ইনপুটসহ), Floating Phone Call বাটন (আলাদা নম্বরের ইনপুটসহ) এবং Maintenance Mode আলাদাভাবে On/Off করা যাবে। Maintenance Mode চালু করলে সাথে সাথেই লাইভ সাইটে মেইনটেন্যান্স স্ক্রিন আসে এবং পাবলিক ফর্ম জমা নেওয়া বন্ধ থাকে।',
         },
       },
     ],
