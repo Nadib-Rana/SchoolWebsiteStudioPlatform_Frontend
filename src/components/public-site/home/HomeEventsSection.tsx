@@ -24,6 +24,22 @@ interface HomeEventsSectionProps {
   event2Venue: string
 }
 
+function parseEventDateParts(raw: string): { day: string; month: string } {
+  const trimmed = (raw || '').trim()
+  const numMatch = trimmed.match(/\d+/)
+  const strMatch = trimmed.match(/[A-Za-z]+/)
+  if (numMatch && strMatch) {
+    return {
+      day: numMatch[0],
+      month: strMatch[0].slice(0, 3).toUpperCase(),
+    }
+  }
+  if (numMatch) {
+    return { day: numMatch[0], month: 'NOV' }
+  }
+  return { day: trimmed || '15', month: '' }
+}
+
 export function HomeEventsSection({
   eventsHeading,
   schoolSlug,
@@ -37,6 +53,9 @@ export function HomeEventsSection({
   event2Title,
   event2Venue,
 }: HomeEventsSectionProps) {
+  const displayDbEvents = hasDbEvents ? publishedEvents.slice(0, 3) : []
+  const itemCount = hasDbEvents ? displayDbEvents.length : 2
+
   return (
     <section className="home-events">
       <div className="section-heading">
@@ -57,9 +76,17 @@ export function HomeEventsSection({
           </button>
         )}
       </div>
-      <div>
+      <div
+        className={`grid gap-4 ${
+          itemCount === 1
+            ? 'grid-cols-1'
+            : itemCount === 2
+              ? 'grid-cols-1 md:grid-cols-2'
+              : 'grid-cols-1 md:grid-cols-3'
+        }`}
+      >
         {hasDbEvents
-          ? publishedEvents.slice(0, 2).map((ev) => {
+          ? displayDbEvents.map((ev) => {
               const d = new Date(ev.eventDate)
               const day = d.getDate()
               const month = d
@@ -96,21 +123,24 @@ export function HomeEventsSection({
               )
             })
           : [
-              [event1Date, 'NOV', event1Title, event1Venue],
-              [event2Date, 'NOV', event2Title, event2Venue],
-            ].map((x) => (
-              <article key={x[2]}>
-                <span>
-                  <strong>{x[0]}</strong>
-                  <small>{x[1]}</small>
-                </span>
-                <div>
-                  <h3>{x[2]}</h3>
-                  <p>{x[3]}</p>
-                </div>
-                <Icon name="arrow" />
-              </article>
-            ))}
+              [event1Date, event1Title, event1Venue],
+              [event2Date, event2Title, event2Venue],
+            ].map((x) => {
+              const parts = parseEventDateParts(x[0])
+              return (
+                <article key={x[1]}>
+                  <span>
+                    <strong>{parts.day}</strong>
+                    {parts.month && <small>{parts.month}</small>}
+                  </span>
+                  <div>
+                    <h3>{x[1]}</h3>
+                    <p>{x[2]}</p>
+                  </div>
+                  <Icon name="arrow" />
+                </article>
+              )
+            })}
       </div>
     </section>
   )
