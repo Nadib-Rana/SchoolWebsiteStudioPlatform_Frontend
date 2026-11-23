@@ -153,12 +153,42 @@ export class ApiSession {
       }
 
       if (!response.ok) {
-        const errorMsg = Array.isArray(data)
+        let detailedErrors = ''
+        if (Array.isArray(data?.errors) && data.errors.length > 0) {
+          const parts = data.errors
+            .map((e: any) => {
+              const fieldLabel = e?.field ? `${e.field}: ` : ''
+              if (Array.isArray(e?.errors) && e.errors.length > 0) {
+                return `${fieldLabel}${e.errors.join(', ')}`
+              }
+              if (typeof e?.message === 'string') {
+                return `${fieldLabel}${e.message}`
+              }
+              return ''
+            })
+            .filter(Boolean)
+          if (parts.length > 0) {
+            detailedErrors = parts.join(' | ')
+          }
+        } else if (Array.isArray(data?.message)) {
+          detailedErrors = data.message.join(' | ')
+        }
+
+        const baseMsg = Array.isArray(data)
           ? data[0]?.message || `API error: ${response.status}`
-          : data?.message ||
-            (data?.errors && data.errors[0]?.message) ||
-            `API error: ${response.status}`
-        throw new Error(errorMsg)
+          : typeof data?.message === 'string'
+            ? data.message
+            : `API error: ${response.status}`
+
+        const finalMsg =
+          detailedErrors && baseMsg === 'Request validation failed'
+            ? `${baseMsg} (${detailedErrors})`
+            : detailedErrors || baseMsg
+
+        const apiErr: any = new Error(finalMsg)
+        apiErr.status = response.status
+        apiErr.validationErrors = Array.isArray(data?.errors) ? data.errors : undefined
+        throw apiErr
       }
 
       return data

@@ -76,23 +76,43 @@ export function useOnboardingForm() {
   const validateStep = (currentStep: number): boolean => {
     setErrorMessage('')
     const errors: Record<string, string> = {}
+    const details: string[] = []
+
     if (currentStep === 1) {
-      if (!schoolName.trim()) errors.schoolName = 'School name is required.'
-      if (!contactEmail.trim()) errors.contactEmail = 'Public email is required.'
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
-        errors.contactEmail = 'Please enter a valid email address.'
+      if (!schoolName.trim()) {
+        errors.schoolName = 'School name is required.'
+        details.push('Step 1 (School Info) → School name is required.')
       }
-      if (!contactPhone.trim()) errors.contactPhone = 'Contact phone number is required.'
+      if (!contactEmail.trim()) {
+        errors.contactEmail = 'Public email is required.'
+        details.push('Step 1 (School Info) → Public email is required.')
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
+        errors.contactEmail = 'Please enter a valid email address (e.g. info@school.edu).'
+        details.push(`Step 1 (School Info) → Invalid Public Email "${contactEmail.trim()}".`)
+      }
+      if (!contactPhone.trim()) {
+        errors.contactPhone = 'Contact phone number is required.'
+        details.push('Step 1 (School Info) → Contact number is required.')
+      }
     }
+
     if (currentStep === 2) {
       const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '')
-      if (!cleanSlug) errors.slug = 'Website address (slug) is required.'
-      else if (cleanSlug.length < 3) errors.slug = 'Website address must be at least 3 characters long.'
-      else if (cleanSlug !== slug) errors.slug = 'Only lowercase letters, numbers, and hyphens are allowed.'
+      if (!cleanSlug) {
+        errors.slug = 'Website address (slug) is required.'
+        details.push('Step 2 (Identity) → Website address (Slug) is required.')
+      } else if (cleanSlug.length < 3) {
+        errors.slug = 'Website address must be at least 3 characters long.'
+        details.push(`Step 2 (Identity) → Website address "${cleanSlug}" must be at least 3 characters.`)
+      } else if (cleanSlug !== slug) {
+        errors.slug = 'Only lowercase letters, numbers, and hyphens are allowed.'
+        details.push('Step 2 (Identity) → Website address (Slug) can only contain lowercase letters, numbers, and hyphens.')
+      }
     }
+
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) {
-      setErrorMessage('Please fix the highlighted errors before proceeding.')
+      setErrorMessage(details.join(' '))
       return false
     }
     return true
@@ -100,8 +120,18 @@ export function useOnboardingForm() {
 
   const handlePublish = async () => {
     setErrorMessage('')
-    if (!api.getAuthToken()) return setErrorMessage('You must be signed in to provision a school.')
-    if (!validateStep(1) || !validateStep(2)) return
+    if (!api.getAuthToken()) {
+      setErrorMessage('You must be signed in to provision a school. Please log in first.')
+      return
+    }
+    if (!validateStep(1)) {
+      setStep(1)
+      return
+    }
+    if (!validateStep(2)) {
+      setStep(2)
+      return
+    }
 
     setIsPublishing(true)
     try {
@@ -112,11 +142,10 @@ export function useOnboardingForm() {
         templateId: templates[selectedTemplateIndex]?.name || 'Aster Academy',
         themePreset: 'theme-classic',
         primaryColor,
-        principalName: principalName.trim(),
-        contactEmail: contactEmail.trim(),
+        principalName: principalName.trim() || 'Principal',
+        contactEmail: contactEmail.trim().toLowerCase(),
         contactPhone: contactPhone.trim(),
         selectedPages: ['home', 'about', 'academics', 'admissions', 'teachers', 'contact'],
-        ...(uploadedLogoUrl ? { logoUrl: uploadedLogoUrl } : {}),
       }
       const res = await api.schools.onboarding(payload)
       const data = (res as any)?.data || res
@@ -136,8 +165,49 @@ export function useOnboardingForm() {
       notify(`Congratulations! School "${schoolName}" has been created and published!`)
     } catch (err: any) {
       const msg = err?.message || ''
+      const valErrors: Array<{ field?: string; errors?: string[] }> = Array.isArray(err?.validationErrors)
+        ? err.validationErrors
+        : []
+
       if (msg.includes('already exists') || err?.status === 409) {
-        setErrorMessage(`⚠️ The website address "${slug}" is already taken. Please choose a different slug.`)
+        setStep(2)
+        setFieldErrors((prev) => ({
+          ...prev,
+          slug: `The website address "${slug}" is already taken. Please choose another slug.`,
+        }))
+        setErrorMessage(`⚠️ Step 2 (Identity) → The website address "${slug}" is already taken. Please choose a different slug.`)
+      } else if (valErrors.length > 0) {
+        const mappedFieldErrors: Record<string, string> = {}
+        const humanDetails: string[] = []
+        let targetStep = step
+
+        for (const ve of valErrors) {
+          const f = ve.field || ''
+          const reason = Array.isArray(ve.errors) && ve.errors.length > 0 ? ve.errors[0] : 'Invalid value'
+          if (f === 'name') {
+            mappedFieldErrors.schoolName = reason
+            humanDetails.push(`Step 1 (School Name): ${reason}`)
+            targetStep = 1
+          } else if (f === 'contactEmail') {
+            mappedFieldErrors.contactEmail = 'Please enter a valid email address (e.g. info@school.edu.bd).'
+            humanDetails.push(`Step 1 (Public Email "${contactEmail}"): ${reason}`)
+            targetStep = 1
+          } else if (f === 'contactPhone') {
+            mappedFieldErrors.contactPhone = reason
+            humanDetails.push(`Step 1 (Contact Number): ${reason}`)
+            targetStep = 1
+          } else if (f === 'slug') {
+            mappedFieldErrors.slug = reason
+            humanDetails.push(`Step 2 (Website Address / Slug): ${reason}`)
+            if (targetStep !== 1) targetStep = 2
+          } else {
+            humanDetails.push(`${f || 'Field'}: ${reason}`)
+          }
+        }
+
+        setFieldErrors((prev) => ({ ...prev, ...mappedFieldErrors }))
+        setStep(targetStep)
+        setErrorMessage(`⚠️ Validation Error — ${humanDetails.join(' | ')}`)
       } else {
         setErrorMessage(`⚠️ Registration failed: ${msg || 'Please check your connection and try again.'}`)
       }
