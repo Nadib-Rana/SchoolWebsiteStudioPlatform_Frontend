@@ -103,8 +103,8 @@ export const QUICK_START_CHECKLIST: Array<{
     targetView: 'integrations',
     title: { en: '4. Connect School ERP (Optional)', bn: '৪. School ERP কানেক্ট করুন (ঐচ্ছিক)' },
     detail: {
-      en: 'Paste your ERP Base URL & x-website-key for live admissions and alumni verify.',
-      bn: 'লাইভ অ্যাডমিশন ও Alumni Verify-এর জন্য ERP URL ও x-website-key যুক্ত করুন।',
+      en: 'Paste your Website API Key (x-website-key) for live admissions and alumni verify.',
+      bn: 'লাইভ অ্যাডমিশন ও Alumni Verify-এর জন্য Website API Key (x-website-key) যুক্ত করুন।',
     },
   },
   {
@@ -633,15 +633,15 @@ export const HELP_GUIDES: HelpGuide[] = [
       {
         title: { en: 'Generate API Key in your ERP', bn: '১. ERP ড্যাশবোর্ড থেকে API Key নিন' },
         detail: {
-          en: 'In your ERP Dashboard, go to System → Website Integration, generate a sk_web_... key, and copy your ERP Base URL (e.g. https://erp.school.edu/api/v1).',
-          bn: 'ERP Dashboard → System → Website Integration থেকে sk_web_... কী জেনারেট করুন এবং ERP Base URL কপি করুন।',
+          en: 'In your ERP Dashboard, go to System → Website Integration and copy your sk_web_... Website API Key.',
+          bn: 'ERP Dashboard → System → Website Integration থেকে আপনার sk_web_... Website API Key কপি করুন।',
         },
       },
       {
         title: { en: 'Save & Test Live Connection here', bn: '২. এখানে Save করে Test Live Connection দিন' },
         detail: {
-          en: 'Paste ERP Base URL and x-website-key into the Integrations form, check "Enable Live ERP", and click "Test Live Connection". Keys are encrypted server-side.',
-          bn: 'Integrations ফর্মে ERP Base URL ও API Key দিয়ে "Test Live Connection" ক্লিক করুন। কী সার্ভারে এনক্রিপ্টেড অবস্থায় সেভ হয়।',
+          en: 'Paste your Website API Key (x-website-key) into the Integrations form, check "Enable Live ERP", and click "Test Live Connection". Keys are encrypted server-side.',
+          bn: 'Integrations ফর্মে শুধু আপনার Website API Key (x-website-key) দিয়ে "Test Live Connection" ক্লিক করুন। কী সার্ভারে এনক্রিপ্টেড অবস্থায় সেভ হয়।',
         },
       },
       {

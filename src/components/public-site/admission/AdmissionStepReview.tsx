@@ -29,6 +29,18 @@ export function AdmissionStepReview({
           <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider mb-2">
             Student Summary
           </h4>
+          {formData.photoUrl && (
+            <div className="mb-3 flex items-center gap-3">
+              <img
+                src={formData.photoUrl}
+                alt={fullName || 'Applicant photo'}
+                className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs"
+              />
+              <span className="text-xs text-slate-500">
+                Passport photo attached (ready for Student Profile &amp; ID Card)
+              </span>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2 text-slate-600">
             <div>
               <span className="font-semibold text-slate-800">Name:</span> {fullName}

@@ -8,7 +8,7 @@ import type { IconName } from '@/types/studio'
 import { useCallback, useEffect, useState } from 'react'
 
 interface ErpCredentialsSummary {
-  erpBaseUrl?: string
+  isServerConfigured?: boolean
   apiKeyHint?: string
   hasApiKey?: boolean
   webhookSecretHint?: string
@@ -96,7 +96,6 @@ export function Integrations() {
   const [gatewayRecord, setGatewayRecord] = useState<IntegrationRecord | null>(null)
   const [history, setHistory] = useState<Array<[string, string, string, string]>>([])
 
-  const [erpBaseUrl, setErpBaseUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [webhookSecret, setWebhookSecret] = useState('')
   const [enabled, setEnabled] = useState(true)
@@ -122,7 +121,6 @@ export function Integrations() {
       setGatewayRecord(gateway)
 
       if (erp?.credentials) {
-        setErpBaseUrl(erp.credentials.erpBaseUrl || '')
         setEnabled(erp.credentials.enabled ?? false)
       }
 
@@ -155,15 +153,17 @@ export function Integrations() {
 
   const handleSaveErpConfig = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!erpBaseUrl.trim()) {
-      setTestBanner({ type: 'error', text: 'Please enter your ERP API Base URL.' })
+    if (!apiKey.trim() && !creds?.hasApiKey) {
+      setTestBanner({
+        type: 'error',
+        text: 'Please enter your ERP Website API Key (x-website-key).',
+      })
       return
     }
     setIsSaving(true)
     setTestBanner(null)
     try {
       const credentials: Record<string, any> = {
-        erpBaseUrl: erpBaseUrl.trim(),
         enabled,
       }
       if (apiKey.trim()) {
@@ -200,10 +200,9 @@ export function Integrations() {
     setIsTesting(true)
     setTestBanner(null)
     try {
-      const payload: { erpBaseUrl?: string; apiKey?: string; enabled?: boolean } = {
+      const payload: { apiKey?: string; enabled?: boolean } = {
         enabled,
       }
-      if (erpBaseUrl.trim()) payload.erpBaseUrl = erpBaseUrl.trim()
       if (apiKey.trim()) payload.apiKey = apiKey.trim()
 
       const res = await api.integrations.testErp(payload)
@@ -237,7 +236,9 @@ export function Integrations() {
   }
 
   const creds = erpRecord?.credentials
-  const isErpLive = Boolean(creds?.enabled && creds?.hasApiKey && creds?.erpBaseUrl)
+  const isErpLive = Boolean(
+    creds?.enabled && creds?.hasApiKey && creds?.isServerConfigured !== false,
+  )
   const activeSchoolId = api.getActiveSchoolId()
   const webhookUrl = `${API_BASE_URL}/public/webhooks/erp/${activeSchoolId || 'SCHOOL_ID'}`
 
@@ -269,7 +270,7 @@ export function Integrations() {
         footer={
           erpRecord?.lastSyncAt
             ? `Last verified: ${new Date(erpRecord.lastSyncAt).toLocaleString()}`
-            : 'Configure your ERP API URL and key below'
+            : 'Configure your Website API Key below'
         }
         action={isSyncing ? 'Syncing...' : 'Sync ERP now'}
         onAction={() => handleSync('SCHOOL_ERP')}
@@ -304,7 +305,7 @@ export function Integrations() {
           <div>
             <h3>Connect School ERP (x-website-key)</h3>
             <p>
-              Paste your ERP API Base URL and the <code>sk_web_...</code> key generated from{' '}
+              Paste the <code>sk_web_...</code> Website API Key generated from{' '}
               <strong>ERP → System → Website Integration</strong>. Keys are stored encrypted on the server.
             </p>
           </div>
@@ -315,50 +316,26 @@ export function Integrations() {
           )}
         </div>
 
+        {creds && creds.isServerConfigured === false && (
+          <div className="mt-4 p-3.5 rounded-lg text-sm border bg-amber-50 border-amber-200 text-amber-800">
+            ERP server connection is not yet enabled on this platform. Please contact system support.
+          </div>
+        )}
+
         <form onSubmit={handleSaveErpConfig} className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                ERP API Base URL *
-              </label>
-              <input
-                type="url"
-                required
-                placeholder="https://erp.myschool.edu.bd/api/v1"
-                value={erpBaseUrl}
-                onChange={(e) => setErpBaseUrl(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
-            </div>
-
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
                 Website API Key (x-website-key) {creds?.hasApiKey ? '(leave blank to keep existing)' : '*'}
               </label>
               <input
                 type="password"
+                required={!creds?.hasApiKey}
                 placeholder={creds?.hasApiKey ? creds.apiKeyHint || 'sk_web_••••••••' : 'sk_web_xxxxxxxx...'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                ERP Status Webhook URL (paste into ERP Website Integration)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={webhookUrl}
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-50 text-xs font-mono text-slate-700"
-                />
-                <Button type="button" onClick={handleCopyWebhookUrl}>
-                  {copiedWebhook ? 'Copied' : 'Copy'}
-                </Button>
-              </div>
             </div>
 
             <div>
@@ -376,6 +353,23 @@ export function Integrations() {
                 onChange={(e) => setWebhookSecret(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                ERP Status Webhook URL (paste into ERP Website Integration)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={webhookUrl}
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-50 text-xs font-mono text-slate-700"
+                />
+                <Button type="button" onClick={handleCopyWebhookUrl}>
+                  {copiedWebhook ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
             </div>
           </div>
 

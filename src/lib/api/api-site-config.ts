@@ -85,7 +85,7 @@ export function createSiteConfigEndpoints(session: ApiSession) {
         })
       },
       testErp: async (
-        data?: { erpBaseUrl?: string; apiKey?: string; enabled?: boolean },
+        data?: { apiKey?: string; enabled?: boolean },
         schoolId?: string,
       ) => {
         const id = schoolId || session.getActiveSchoolId()

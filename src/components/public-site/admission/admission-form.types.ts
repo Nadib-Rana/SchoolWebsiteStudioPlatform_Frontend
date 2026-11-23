@@ -26,6 +26,7 @@ export interface AdmissionFormData {
   guardianEmail: string
   address: string
   documentsUrl: string
+  photoUrl: string
   declaration: boolean
 }
 

@@ -82,6 +82,7 @@ export function PublicAdmissionForm({
     guardianEmail: '',
     address: '',
     documentsUrl: '',
+    photoUrl: '',
     declaration: false,
   })
 
@@ -203,6 +204,7 @@ export function PublicAdmissionForm({
         guardianEmail: formData.guardianEmail.trim() || undefined,
         address: formData.address.trim(),
         documentsUrl: formData.documentsUrl.trim() || undefined,
+        photoUrl: formData.photoUrl || undefined,
       })
       if (res.data) setSubmissionResult(res.data)
     } catch (err: unknown) {
@@ -328,6 +330,9 @@ export function PublicAdmissionForm({
                   isErpConnected={isErpConnected}
                   handleInputChange={handleInputChange}
                   onClassSelect={handleClassSelect}
+                  onPhotoChange={(photoUrl) =>
+                    setFormData((prev) => ({ ...prev, photoUrl }))
+                  }
                   onNext={handleNextStep}
                 />
               )}

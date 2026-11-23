@@ -122,6 +122,7 @@ export function createAcademicEndpoints(session: ApiSession) {
         address: string
         documentsUrl?: string
         documents?: Record<string, string>
+        photoUrl?: string
       }) => {
         return session.request<{
           success: boolean

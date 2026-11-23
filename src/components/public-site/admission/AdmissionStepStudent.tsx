@@ -1,7 +1,9 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import { Icon } from '@/components/common/Icon'
 import type { AdmissionFormData, ErpClassOption } from './admission-form.types'
+import { compressStudentPhoto } from './photo-compress'
 
 interface AdmissionStepStudentProps {
   formData: AdmissionFormData
@@ -12,6 +14,7 @@ interface AdmissionStepStudentProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void
   onClassSelect: (classId: string) => void
+  onPhotoChange: (photoUrl: string) => void
   onNext: (e: React.FormEvent) => void
 }
 
@@ -25,8 +28,29 @@ export function AdmissionStepStudent({
   isErpConnected,
   handleInputChange,
   onClassSelect,
+  onPhotoChange,
   onNext,
 }: AdmissionStepStudentProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
+  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setPhotoError(null)
+    setIsCompressingPhoto(true)
+    try {
+      const compressed = await compressStudentPhoto(file)
+      onPhotoChange(compressed)
+    } catch (err: unknown) {
+      setPhotoError(err instanceof Error ? err.message : 'Unable to process photo.')
+    } finally {
+      setIsCompressingPhoto(false)
+    }
+  }
+
   const selectGender = (gender: string) => {
     handleInputChange({
       target: { name: 'gender', value: gender, type: 'text' },
@@ -151,6 +175,66 @@ export function AdmissionStepStudent({
               onChange={handleInputChange}
               className={INPUT_CLASS}
             />
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-slate-200/70">
+          <label className="block text-xs font-semibold text-slate-700 mb-2">
+            Student Passport Photo <span className="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="w-20 h-20 rounded-xl border border-slate-200 bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-xs text-slate-400">
+              {formData.photoUrl ? (
+                <img
+                  src={formData.photoUrl}
+                  alt="Applicant preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Icon name="image" size={24} />
+              )}
+            </div>
+            <div className="flex-1 min-w-[200px] space-y-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/webp,image/jpeg,image/png"
+                onChange={handlePhotoFileChange}
+                className="hidden"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isCompressingPhoto}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3.5 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition disabled:opacity-50"
+                >
+                  {isCompressingPhoto
+                    ? 'Compressing...'
+                    : formData.photoUrl
+                    ? 'Change Photo'
+                    : 'Upload Photo'}
+                </button>
+                {formData.photoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhotoError(null)
+                      onPhotoChange('')
+                    }}
+                    className="px-3 py-2 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-700 transition"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Optional · Passport-size photo (WebP/JPG/PNG, auto-resized to 512px for Student Profile &amp; Smart ID Card).
+              </p>
+              {photoError && (
+                <p className="text-xs font-medium text-rose-600">{photoError}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
