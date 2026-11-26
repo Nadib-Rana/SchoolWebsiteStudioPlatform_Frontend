@@ -4,6 +4,7 @@ import { Button } from '@/components/common/Button'
 import { StateBadge } from '@/components/common/StateBadge'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
+import { revalidatePublicSite } from '@/lib/revalidate-client'
 import { useEffect, useState } from 'react'
 import {
   type ContentFormData,
@@ -29,6 +30,7 @@ export function ContentManager() {
   ])
 
   const [formData, setFormData] = useState<ContentFormData>(INITIAL_CONTENT_FORM_DATA)
+  const [rawAcademics, setRawAcademics] = useState<Record<string, any>>({})
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState('Just now')
 
@@ -47,6 +49,7 @@ export function ContentManager() {
           if (data.profile) {
             const p = data.profile
             const ac = p.academics || {}
+            setRawAcademics(ac)
             setFormData((prev) => ({
               ...prev,
               schoolName: data.school?.name || prev.schoolName,
@@ -69,11 +72,11 @@ export function ContentManager() {
               principalPhotoUrl: p.principalPhotoUrl || prev.principalPhotoUrl,
               curriculum: ac.curriculum || prev.curriculum,
               academicLevels: ac.levels || prev.academicLevels,
-              gradesOffered: ac.grades || prev.gradesOffered,
+              gradesOffered: ac.grades || ac.gradesOffered || prev.gradesOffered,
               classSize: ac.classSize || prev.classSize,
-              subjectsSummary: ac.subjects || prev.subjectsSummary,
-              facilitiesOverview: ac.facilities || prev.facilitiesOverview,
-              achievementsText: ac.achievements || prev.achievementsText,
+              subjectsSummary: ac.subjects || ac.subjectsSummary || prev.subjectsSummary,
+              facilitiesOverview: ac.facilities || ac.facilitiesOverview || prev.facilitiesOverview,
+              achievementsText: ac.achievements || ac.achievementsText || prev.achievementsText,
             }))
           }
         }
@@ -90,6 +93,20 @@ export function ContentManager() {
   const handleSave = async (publish = false) => {
     setSaving(true)
     try {
+      const nextAcademics = {
+        ...rawAcademics,
+        curriculum: formData.curriculum,
+        levels: formData.academicLevels,
+        grades: formData.gradesOffered,
+        gradesOffered: formData.gradesOffered,
+        classSize: formData.classSize,
+        subjects: formData.subjectsSummary,
+        subjectsSummary: formData.subjectsSummary,
+        facilities: formData.facilitiesOverview,
+        facilitiesOverview: formData.facilitiesOverview,
+        achievements: formData.achievementsText,
+        achievementsText: formData.achievementsText,
+      }
       await api.content.update({
         schoolName: formData.schoolName,
         schoolType: formData.schoolType,
@@ -111,16 +128,10 @@ export function ContentManager() {
         principalTitle: formData.principalTitle,
         principalBio: formData.principalBio,
         principalPhotoUrl: formData.principalPhotoUrl || undefined,
-        academics: {
-          curriculum: formData.curriculum,
-          levels: formData.academicLevels,
-          grades: formData.gradesOffered,
-          classSize: formData.classSize,
-          subjects: formData.subjectsSummary,
-          facilities: formData.facilitiesOverview,
-          achievements: formData.achievementsText,
-        },
+        academics: nextAcademics,
       })
+      setRawAcademics(nextAcademics)
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       setLastSaved(
         new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       )

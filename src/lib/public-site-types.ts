@@ -60,6 +60,12 @@ export interface GoverningBodyConfig {
   subtitle?: string
   columns?: 2 | 3 | 4
   compactLimit?: number
+  cardStyle?: 'horizontal' | 'portrait' | 'executive' | 'minimal'
+  photoShape?: 'rounded' | 'circle' | 'square'
+  sectionBg?: string
+  cardBg?: string
+  accentColor?: string
+  cardElevation?: 'flat' | 'soft' | 'elevated'
 }
 
 export interface NoticeData {

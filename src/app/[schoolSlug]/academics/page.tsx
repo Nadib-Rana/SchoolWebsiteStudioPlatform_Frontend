@@ -16,24 +16,50 @@ export default async function SchoolAcademicsPage({ params }: PageProps) {
   }
 
   const schoolName = siteData.school.name
-  const profileAcademics = (siteData.profile?.academics as Record<string, string>) || {}
+  const profileAcademics = (siteData.profile?.academics as Record<string, any>) || {}
+
+  const heroKicker =
+    (typeof profileAcademics.heroKicker === 'string' &&
+      profileAcademics.heroKicker.trim()) ||
+    'CURRICULUM & SCHOLARSHIP'
+  const heroTitle =
+    (typeof profileAcademics.heroTitle === 'string' &&
+      profileAcademics.heroTitle.trim()) ||
+    `Academic Programs at ${schoolName}`
+  const heroSubtitle =
+    (typeof profileAcademics.heroSubtitle === 'string' &&
+      profileAcademics.heroSubtitle.trim()) ||
+    'Inspiring students toward intellectual curiosity, critical thinking, and character-driven leadership.'
+  const frameworkKicker =
+    (typeof profileAcademics.frameworkKicker === 'string' &&
+      profileAcademics.frameworkKicker.trim()) ||
+    'LEARNING FRAMEWORK'
+  const frameworkHeading =
+    (typeof profileAcademics.frameworkHeading === 'string' &&
+      profileAcademics.frameworkHeading.trim()) ||
+    'A structured continuum of excellence.'
 
   const curriculum =
     profileAcademics.curriculum ||
     'National Standard Curriculum complemented by international STEM and inquiry-based learning modules.'
   const gradesOffered =
-    profileAcademics.gradesOffered || 'Kindergarten through Grade 12'
+    profileAcademics.grades ||
+    profileAcademics.gradesOffered ||
+    'Kindergarten through Grade 12'
   const subjectsSummary =
+    profileAcademics.subjects ||
     profileAcademics.subjectsSummary ||
     'Core disciplines in Mathematics, Natural Sciences, Computing & Robotics, Language Arts, Social Sciences, Visual Arts, and Physical Education.'
   const facilitiesOverview =
+    profileAcademics.facilities ||
     profileAcademics.facilitiesOverview ||
     'State-of-the-art physics, chemistry, and biology laboratories, high-speed digital computing center, multimedia library, indoor sports pavilion, and creative arts studio.'
   const achievements =
+    profileAcademics.achievements ||
     profileAcademics.achievementsText ||
     'Consistently ranked in the top academic tier for college readiness, national Olympiad honors, and regional robotics championships.'
 
-  const academicTiers = [
+  const defaultAcademicTiers = [
     {
       level: 'Primary Years (Grades 1–5)',
       desc: 'Building fundamental literacy, numerical fluency, scientific curiosity, and emotional intelligence in a collaborative environment.',
@@ -51,14 +77,26 @@ export default async function SchoolAcademicsPage({ params }: PageProps) {
     },
   ]
 
+  const savedPrograms = Array.isArray(profileAcademics.programs)
+    ? profileAcademics.programs.filter(
+        (p: any) =>
+          p &&
+          typeof p.level === 'string' &&
+          p.level.trim() &&
+          typeof p.desc === 'string' &&
+          p.desc.trim(),
+      )
+    : []
+
+  const academicTiers =
+    savedPrograms.length > 0 ? savedPrograms : defaultAcademicTiers
+
   return (
     <main className="inner-page">
       <section className="inner-hero">
-        <span>CURRICULUM & SCHOLARSHIP</span>
-        <h1>Academic Programs at {schoolName}</h1>
-        <p>
-          Inspiring students toward intellectual curiosity, critical thinking, and character-driven leadership.
-        </p>
+        <span>{heroKicker}</span>
+        <h1>{heroTitle}</h1>
+        <p>{heroSubtitle}</p>
         <div className="breadcrumb">
           <Link href={`/${schoolSlug}`} className="hover:underline">
             Home
@@ -69,9 +107,9 @@ export default async function SchoolAcademicsPage({ params }: PageProps) {
 
       {/* Program Milestones Grid */}
       <section className="max-w-6xl mx-auto px-6 py-12">
-        <span className="section-kicker">LEARNING FRAMEWORK</span>
+        <span className="section-kicker">{frameworkKicker}</span>
         <h2 className="text-3xl font-extrabold text-slate-900 mb-8">
-          A structured continuum of excellence.
+          {frameworkHeading}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">

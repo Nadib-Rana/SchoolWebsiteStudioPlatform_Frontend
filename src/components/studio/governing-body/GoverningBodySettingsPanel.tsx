@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/common/Button'
-import { Icon } from '@/components/common/Icon'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import type { GoverningBodyConfig } from '@/lib/public-site-types'
@@ -19,6 +18,12 @@ const DEFAULT_CONFIG: Required<GoverningBodyConfig> = {
   subtitle: '',
   columns: 3,
   compactLimit: 6,
+  cardStyle: 'horizontal',
+  photoShape: 'rounded',
+  sectionBg: '',
+  cardBg: '',
+  accentColor: '',
+  cardElevation: 'soft',
 }
 
 export function GoverningBodySettingsPanel() {
@@ -56,6 +61,25 @@ export function GoverningBodySettingsPanel() {
               saved.columns === 2 || saved.columns === 4 ? saved.columns : 3,
             compactLimit:
               typeof saved.compactLimit === 'number' ? saved.compactLimit : 6,
+            cardStyle:
+              saved.cardStyle === 'portrait' ||
+              saved.cardStyle === 'executive' ||
+              saved.cardStyle === 'minimal'
+                ? saved.cardStyle
+                : 'horizontal',
+            photoShape:
+              saved.photoShape === 'circle' || saved.photoShape === 'square'
+                ? saved.photoShape
+                : 'rounded',
+            sectionBg:
+              typeof saved.sectionBg === 'string' ? saved.sectionBg : '',
+            cardBg: typeof saved.cardBg === 'string' ? saved.cardBg : '',
+            accentColor:
+              typeof saved.accentColor === 'string' ? saved.accentColor : '',
+            cardElevation:
+              saved.cardElevation === 'flat' || saved.cardElevation === 'elevated'
+                ? saved.cardElevation
+                : 'soft',
           })
         } else if (mounted) {
           setConfig(DEFAULT_CONFIG)
@@ -91,6 +115,12 @@ export function GoverningBodySettingsPanel() {
             subtitle: nextConfig.subtitle.trim(),
             columns: nextConfig.columns,
             compactLimit: Number(nextConfig.compactLimit),
+            cardStyle: nextConfig.cardStyle,
+            photoShape: nextConfig.photoShape,
+            sectionBg: nextConfig.sectionBg.trim(),
+            cardBg: nextConfig.cardBg.trim(),
+            accentColor: nextConfig.accentColor.trim(),
+            cardElevation: nextConfig.cardElevation,
           },
         },
       })
@@ -145,9 +175,9 @@ export function GoverningBodySettingsPanel() {
             <span style={{ fontSize: '12px', color: '#64748b' }}>
               {loading
                 ? 'Loading preferences...'
-                : `Homepage: ${config.showOnHome && config.enabled ? 'On' : 'Off'} · About Page: ${
+                : `Homepage: ${config.showOnHome && config.enabled ? 'On' : 'Off'} · About: ${
                     config.showOnAbout && config.enabled ? 'On' : 'Off'
-                  } · Columns: ${config.columns}`}
+                  } · Style: ${config.cardStyle} · ${config.columns} Cols`}
             </span>
           </div>
         </div>
@@ -295,7 +325,7 @@ export function GoverningBodySettingsPanel() {
             <label>
               Custom Section &amp; Page Title
               <input
-                placeholder="e.g. Governing Body / Managing Committee (SMC)"
+                placeholder="e.g. Governing Body / Advisory Board / Managing Committee"
                 value={config.title}
                 onChange={(e) =>
                   setConfig((prev) => ({ ...prev, title: e.target.value }))
@@ -353,6 +383,179 @@ export function GoverningBodySettingsPanel() {
 
           <div
             style={{
+              marginTop: '18px',
+              paddingTop: '16px',
+              borderTop: '1px solid #e2e8f0',
+            }}
+          >
+            <strong
+              style={{
+                display: 'block',
+                fontSize: '13px',
+                color: '#0f172a',
+                marginBottom: '12px',
+              }}
+            >
+              Card Style &amp; Visual Appearance (Advisory Board / Committee Cards)
+            </strong>
+            <div className="form-grid">
+              <label>
+                Card Layout Style
+                <select
+                  value={config.cardStyle}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      cardStyle: e.target.value as NonNullable<GoverningBodyConfig['cardStyle']>,
+                    }))
+                  }
+                >
+                  <option value="horizontal">Horizontal (Photo Left)</option>
+                  <option value="portrait">Portrait (Centered Vertical Card)</option>
+                  <option value="executive">Executive (Top Color Accent Bar)</option>
+                  <option value="minimal">Minimal (Soft Clean Surface)</option>
+                </select>
+              </label>
+
+              <label>
+                Photo Frame Shape
+                <select
+                  value={config.photoShape}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      photoShape: e.target.value as NonNullable<GoverningBodyConfig['photoShape']>,
+                    }))
+                  }
+                >
+                  <option value="rounded">Rounded Portrait (Default)</option>
+                  <option value="circle">Circle Avatar</option>
+                  <option value="square">Sharp Square</option>
+                </select>
+              </label>
+
+              <label>
+                Card Shadow &amp; Elevation
+                <select
+                  value={config.cardElevation}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      cardElevation: e.target.value as NonNullable<GoverningBodyConfig['cardElevation']>,
+                    }))
+                  }
+                >
+                  <option value="flat">Flat (Clean Border)</option>
+                  <option value="soft">Soft Shadow (Default)</option>
+                  <option value="elevated">Elevated Depth Shadow</option>
+                </select>
+              </label>
+
+              <label>
+                Section Background Color
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="color"
+                    value={config.sectionBg || '#ffffff'}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, sectionBg: e.target.value }))
+                    }
+                    className="w-10 h-9 p-0.5 rounded border border-slate-200 cursor-pointer shrink-0"
+                  />
+                  <input
+                    type="text"
+                    placeholder="#ffffff (default)"
+                    value={config.sectionBg}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, sectionBg: e.target.value }))
+                    }
+                  />
+                  {config.sectionBg && (
+                    <button
+                      type="button"
+                      onClick={() => setConfig((prev) => ({ ...prev, sectionBg: '' }))}
+                      className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </label>
+
+              <label>
+                Card Background Color
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="color"
+                    value={config.cardBg || '#ffffff'}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, cardBg: e.target.value }))
+                    }
+                    className="w-10 h-9 p-0.5 rounded border border-slate-200 cursor-pointer shrink-0"
+                  />
+                  <input
+                    type="text"
+                    placeholder="#ffffff (default)"
+                    value={config.cardBg}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, cardBg: e.target.value }))
+                    }
+                  />
+                  {config.cardBg && (
+                    <button
+                      type="button"
+                      onClick={() => setConfig((prev) => ({ ...prev, cardBg: '' }))}
+                      className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </label>
+
+              <label>
+                Accent / Designation Badge Color
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="color"
+                    value={config.accentColor || '#102f58'}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        accentColor: e.target.value,
+                      }))
+                    }
+                    className="w-10 h-9 p-0.5 rounded border border-slate-200 cursor-pointer shrink-0"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Theme primary color"
+                    value={config.accentColor}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        accentColor: e.target.value,
+                      }))
+                    }
+                  />
+                  {config.accentColor && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setConfig((prev) => ({ ...prev, accentColor: '' }))
+                      }
+                      className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div
+            style={{
               display: 'flex',
               justifyContent: 'flex-end',
               gap: '10px',
@@ -368,7 +571,7 @@ export function GoverningBodySettingsPanel() {
               onClick={() =>
                 persistConfig(
                   config,
-                  'Governing Body visibility & customization settings saved!',
+                  'Governing Body visibility & style settings saved!',
                 )
               }
               disabled={saving}
@@ -381,4 +584,3 @@ export function GoverningBodySettingsPanel() {
     </div>
   )
 }
-

@@ -114,6 +114,30 @@ export function GoverningBodySection({
   const compactLimit =
     typeof config?.compactLimit === 'number' ? config.compactLimit : 6
 
+  const cardStyle = config?.cardStyle || 'horizontal'
+  const photoShape = config?.photoShape || 'rounded'
+  const cardElevation = config?.cardElevation || 'soft'
+  const sectionBg = config?.sectionBg?.trim() || undefined
+  const customCardBg = config?.cardBg?.trim() || undefined
+  const accentColor = config?.accentColor?.trim() || 'var(--navy, #102f58)'
+  const hasCustomAccent = Boolean(config?.accentColor?.trim())
+
+  const shapeClass =
+    photoShape === 'circle'
+      ? 'rounded-full'
+      : photoShape === 'square'
+      ? 'rounded-none'
+      : cardStyle === 'portrait' || cardStyle === 'executive'
+      ? 'rounded-2xl'
+      : 'rounded-xl'
+
+  const elevationClass =
+    cardElevation === 'flat'
+      ? 'shadow-none'
+      : cardElevation === 'elevated'
+      ? 'shadow-lg hover:shadow-xl'
+      : 'shadow-sm hover:shadow-md'
+
   const visibleByCategory =
     mode === 'full' && selectedCategory !== 'ALL'
       ? members.filter((m) => (m.category || 'GOVERNING_BODY') === selectedCategory)
@@ -135,7 +159,10 @@ export function GoverningBodySection({
       : remainingMembers
 
   return (
-    <section className="py-16 px-6 bg-white border-t border-slate-100">
+    <section
+      className="py-16 px-6 bg-white border-t border-slate-100"
+      style={sectionBg ? { background: sectionBg } : undefined}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
@@ -152,8 +179,8 @@ export function GoverningBodySection({
             <Link
               href={`/${schoolSlug}/governing-body`}
               style={{
-                borderColor: 'var(--navy, #102f58)',
-                color: 'var(--navy, #102f58)',
+                borderColor: accentColor,
+                color: accentColor,
               }}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold hover:bg-slate-50 transition self-start md:self-auto"
             >
@@ -168,8 +195,7 @@ export function GoverningBodySection({
               type="button"
               onClick={() => setSelectedCategory('ALL')}
               style={{
-                background:
-                  selectedCategory === 'ALL' ? 'var(--navy, #102f58)' : undefined,
+                background: selectedCategory === 'ALL' ? accentColor : undefined,
               }}
               className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
                 selectedCategory === 'ALL'
@@ -185,8 +211,7 @@ export function GoverningBodySection({
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
                 style={{
-                  background:
-                    selectedCategory === cat ? 'var(--navy, #102f58)' : undefined,
+                  background: selectedCategory === cat ? accentColor : undefined,
                 }}
                 className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
                   selectedCategory === cat
@@ -201,9 +226,20 @@ export function GoverningBodySection({
         )}
 
         {featuredMember && (
-          <div className="mb-10 rounded-2xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8 shadow-sm">
+          <div
+            className="mb-10 rounded-2xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8 shadow-sm"
+            style={customCardBg ? { background: customCardBg } : undefined}
+          >
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
-              <div className="w-36 h-44 sm:w-40 sm:h-48 rounded-2xl overflow-hidden shrink-0 border-4 border-white shadow-md bg-slate-200 flex items-center justify-center">
+              <div
+                className={`${
+                  photoShape === 'circle'
+                    ? 'w-36 h-36 sm:w-40 sm:h-40 rounded-full'
+                    : photoShape === 'square'
+                    ? 'w-36 h-44 sm:w-40 sm:h-48 rounded-none'
+                    : 'w-36 h-44 sm:w-40 sm:h-48 rounded-2xl'
+                } overflow-hidden shrink-0 border-4 border-white shadow-md bg-slate-200 flex items-center justify-center`}
+              >
                 {featuredMember.photoUrl ? (
                   <img
                     src={featuredMember.photoUrl}
@@ -212,7 +248,7 @@ export function GoverningBodySection({
                   />
                 ) : (
                   <span
-                    style={{ background: 'var(--navy, #102f58)' }}
+                    style={{ background: accentColor }}
                     className="w-full h-full flex items-center justify-center text-white text-3xl font-bold"
                   >
                     {getInitials(featuredMember.name)}
@@ -266,49 +302,104 @@ export function GoverningBodySection({
 
         {gridMembers.length > 0 && (
           <div className={`grid ${gridColsClass} gap-6`}>
-            {gridMembers.map((member, idx) => (
-              <article
-                key={member.id}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4"
-              >
-                <div className="w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100 flex items-center justify-center">
-                  {member.photoUrl ? (
-                    <img
-                      src={member.photoUrl}
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className={`faculty-photo fp${idx % 4} w-full h-full flex items-center justify-center text-lg font-bold`}>
-                      {getInitials(member.name)}
-                    </div>
-                  )}
-                </div>
+            {gridMembers.map((member, idx) => {
+              const isVertical = cardStyle === 'portrait' || cardStyle === 'executive'
+              const isExecutive = cardStyle === 'executive'
+              const isMinimal = cardStyle === 'minimal'
 
-                <div className="min-w-0 flex-1">
-                  <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md">
-                    {member.designation}
-                  </span>
-                  <h4 className="mt-1.5 text-base font-bold text-slate-900 leading-snug">
-                    {member.name}
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {getCategoryLabel(member.category)}
-                    {member.termPeriod ? ` · ${member.termPeriod}` : ''}
-                  </p>
-                  {member.qualification && (
-                    <p className="text-xs text-slate-600 italic mt-1">
-                      {member.qualification}
-                    </p>
+              const cardSurfaceClass = isMinimal
+                ? 'rounded-2xl border border-slate-100 bg-slate-50/80 p-5'
+                : isExecutive
+                ? 'rounded-2xl border border-slate-200 bg-white overflow-hidden'
+                : 'rounded-2xl border border-slate-200 bg-white p-5'
+
+              const photoSizeClass = isVertical
+                ? photoShape === 'circle'
+                  ? 'w-28 h-28'
+                  : 'w-28 h-32'
+                : photoShape === 'circle'
+                ? 'w-20 h-20'
+                : 'w-20 h-24'
+
+              const badgeStyle = hasCustomAccent
+                ? {
+                    background: accentColor,
+                    color: '#ffffff',
+                  }
+                : undefined
+
+              return (
+                <article
+                  key={member.id}
+                  className={`${cardSurfaceClass} ${elevationClass} transition-shadow`}
+                  style={customCardBg ? { background: customCardBg } : undefined}
+                >
+                  {isExecutive && (
+                    <div
+                      className="h-2 w-full"
+                      style={{ background: accentColor }}
+                    />
                   )}
-                  {member.message && (
-                    <p className="text-xs text-slate-600 mt-2 line-clamp-3">
-                      {member.message}
-                    </p>
-                  )}
-                </div>
-              </article>
-            ))}
+
+                  <div
+                    className={
+                      isVertical
+                        ? `${isExecutive ? 'p-6' : ''} flex flex-col items-center text-center gap-3.5`
+                        : 'flex items-start gap-4'
+                    }
+                  >
+                    <div
+                      className={`${photoSizeClass} ${shapeClass} overflow-hidden shrink-0 border border-slate-200 bg-slate-100 flex items-center justify-center`}
+                    >
+                      {member.photoUrl ? (
+                        <img
+                          src={member.photoUrl}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`faculty-photo fp${idx % 4} w-full h-full flex items-center justify-center text-lg font-bold`}
+                          style={
+                            hasCustomAccent
+                              ? { background: accentColor, color: '#ffffff' }
+                              : undefined
+                          }
+                        >
+                          {getInitials(member.name)}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className="inline-block text-[10px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 px-2.5 py-0.5 rounded-md"
+                        style={badgeStyle}
+                      >
+                        {member.designation}
+                      </span>
+                      <h4 className="mt-1.5 text-base font-bold text-slate-900 leading-snug">
+                        {member.name}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {getCategoryLabel(member.category)}
+                        {member.termPeriod ? ` · ${member.termPeriod}` : ''}
+                      </p>
+                      {member.qualification && (
+                        <p className="text-xs text-slate-600 italic mt-1">
+                          {member.qualification}
+                        </p>
+                      )}
+                      {member.message && (
+                        <p className="text-xs text-slate-600 mt-2 line-clamp-3">
+                          {member.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         )}
       </div>
