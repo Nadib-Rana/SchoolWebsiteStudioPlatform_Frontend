@@ -381,6 +381,65 @@ export const HELP_GUIDES: HelpGuide[] = [
     ],
   },
   {
+    id: 'governing-body',
+    view: 'governing-body',
+    category: 'content',
+    estimatedTime: '2 min',
+    roles: EDIT_ROLES,
+    title: {
+      en: 'Governing Body & Managing Committee',
+      bn: 'গভর্নিং বডি ও ম্যানেজিং কমিটি (SMC)',
+    },
+    summary: {
+      en: 'Publish Chairman spotlight, Managing Committee (SMC) / Governing Body members, and control section visibility & custom titles.',
+      bn: 'চেয়ারম্যান স্পটলাইট, ম্যানেজিং কমিটি (SMC) বা গভর্নিং বডির সদস্য যোগ করুন এবং পেজ/সেকশন কাস্টমাইজ ও On/Off করুন।',
+    },
+    steps: [
+      {
+        title: {
+          en: 'Add committee members with roles & term period',
+          bn: 'পদবি ও মেয়াদকালসহ কমিটির সদস্য যোগ করুন',
+        },
+        detail: {
+          en: 'Click "Add member", upload a portrait photo, pick or type a designation (Chairman, President, Member Secretary, Guardian Representative, Donor Member), select a committee category (Governing Body, Managing Committee (SMC), Board of Trustees, Advisory Board), enter Term Period (e.g. 2025–2027), and toggle "Highlight as Chairman / President Spotlight" for featured leaders.',
+          bn: '"Add member" ক্লিক করে ছবি আপলোড করুন, পদবি (Chairman, President, Member Secretary, Guardian Representative ইত্যাদি), কমিটির ধরন (Governing Body / Managing Committee (SMC) / Board of Trustees / Advisory Board), মেয়াদকাল (যেমন 2025–2027) এবং চাইলে Chairman Spotlight অপশন চালু করুন।',
+        },
+      },
+      {
+        title: {
+          en: '1-Click On/Off & Customize Visibility/Layout',
+          bn: '১ ক্লিকে On/Off ও টাইটেল/লেআউট কাস্টমাইজ করুন',
+        },
+        detail: {
+          en: 'Use the top "Page & Section Visibility / Customization" panel (and Settings → Website) to toggle the /{schoolSlug}/governing-body page ON/OFF, show/hide on Homepage or About page, toggle Chairman Spotlight & public phone/email, customize Kicker/Title/Subtitle, and choose 2/3/4-column layout or Homepage/About member limit (3, 6, 9, or All).',
+          bn: 'এই স্ক্রিনের উপরের "Page & Section Visibility / Customization" প্যানেল (এবং Settings → Website) থেকে ১ ক্লিকে /{schoolSlug}/governing-body পেজ On/Off, Homepage ও About পেজে দেখানো বা লুকানো, Chairman Spotlight ও ফোন/ইমেইল হাইড/শো, কাস্টম টাইটেল/সাবটাইটেল এবং ২/৩/৪ কলাম গ্রিড সেট করতে পারবেন।',
+        },
+      },
+      {
+        title: {
+          en: 'Link Governing Body in Header or Footer Menu',
+          bn: 'হেডার বা ফুটার মেনুতে পেজটি যুক্ত করুন',
+        },
+        detail: {
+          en: 'Open Navigation, choose the "Governing Body (/governing-body)" preset link, and save so visitors can jump directly to the full committee directory with category filters.',
+          bn: 'Navigation স্ক্রিনে গিয়ে "Governing Body (/governing-body)" প্রিসেট লিংকটি হেডার বা ফুটারে যুক্ত করুন, যাতে ভিজিটররা সরাসরি ক্যাটাগরি ফিল্টারসহ পুরো কমিটি দেখতে পারেন।',
+        },
+      },
+    ],
+    troubleshooting: [
+      {
+        q: {
+          en: 'Why is the Governing Body section not appearing on the Homepage or About page?',
+          bn: 'হোমপেজ বা About পেজে গভর্নিং বডি সেকশন না দেখালে কী করব?',
+        },
+        a: {
+          en: 'Check two things: (1) At least one member must have status "Published" (Active) in this table, and (2) both the master toggle and "Show on Homepage" / "Show on About Page" must be enabled in the Customize & Visibility panel above.',
+          bn: 'দুটি বিষয় নিশ্চিত করুন: (১) তালিকায় অন্তত একজন সদস্য "Published" অবস্থায় আছে, এবং (২) উপরের Customize & Visibility প্যানেলে মাস্টার টগল ও "Show on Homepage" / "Show on About Page" চালু (On) আছে।',
+        },
+      },
+    ],
+  },
+  {
     id: 'academics',
     view: 'academics',
     category: 'content',
@@ -540,10 +599,10 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Choose menu location', bn: 'মেনু লোকেশন সিলেক্ট করুন' },
+        title: { en: 'Choose menu location & preset links', bn: 'মেনু লোকেশন ও প্রিসেট লিংক সিলেক্ট করুন' },
         detail: {
-          en: 'Switch between Header and Footer menus, reorder links, or add external portal URLs (e.g. ERP Login).',
-          bn: 'Header বা Footer মেনু সিলেক্ট করে লিংক সাজান বা এক্সটার্নাল লিংক (যেমন ERP Login) যোগ করুন।',
+          en: 'Switch between Header and Footer menus, pick built-in school pages (including Governing Body at /governing-body), reorder links, or add external portal URLs (e.g. ERP Login).',
+          bn: 'Header বা Footer মেনু সিলেক্ট করে স্কুলের প্রিসেট পেজ (যেমন Governing Body /governing-body) বা এক্সটার্নাল লিংক (যেমন ERP Login) যুক্ত ও সাজিয়ে নিন।',
         },
       },
       {
@@ -568,10 +627,13 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Public admission portal, Class-Wise Fees, Online Payment & PDF Receipt', bn: 'পাবলিক অ্যাডমিশন, ক্লাস-ভিত্তিক ফি, অনলাইন পেমেন্ট ও PDF রিসিট' },
+        title: {
+          en: 'Online Admissions, Fees, Payment & Single-Page A4 PDF Slip',
+          bn: 'অনলাইন অ্যাডমিশন, ফি, পেমেন্ট ও সিঙ্গেল-পেজ A4 PDF স্লিপ',
+        },
         detail: {
-          en: 'Parents apply at /{schoolSlug}/admissions with class-wise admission fees shown automatically, optional student passport photo (512px WebP), Birth Registration & parent details, and instant Online Payment (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe) or Manual TrxID submission. Live tracking also displays payment status and printable A4 PDF receipts.',
-          bn: 'অভিভাবকরা /{schoolSlug}/admissions থেকে ক্লাস-ভিত্তিক ফি দেখে, শিক্ষার্থীর ছবি (512px WebP), জন্ম নিবন্ধন ও মা-বাবার তথ্যসহ আবেদন করে সরাসরি অনলাইন পেমেন্ট (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe) বা ম্যানুয়াল TrxID দিতে পারবেন। ট্র্যাকিং পেজ ও PDF রিসিটেও পেমেন্ট স্ট্যাটাস দেখা যাবে।',
+          en: 'Parents apply at /{schoolSlug}/admissions with class-wise admission fees shown automatically, passport photo (preserved across payment redirects and status tracking), Birth Registration & parent details, and instant Online Payment (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe) or Manual TrxID submission. Both the Admission Confirmation Receipt and Status Slip print cleanly on a single A4 page with school logo, applicant photo, PAID/UNPAID/VERIFYING stamp, 4 structured detail/fee cards, and signature lines.',
+          bn: 'অভিভাবকরা /{schoolSlug}/admissions থেকে ক্লাস-ভিত্তিক ফি দেখে শিক্ষার্থীর পাসপোর্ট সাইজ ছবি, জন্ম নিবন্ধন ও মা-বাবার তথ্যসহ আবেদন করে অনলাইন পেমেন্ট (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe) বা ম্যানুয়াল TrxID দিতে পারবেন। আবেদন ও ট্র্যাকিং উভয় জায়গা থেকেই স্কুলের লোগো, শিক্ষার্থীর ছবি, PAID/UNPAID/VERIFYING স্ট্যাম্প, ৪টি কাঠামোবদ্ধ সেকশন কার্ড ও স্বাক্ষর লাইনসহ এক পেজের A4 PDF রিসিট প্রিন্ট করা যায়।',
         },
       },
       {
@@ -842,10 +904,13 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Control Admissions, Notice Ticker, Separate WhatsApp / Call Buttons & Maintenance Mode', bn: 'অ্যাডমিশন, নোটিশ বার, আলাদা WhatsApp ও Call বাটন এবং মেইনটেন্যান্স কন্ট্রোল' },
+        title: {
+          en: 'Control Admissions, Governing Body, Notice Ticker, WhatsApp / Call Buttons & Maintenance Mode',
+          bn: 'অ্যাডমিশন, গভর্নিং বডি, নোটিশ বার, WhatsApp / Call বাটন ও মেইনটেন্যান্স কন্ট্রোল',
+        },
         detail: {
-          en: 'In Website Preferences, toggle Public Admissions Portal, Latest Notices Ticker Bar, Floating WhatsApp Button (with editable WhatsApp number), Floating Phone Call Button (with editable Call Office phone number), or Maintenance Mode ON/OFF independently anytime. Maintenance Mode applies immediately (0-second live switch), warns admins inside Studio Preview, and blocks public Admission & Contact submissions.',
-          bn: 'Website Preferences থেকে Public Admissions, Latest Notices চলমান বার, Floating WhatsApp বাটন (আলাদা নম্বরের ইনপুটসহ), Floating Phone Call বাটন (আলাদা নম্বরের ইনপুটসহ) এবং Maintenance Mode আলাদাভাবে On/Off করা যাবে। Maintenance Mode চালু করলে সাথে সাথেই লাইভ সাইটে মেইনটেন্যান্স স্ক্রিন আসে এবং পাবলিক ফর্ম জমা নেওয়া বন্ধ থাকে।',
+          en: 'In Website Preferences, toggle Public Admissions Portal, Governing Body / Managing Committee (full title, Homepage/About visibility, and grid layout can also be customized under Governing Body → Customize & Visibility), Latest Notices Ticker Bar, Floating WhatsApp Button (with editable WhatsApp number), Floating Phone Call Button (with editable Call Office phone number), or Maintenance Mode ON/OFF independently anytime. Maintenance Mode applies immediately (0-second live switch), warns admins inside Studio Preview, and blocks public Admission & Contact submissions.',
+          bn: 'Website Preferences থেকে Public Admissions, Governing Body / Managing Committee (পূর্ণ টাইটেল, Homepage/About দৃশ্যমানতা ও গ্রিড লেআউট Governing Body → Customize & Visibility থেকে কাস্টমাইজ করা যাবে), Latest Notices চলমান বার, Floating WhatsApp বাটন, Floating Phone Call বাটন এবং Maintenance Mode আলাদাভাবে On/Off করা যাবে। Maintenance Mode চালু করলে সাথে সাথেই লাইভ সাইটে মেইনটেন্যান্স স্ক্রিন আসে এবং পাবলিক ফর্ম জমা নেওয়া বন্ধ থাকে।',
         },
       },
     ],
