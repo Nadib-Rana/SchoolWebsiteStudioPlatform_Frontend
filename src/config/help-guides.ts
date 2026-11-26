@@ -156,6 +156,13 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
+        title: { en: 'Quick-Search any page or setting in the Header (Ctrl + K)', bn: 'হেডার সার্চ দিয়ে যেকোনো অপশন দ্রুত খুঁজুন (Ctrl + K)' },
+        detail: {
+          en: 'Use the search bar in the top Studio Header (or press Ctrl+K / Cmd+K) to jump straight to Governing Body, Advisory Board card styles, Academics, ERP Login & Footer social links, Admissions, or Maintenance Mode.',
+          bn: 'উপরের Studio হেডারের সার্চ বক্স (অথবা Ctrl+K) ব্যবহার করে এক ক্লিকেই Governing Body, Advisory Board কার্ড স্টাইল, Academics, ERP Login ও Footer সোশ্যাল লিংক বা Maintenance Mode-এ চলে যান।',
+        },
+      },
+      {
         title: { en: 'Use Shift + ? anywhere for instant help', bn: 'যেকোনো পেজে Shift + ? চাপুন' },
         detail: {
           en: 'Press Shift + ? on any screen to open step-by-step instructions tailored to that exact page.',
@@ -344,10 +351,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Update contact & principal profile', bn: 'যোগাযোগ ও প্রিন্সিপালের তথ্য দিন' },
+        title: { en: 'Update contact, principal profile & ERP / social links', bn: 'যোগাযোগ, প্রিন্সিপাল ও ERP / সোশ্যাল লিংক দিন' },
         detail: {
-          en: 'Keep address, phone, email, and office hours accurate — they automatically power your redesigned Contact page (/{schoolSlug}/contact) with interactive contact cards, quick-action buttons (Directions, Call, WhatsApp, Email), embedded campus map, and theme primary-color styling.',
-          bn: 'ঠিকানা, ফোন, ইমেইল ও অফিস সময় ঠিক রাখুন—এগুলো অটোমেটিক আপনার থিমের প্রাইমারি কালারে সাজানো নতুন Contact পেজ (/{schoolSlug}/contact)-এর ইন্টারেক্টিভ কার্ড, কুইক-অ্যাকশন লিংক (Directions, Call, WhatsApp, Email) এবং Google Map কার্ডে দেখাবে।',
+          en: 'Keep address, phone, email, and office hours accurate for /{schoolSlug}/contact, and add your ERP Login URL + Facebook, YouTube, Instagram, LinkedIn, X, and Official Website links under "ERP Login & Public Social Profile Links" (saved per-school in PostgreSQL) to display icons in the Footer and an ERP Login button in both Header & Footer.',
+          bn: 'ঠিকানা, ফোন, ইমেইল ও অফিস সময় /{schoolSlug}/contact পেজের জন্য ঠিক রাখুন এবং "ERP Login & Public Social Profile Links" অংশে ERP Login URL ও Facebook, YouTube, Instagram, LinkedIn, X, Official Website লিংক দিন—এগুলো প্রতি স্কুলের জন্য আলাদাভাবে ডাটাবেসে সেভ থাকে এবং Header ও Footer-এ অটোমেটিক দেখায়।',
         },
       },
     ],
@@ -387,12 +394,12 @@ export const HELP_GUIDES: HelpGuide[] = [
     estimatedTime: '2 min',
     roles: EDIT_ROLES,
     title: {
-      en: 'Governing Body & Managing Committee',
-      bn: 'গভর্নিং বডি ও ম্যানেজিং কমিটি (SMC)',
+      en: 'Governing Body, Advisory Board & Managing Committee',
+      bn: 'গভর্নিং বডি, অ্যাডভাইজরি বোর্ড ও ম্যানেজিং কমিটি (SMC)',
     },
     summary: {
-      en: 'Publish Chairman spotlight, Managing Committee (SMC) / Governing Body members, and control section visibility & custom titles.',
-      bn: 'চেয়ারম্যান স্পটলাইট, ম্যানেজিং কমিটি (SMC) বা গভর্নিং বডির সদস্য যোগ করুন এবং পেজ/সেকশন কাস্টমাইজ ও On/Off করুন।',
+      en: 'Publish Chairman spotlight, Governing Body / Advisory Board / SMC members, customize card styles & colors, and toggle visibility On/Off.',
+      bn: 'চেয়ারম্যান স্পটলাইট, গভর্নিং বডি / অ্যাডভাইজরি বোর্ড / ম্যানেজিং কমিটি (SMC) সদস্য যোগ করুন এবং কার্ড স্টাইল, কালার ও On/Off কন্ট্রোল করুন।',
     },
     steps: [
       {
@@ -407,12 +414,12 @@ export const HELP_GUIDES: HelpGuide[] = [
       },
       {
         title: {
-          en: '1-Click On/Off & Customize Visibility/Layout',
-          bn: '১ ক্লিকে On/Off ও টাইটেল/লেআউট কাস্টমাইজ করুন',
+          en: '1-Click On/Off, Card Styles & Visual Customization',
+          bn: '১ ক্লিকে On/Off, কার্ড স্টাইল ও কালার কাস্টমাইজ করুন',
         },
         detail: {
-          en: 'Use the top "Page & Section Visibility / Customization" panel (and Settings → Website) to toggle the /{schoolSlug}/governing-body page ON/OFF, show/hide on Homepage or About page, toggle Chairman Spotlight & public phone/email, customize Kicker/Title/Subtitle, and choose 2/3/4-column layout or Homepage/About member limit (3, 6, 9, or All).',
-          bn: 'এই স্ক্রিনের উপরের "Page & Section Visibility / Customization" প্যানেল (এবং Settings → Website) থেকে ১ ক্লিকে /{schoolSlug}/governing-body পেজ On/Off, Homepage ও About পেজে দেখানো বা লুকানো, Chairman Spotlight ও ফোন/ইমেইল হাইড/শো, কাস্টম টাইটেল/সাবটাইটেল এবং ২/৩/৪ কলাম গ্রিড সেট করতে পারবেন।',
+          en: 'Use the top "Page & Section Visibility / Customization" panel (and Settings → Website) to toggle /{schoolSlug}/governing-body ON/OFF, control Homepage/About visibility, Chairman Spotlight & public phone/email, customize Kicker/Title/Subtitle & column count, and style Advisory Board / Committee cards (Horizontal, Portrait, Executive, or Minimal layout; Rounded/Circle/Square photo; Flat/Soft/Elevated shadow; custom Section, Card & Accent colors).',
+          bn: 'উপরের "Page & Section Visibility / Customization" প্যানেল (এবং Settings → Website) থেকে ১ ক্লিকে /{schoolSlug}/governing-body পেজ On/Off, Homepage ও About দৃশ্যমানতা, কাস্টম টাইটেল/সাবটাইটেল ছাড়াও কার্ডের ডিজাইন (Horizontal, Portrait, Executive, Minimal লেআউট; Rounded/Circle/Square ছবি; Shadow ও কাস্টম Section/Card/Accent কালার) পরিবর্তন করতে পারবেন।',
         },
       },
       {
@@ -445,24 +452,24 @@ export const HELP_GUIDES: HelpGuide[] = [
     category: 'content',
     estimatedTime: '3 min',
     roles: EDIT_ROLES,
-    title: { en: 'Academic Programs & Facilities', bn: 'একাডেমিক প্রোগ্রাম ও ফ্যাসিলিটিজ' },
+    title: { en: 'Academic Programs Page Editor', bn: 'একাডেমিক প্রোগ্রাম পেজ এডিটর' },
     summary: {
-      en: 'Showcase academic divisions, curriculum highlights, labs, library, and student achievements.',
-      bn: 'একাডেমিক বিভাগ, কারিকুলাম, ল্যাব, লাইব্রেরি ও শিক্ষার্থীদের অর্জন তুলে ধরুন।',
+      en: 'Edit /academics hero headings, customizable Program Division cards, curriculum, grades, subjects, facilities, and honors directly.',
+      bn: 'সরাসরি এই স্ক্রিন থেকেই /academics পেজের শিরোনাম, প্রোগ্রাম ডিভিশন কার্ড, কারিকুলাম, গ্রেড, বিষয়, ফ্যাসিলিটিজ ও সম্মাননা এডিট ও পাবলিশ করুন।',
     },
     steps: [
       {
-        title: { en: 'Add programs and facilities', bn: 'প্রোগ্রাম ও ফ্যাসিলিটি যোগ করুন' },
+        title: { en: 'Customize Hero Title & Program Division Cards', bn: 'Hero শিরোনাম ও প্রোগ্রাম ডিভিশন কার্ড এডিট করুন' },
         detail: {
-          en: 'Organize Primary, Secondary, and Higher Secondary programs along with campus facilities.',
-          bn: 'প্রাইমারি, সেকেন্ডারি ও কলেজ প্রোগ্রাম এবং ক্যাম্পাসের সুযোগ-সুবিধা যুক্ত করুন।',
+          en: 'Edit Hero Kicker, Page Title ("Academic Programs at ..."), Subtitle, and Framework Heading, then add, edit, or remove Program Division cards (e.g. Primary Years, Middle School, Senior Secondary) with custom icons.',
+          bn: 'Hero Kicker, Page Title ("Academic Programs at ..."), Subtitle এবং Framework Heading পরিবর্তন করুন এবং আপনার স্কুলের প্রয়োজন অনুযায়ী Program Division কার্ড যোগ/এডিট বা রিমুভ করুন।',
         },
       },
       {
-        title: { en: 'Save changes to update /academics page', bn: 'সেভ করে /academics পেজ আপডেট করুন' },
+        title: { en: 'Edit Curriculum, Grades, Facilities & Save Live', bn: 'কারিকুলাম, গ্রেড, ফ্যাসিলিটিজ সেভ করে লাইভ করুন' },
         detail: {
-          en: 'Saved academic data renders automatically on your public Academics page.',
-          bn: 'সেভ করা তথ্য আপনার পাবলিক Academics পেজে অটোমেটিক প্রদর্শিত হবে।',
+          en: 'Update Classes & Grades, Curriculum, Subjects, Learning Facilities, and Academic Honors, then click "Save & Publish Academics" to update /{schoolSlug}/academics immediately in your school database.',
+          bn: 'Classes & Grades, Curriculum, Subjects, Learning Facilities ও Academic Honors আপডেট করে "Save & Publish Academics" ক্লিক করলেই ডাটাবেসে সেভ হয়ে /{schoolSlug}/academics লাইভ হয়ে যাবে।',
         },
       },
     ],
@@ -901,6 +908,16 @@ export const HELP_GUIDES: HelpGuide[] = [
         detail: {
           en: 'Assign ADMIN for full management, EDITOR/CONTENT_MANAGER for notices/teachers/pages, or ANALYST for read-only analytics.',
           bn: 'সম্পূর্ণ কন্ট্রোলের জন্য ADMIN, কনটেন্টের জন্য EDITOR/CONTENT_MANAGER এবং শুধু রিপোর্ট দেখার জন্য ANALYST রোল দিন।',
+        },
+      },
+      {
+        title: {
+          en: 'Manage ERP Login URL & Public Social Links (Settings → School profile)',
+          bn: 'ERP Login ও সোশ্যাল প্রোফাইল লিংক (Settings → School profile)',
+        },
+        detail: {
+          en: 'Under Settings → School profile (or Content Management → School information), add your ERP Login URL/Label and Facebook, YouTube, Instagram, LinkedIn, X, and Official Website links. They save per-school in PostgreSQL and appear automatically in your Header & Footer.',
+          bn: 'Settings → School profile (অথবা Content Management → School information) থেকে ERP Login URL/Label এবং Facebook, YouTube, Instagram, LinkedIn, X ও Official Website লিংক দিন—প্রতি স্কুলের জন্য আলাদাভাবে ডাটাবেসে সেভ হয়ে Header ও Footer-এ দেখাবে।',
         },
       },
       {

@@ -4,6 +4,7 @@ import { Button } from '@/components/common/Button'
 import { Icon } from '@/components/common/Icon'
 import { NotificationsPopover } from '@/components/studio/layout/NotificationsPopover'
 import { ProfilePopover } from '@/components/studio/layout/ProfilePopover'
+import { StudioTopbarSearch } from '@/components/studio/layout/StudioTopbarSearch'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import { revalidatePublicSite } from '@/lib/revalidate-client'
@@ -107,6 +108,8 @@ export function StudioTopbar() {
           <strong>{currentSchool?.name || 'School'}</strong> is {isLive ? 'Live' : 'in Draft'}
         </span>
       </div>
+
+      <StudioTopbarSearch />
 
       <div className="top-actions">
         <Button kind="ghost" icon="eye" onClick={() => window.open(`/${schoolSlug}`, '_blank')}>
