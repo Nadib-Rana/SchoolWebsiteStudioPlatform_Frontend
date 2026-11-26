@@ -5,6 +5,8 @@ import { SettingsTitle, SettingsSave } from './SettingsHeaderSave'
 interface WebsiteSettingsTabProps {
   allowPublicAdmission: boolean
   setAllowPublicAdmission: React.Dispatch<React.SetStateAction<boolean>>
+  showGoverningBody: boolean
+  setShowGoverningBody: React.Dispatch<React.SetStateAction<boolean>>
   showNoticeTicker: boolean
   setShowNoticeTicker: React.Dispatch<React.SetStateAction<boolean>>
   showFloatingContact: boolean
@@ -34,6 +36,8 @@ interface WebsiteSettingsTabProps {
 export function WebsiteSettingsTab({
   allowPublicAdmission,
   setAllowPublicAdmission,
+  showGoverningBody,
+  setShowGoverningBody,
   showNoticeTicker,
   setShowNoticeTicker,
   showWhatsappButton,
@@ -68,6 +72,23 @@ export function WebsiteSettingsTab({
           className={allowPublicAdmission ? 'toggle on' : 'toggle'}
           onClick={() => setAllowPublicAdmission((prev) => !prev)}
           aria-label="Toggle Public admissions portal"
+        >
+          <i />
+        </button>
+      </div>
+
+      <div className="toggle-row">
+        <div>
+          <strong>Governing Body / Managing Committee</strong>
+          <small>
+            Show the /governing-body page and committee sections on Homepage &amp; About page
+          </small>
+        </div>
+        <button
+          type="button"
+          className={showGoverningBody ? 'toggle on' : 'toggle'}
+          onClick={() => setShowGoverningBody((prev) => !prev)}
+          aria-label="Toggle Governing Body section and page"
         >
           <i />
         </button>

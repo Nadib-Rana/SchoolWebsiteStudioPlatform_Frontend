@@ -16,16 +16,28 @@ export default async function GoverningBodyPage({ params }: PageProps) {
     notFound()
   }
 
+  const governingBodyConfig =
+    siteData.settings?.notificationPreferences?._governingBody
+
+  if (governingBodyConfig?.enabled === false) {
+    notFound()
+  }
+
   const members = siteData.governingMembers || []
+  const heroKicker =
+    governingBodyConfig?.kicker?.trim() || 'LEADERSHIP & GOVERNANCE'
+  const heroTitle =
+    governingBodyConfig?.title?.trim() || 'Governing Body & Managing Committee'
+  const heroSubtitle =
+    governingBodyConfig?.subtitle?.trim() ||
+    `Meet the Chairman, trustees, guardian representatives, and committee members guiding ${siteData.school.name}.`
 
   return (
     <main className="inner-page">
       <section className="inner-hero">
-        <span>LEADERSHIP &amp; GOVERNANCE</span>
-        <h1>Governing Body &amp; Managing Committee</h1>
-        <p>
-          Meet the Chairman, trustees, guardian representatives, and committee members guiding {siteData.school.name}.
-        </p>
+        <span>{heroKicker}</span>
+        <h1>{heroTitle}</h1>
+        <p>{heroSubtitle}</p>
         <div className="breadcrumb">
           <Link href={`/${schoolSlug}`} className="hover:underline">
             Home
@@ -39,8 +51,8 @@ export default async function GoverningBodyPage({ params }: PageProps) {
         schoolSlug={schoolSlug}
         schoolName={siteData.school.name}
         mode="full"
+        config={governingBodyConfig}
       />
     </main>
   )
 }
-

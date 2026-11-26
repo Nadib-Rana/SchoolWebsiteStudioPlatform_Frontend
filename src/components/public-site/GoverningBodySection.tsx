@@ -3,13 +3,17 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Icon } from '@/components/common/Icon'
-import type { GoverningMemberData } from '@/lib/public-site-types'
+import type {
+  GoverningBodyConfig,
+  GoverningMemberData,
+} from '@/lib/public-site-types'
 
 interface GoverningBodySectionProps {
   members: GoverningMemberData[]
   schoolSlug?: string
   schoolName?: string
   mode?: 'full' | 'compact'
+  config?: GoverningBodyConfig
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -41,6 +45,7 @@ export function GoverningBodySection({
   schoolSlug,
   schoolName,
   mode = 'compact',
+  config,
 }: GoverningBodySectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
 
@@ -66,6 +71,10 @@ export function GoverningBodySection({
     return 'Governing Body & Managing Committee'
   }, [categories])
 
+  if (config?.enabled === false) {
+    return null
+  }
+
   if (mode === 'compact' && members.length === 0) {
     return null
   }
@@ -87,36 +96,55 @@ export function GoverningBodySection({
     )
   }
 
+  const kickerText = config?.kicker?.trim() || 'LEADERSHIP & GOVERNANCE'
+  const headingText = config?.title?.trim() || sectionHeading
+  const subtitleText =
+    config?.subtitle?.trim() ||
+    `Committed trustees, guardians, and academic leaders guiding policy, transparency, and institutional excellence${
+      schoolName ? ` at ${schoolName}` : ''
+    }.`
+  const showSpotlight = config?.showSpotlight !== false
+  const showContact = config?.showContact !== false
+  const gridColsClass =
+    config?.columns === 2
+      ? 'grid-cols-1 sm:grid-cols-2'
+      : config?.columns === 4
+      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  const compactLimit =
+    typeof config?.compactLimit === 'number' ? config.compactLimit : 6
+
   const visibleByCategory =
     mode === 'full' && selectedCategory !== 'ALL'
       ? members.filter((m) => (m.category || 'GOVERNING_BODY') === selectedCategory)
       : members
 
-  const featuredMember =
-    visibleByCategory.find((m) => m.isFeatured) ||
-    visibleByCategory.find((m) => /chairman|president/i.test(m.designation)) ||
-    null
+  const featuredMember = showSpotlight
+    ? visibleByCategory.find((m) => m.isFeatured) ||
+      visibleByCategory.find((m) => /chairman|president/i.test(m.designation)) ||
+      null
+    : null
 
   const remainingMembers = featuredMember
     ? visibleByCategory.filter((m) => m.id !== featuredMember.id)
     : visibleByCategory
 
   const gridMembers =
-    mode === 'compact' ? remainingMembers.slice(0, 6) : remainingMembers
+    mode === 'compact' && compactLimit > 0
+      ? remainingMembers.slice(0, compactLimit)
+      : remainingMembers
 
   return (
     <section className="py-16 px-6 bg-white border-t border-slate-100">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
-            <span className="section-kicker">LEADERSHIP &amp; GOVERNANCE</span>
+            <span className="section-kicker">{kickerText}</span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 mt-1">
-              {sectionHeading}
+              {headingText}
             </h2>
             <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl">
-              Committed trustees, guardians, and academic leaders guiding policy,
-              transparency, and institutional excellence
-              {schoolName ? ` at ${schoolName}` : ''}.
+              {subtitleText}
             </p>
           </div>
 
@@ -225,7 +253,7 @@ export function GoverningBodySection({
                   </blockquote>
                 )}
 
-                {(featuredMember.email || featuredMember.phone) && (
+                {showContact && (featuredMember.email || featuredMember.phone) && (
                   <div className="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-500">
                     {featuredMember.phone && <span>Phone: {featuredMember.phone}</span>}
                     {featuredMember.email && <span>Email: {featuredMember.email}</span>}
@@ -237,7 +265,7 @@ export function GoverningBodySection({
         )}
 
         {gridMembers.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={`grid ${gridColsClass} gap-6`}>
             {gridMembers.map((member, idx) => (
               <article
                 key={member.id}
@@ -287,4 +315,3 @@ export function GoverningBodySection({
     </section>
   )
 }
-

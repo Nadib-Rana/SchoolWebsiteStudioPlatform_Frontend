@@ -49,6 +49,19 @@ export interface GoverningMemberData {
   status?: string
 }
 
+export interface GoverningBodyConfig {
+  enabled?: boolean
+  showOnHome?: boolean
+  showOnAbout?: boolean
+  showSpotlight?: boolean
+  showContact?: boolean
+  kicker?: string
+  title?: string
+  subtitle?: string
+  columns?: 2 | 3 | 4
+  compactLimit?: number
+}
+
 export interface NoticeData {
   id: string
   slug?: string | null
@@ -140,6 +153,7 @@ export interface PublicSiteData {
         whatsappNumber?: string
         callNumber?: string
       }
+      _governingBody?: GoverningBodyConfig
       [key: string]: unknown
     } | null
     showNoticeBoard?: boolean

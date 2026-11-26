@@ -225,12 +225,16 @@ export function PublicHome({
         principalTitle={principalTitle}
         principalPhoto={principalPhoto}
       />
-      <GoverningBodySection
-        members={schoolData?.governingMembers || []}
-        schoolSlug={schoolSlug}
-        schoolName={schoolName}
-        mode="compact"
-      />
+      {schoolData?.settings?.notificationPreferences?._governingBody?.enabled !== false &&
+        schoolData?.settings?.notificationPreferences?._governingBody?.showOnHome !== false && (
+          <GoverningBodySection
+            members={schoolData?.governingMembers || []}
+            schoolSlug={schoolSlug}
+            schoolName={schoolName}
+            mode="compact"
+            config={schoolData?.settings?.notificationPreferences?._governingBody}
+          />
+        )}
       <HomeNoticesSection
         sectionStyle={sectionStyles['Latest notices']}
         noticesHeading={draft?.noticesHeading || dbSections.noticesHeading || 'Latest notices & circulars'}

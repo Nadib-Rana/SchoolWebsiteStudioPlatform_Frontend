@@ -115,6 +115,8 @@ export function Settings() {
           <WebsiteSettingsTab
             allowPublicAdmission={s.allowPublicAdmission}
             setAllowPublicAdmission={s.setAllowPublicAdmission}
+            showGoverningBody={s.showGoverningBody}
+            setShowGoverningBody={s.setShowGoverningBody}
             showNoticeTicker={s.showNoticeTicker}
             setShowNoticeTicker={s.setShowNoticeTicker}
             showFloatingContact={s.showFloatingContact}

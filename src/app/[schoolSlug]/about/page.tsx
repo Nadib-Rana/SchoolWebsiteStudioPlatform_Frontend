@@ -108,12 +108,16 @@ export default async function SchoolAboutPage({ params }: PageProps) {
         </aside>
       </section>
 
-      <GoverningBodySection
-        members={siteData.governingMembers || []}
-        schoolSlug={schoolSlug}
-        schoolName={schoolName}
-        mode="compact"
-      />
+      {siteData.settings?.notificationPreferences?._governingBody?.enabled !== false &&
+        siteData.settings?.notificationPreferences?._governingBody?.showOnAbout !== false && (
+          <GoverningBodySection
+            members={siteData.governingMembers || []}
+            schoolSlug={schoolSlug}
+            schoolName={schoolName}
+            mode="compact"
+            config={siteData.settings?.notificationPreferences?._governingBody}
+          />
+        )}
 
       <section className="facilities-strip">
         {[

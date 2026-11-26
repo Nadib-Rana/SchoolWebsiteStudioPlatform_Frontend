@@ -78,6 +78,8 @@ export function useSettingsState() {
   }
 
   const [allowPublicAdmission, setAllowPublicAdmission] = useState(true)
+  const [showGoverningBody, setShowGoverningBody] = useState(true)
+  const [governingBodyConfig, setGoverningBodyConfig] = useState<Record<string, any>>({})
   const [showNoticeTicker, setShowNoticeTicker] = useState(true)
   const [showFloatingContact, setShowFloatingContact] = useState(true)
   const [showWhatsappButton, setShowWhatsappButton] = useState(true)
@@ -155,6 +157,12 @@ export function useSettingsState() {
               if (typeof fc.whatsappNumber === 'string' && fc.whatsappNumber) setWhatsappNumber(fc.whatsappNumber)
               if (typeof fc.callNumber === 'string' && fc.callNumber) setCallNumber(fc.callNumber)
             }
+            if (savedPrefs._governingBody && typeof savedPrefs._governingBody === 'object') {
+              setGoverningBodyConfig(savedPrefs._governingBody)
+              if (typeof savedPrefs._governingBody.enabled === 'boolean') {
+                setShowGoverningBody(savedPrefs._governingBody.enabled)
+              }
+            }
             setNotificationPreferences((prev) =>
               prev.map((item) =>
                 savedPrefs[item.id]
@@ -212,6 +220,10 @@ export function useSettingsState() {
         whatsappNumber: whatsappNumber.trim(),
         callNumber: callNumber.trim(),
       }
+      prefsMap._governingBody = {
+        ...governingBodyConfig,
+        enabled: showGoverningBody,
+      }
       const anyFloating = showWhatsappButton || showCallButton
       setShowFloatingContact(anyFloating)
 
@@ -243,6 +255,10 @@ export function useSettingsState() {
         showCallButton,
         whatsappNumber: whatsappNumber.trim(),
         callNumber: callNumber.trim(),
+      }
+      prefsMap._governingBody = {
+        ...governingBodyConfig,
+        enabled: showGoverningBody,
       }
       await api.settings.update({ notificationPreferences: prefsMap })
       notify('Notification preferences saved successfully.')
@@ -292,6 +308,7 @@ export function useSettingsState() {
     isSavingAccount: account.isSavingAccount, handleSaveAccount: account.handleSaveAccount,
     permMatrixOpen, setPermMatrixOpen, notificationPreferences, toggleNotification,
     allowPublicAdmission, setAllowPublicAdmission,
+    showGoverningBody, setShowGoverningBody,
     showNoticeTicker, setShowNoticeTicker,
     showFloatingContact, setShowFloatingContact,
     showWhatsappButton, setShowWhatsappButton,

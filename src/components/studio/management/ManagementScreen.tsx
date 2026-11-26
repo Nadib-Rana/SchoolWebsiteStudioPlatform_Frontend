@@ -11,6 +11,7 @@ import { DataManager } from '@/components/studio/data-manager/DataManager'
 import { EditorModal } from '@/components/studio/data-manager/EditorModal'
 import { DomainManager } from '@/components/studio/domains/DomainManager'
 import { Gallery } from '@/components/studio/gallery/Gallery'
+import { GoverningBodySettingsPanel } from '@/components/studio/governing-body/GoverningBodySettingsPanel'
 import { Integrations } from '@/components/studio/integrations/Integrations'
 import { MediaLibrary } from '@/components/studio/media/MediaLibrary'
 import { NavigationManager } from '@/components/studio/navigation/NavigationManager'
@@ -72,6 +73,8 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
           )}
         </div>
       </div>
+
+      {view === 'governing-body' && <GoverningBodySettingsPanel />}
 
       {['pages', 'teachers', 'governing-body', 'notices', 'events'].includes(view) && (
         <DataManager type={view} refreshKey={refreshKey} />
