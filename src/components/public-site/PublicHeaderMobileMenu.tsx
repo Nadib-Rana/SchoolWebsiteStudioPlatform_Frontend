@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { normalizeExternalUrl } from '@/lib/social-links'
 
 interface NavItem {
   label: string
@@ -94,27 +95,30 @@ export function PublicHeaderMobileMenu({
         )
       )}
 
-      {erpLoginUrl && (
-        <a
-          href={erpLoginUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={onClose}
-          style={{
-            marginTop: '4px',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            fontWeight: 700,
-            textAlign: 'center',
-            textDecoration: 'none',
-            background: 'var(--accent, #e3ad3f)',
-            color: '#0f172a',
-          }}
-        >
-          {erpLoginLabel?.trim() || 'ERP Login'} →
-        </a>
-      )}
+      {(() => {
+        const safeErpUrl = normalizeExternalUrl(erpLoginUrl)
+        return safeErpUrl ? (
+          <a
+            href={safeErpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            style={{
+              marginTop: '4px',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 700,
+              textAlign: 'center',
+              textDecoration: 'none',
+              background: 'var(--accent, #e3ad3f)',
+              color: '#0f172a',
+            }}
+          >
+            {erpLoginLabel?.trim() || 'ERP Login'} →
+          </a>
+        ) : null
+      })()}
     </div>
   )
 }

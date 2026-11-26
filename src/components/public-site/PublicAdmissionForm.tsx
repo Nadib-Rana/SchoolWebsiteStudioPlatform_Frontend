@@ -181,91 +181,95 @@ export function PublicAdmissionForm({
     const token = (params.get('Token') || params.get('token') || '').trim()
     const nagadRef = (params.get('payment_ref_id') || '').trim()
 
-    let savedSession: PendingPaymentSession | null = null
-    try {
-      const raw = window.sessionStorage.getItem(PENDING_PAYMENT_STORAGE_KEY)
-      if (raw) {
-        savedSession = JSON.parse(raw) as PendingPaymentSession
-      }
-    } catch {
-      savedSession = null
-    }
-
-    try {
-      window.history.replaceState({}, '', window.location.pathname)
-    } catch {
-      // Ignore history errors
-    }
-
-    const resolvedAppNumber = appParam || savedSession?.applicationNumber || ''
-    const resolvedGateway = gatewayParam || savedSession?.gateway || ''
-    if (!resolvedAppNumber) return
-
-    setActiveTab('apply')
-    setSubmissionResult({
-      source: 'ERP',
-      applicationNumber: resolvedAppNumber,
-      studentName: savedSession?.studentName || 'Applicant',
-      status: 'SUBMITTED',
-      feeAmount: savedSession?.feeAmount ?? 0,
-      paymentStatus: 'PENDING',
-      currency: savedSession?.currency || 'BDT',
-      photoUrl: savedSession?.photoUrl || undefined,
-    })
-
-    if (savedSession?.identifier || savedSession?.photoUrl) {
-      setFormData((prev) => ({
-        ...prev,
-        phone: prev.phone || savedSession?.identifier || '',
-        applyingForGrade: savedSession?.applyingForGrade || prev.applyingForGrade,
-        photoUrl: prev.photoUrl || savedSession?.photoUrl || '',
-      }))
-    }
-
-    const isCancelled = payStatus === 'cancelled' || payStatus === 'cancel'
-    const isFailed = payStatus === 'failed' || payStatus === 'failure' || isCancelled
-    if (isFailed) {
-      setPaymentBanner({
-        type: 'error',
-        text: isCancelled
-          ? 'Online payment was cancelled. You can choose another gateway or submit a manual transaction ID below.'
-          : 'Online payment could not be completed. Please retry below or use manual payment.',
-      })
-      return
-    }
-
-    let verifyTransactionId = tranId || savedSession?.transactionId || ''
-    if (resolvedGateway === 'STRIPE' && sessionId) {
-      verifyTransactionId = sessionId
-    } else if (resolvedGateway === 'SHURJOPAY' && orderId) {
-      verifyTransactionId = orderId
-    } else if (resolvedGateway === 'SONALIPAY' && token) {
-      verifyTransactionId = token
-    } else if (resolvedGateway === 'BKASH' && !verifyTransactionId && paymentID) {
-      verifyTransactionId = paymentID
-    } else if (resolvedGateway === 'NAGAD' && nagadRef) {
-      verifyTransactionId = nagadRef
-    }
-
-    const verifyPayload = {
-      applicationNumber: resolvedAppNumber,
-      gateway: resolvedGateway || 'SSLCOMMERZ',
-      transactionId: verifyTransactionId || undefined,
-      valId: valId || undefined,
-      paymentID: paymentID || undefined,
-    }
-
-    if (!savedSession?.identifier) {
-      setPendingCallbackVerify(verifyPayload)
-      setPaymentBanner({
-        type: 'info',
-        text: 'Payment returned from gateway. Enter your registered phone number below to finalize verification.',
-      })
-      return
-    }
-
     let cancelled = false
-    const verify = async () => {
+
+    const handlePaymentCallback = async () => {
+      await Promise.resolve()
+      if (cancelled) return
+
+      let savedSession: PendingPaymentSession | null = null
+      try {
+        const raw = window.sessionStorage.getItem(PENDING_PAYMENT_STORAGE_KEY)
+        if (raw) {
+          savedSession = JSON.parse(raw) as PendingPaymentSession
+        }
+      } catch {
+        savedSession = null
+      }
+
+      try {
+        window.history.replaceState({}, '', window.location.pathname)
+      } catch {
+        // Ignore history errors
+      }
+
+      const resolvedAppNumber = appParam || savedSession?.applicationNumber || ''
+      const resolvedGateway = gatewayParam || savedSession?.gateway || ''
+      if (!resolvedAppNumber) return
+
+      setActiveTab('apply')
+      setSubmissionResult({
+        source: 'ERP',
+        applicationNumber: resolvedAppNumber,
+        studentName: savedSession?.studentName || 'Applicant',
+        status: 'SUBMITTED',
+        feeAmount: savedSession?.feeAmount ?? 0,
+        paymentStatus: 'PENDING',
+        currency: savedSession?.currency || 'BDT',
+        photoUrl: savedSession?.photoUrl || undefined,
+      })
+
+      if (savedSession?.identifier || savedSession?.photoUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          phone: prev.phone || savedSession?.identifier || '',
+          applyingForGrade: savedSession?.applyingForGrade || prev.applyingForGrade,
+          photoUrl: prev.photoUrl || savedSession?.photoUrl || '',
+        }))
+      }
+
+      const isCancelled = payStatus === 'cancelled' || payStatus === 'cancel'
+      const isFailed = payStatus === 'failed' || payStatus === 'failure' || isCancelled
+      if (isFailed) {
+        setPaymentBanner({
+          type: 'error',
+          text: isCancelled
+            ? 'Online payment was cancelled. You can choose another gateway or submit a manual transaction ID below.'
+            : 'Online payment could not be completed. Please retry below or use manual payment.',
+        })
+        return
+      }
+
+      let verifyTransactionId = tranId || savedSession?.transactionId || ''
+      if (resolvedGateway === 'STRIPE' && sessionId) {
+        verifyTransactionId = sessionId
+      } else if (resolvedGateway === 'SHURJOPAY' && orderId) {
+        verifyTransactionId = orderId
+      } else if (resolvedGateway === 'SONALIPAY' && token) {
+        verifyTransactionId = token
+      } else if (resolvedGateway === 'BKASH' && !verifyTransactionId && paymentID) {
+        verifyTransactionId = paymentID
+      } else if (resolvedGateway === 'NAGAD' && nagadRef) {
+        verifyTransactionId = nagadRef
+      }
+
+      const verifyPayload = {
+        applicationNumber: resolvedAppNumber,
+        gateway: resolvedGateway || 'SSLCOMMERZ',
+        transactionId: verifyTransactionId || undefined,
+        valId: valId || undefined,
+        paymentID: paymentID || undefined,
+      }
+
+      if (!savedSession?.identifier) {
+        setPendingCallbackVerify(verifyPayload)
+        setPaymentBanner({
+          type: 'info',
+          text: 'Payment returned from gateway. Enter your registered phone number below to finalize verification.',
+        })
+        return
+      }
+
       setIsVerifyingCallback(true)
       setPaymentBanner({
         type: 'info',
@@ -274,7 +278,7 @@ export function PublicAdmissionForm({
       try {
         const res = await api.admissions.verifyOnlinePayment(schoolSlug, {
           ...verifyPayload,
-          identifier: savedSession!.identifier,
+          identifier: savedSession.identifier,
         })
         if (cancelled) return
         const data = res?.data
@@ -310,7 +314,8 @@ export function PublicAdmissionForm({
         if (!cancelled) setIsVerifyingCallback(false)
       }
     }
-    void verify()
+
+    void handlePaymentCallback()
     return () => {
       cancelled = true
     }

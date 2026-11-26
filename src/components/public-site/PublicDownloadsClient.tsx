@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Icon } from '@/components/common/Icon'
 import type { NoticeData } from '@/lib/public-site-types'
+import { safePublicHref } from '@/lib/social-links'
 
 interface PublicDownloadsClientProps {
   schoolSlug: string
@@ -177,16 +178,21 @@ export function PublicDownloadsClient({
                   Details →
                 </Link>
                 <div className="flex items-center gap-2">
-                  <a
-                    href={item.fileUrl || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'var(--navy, #102f58)' }}
-                  >
-                    <Icon name="download" size={13} />
-                    Download PDF
-                  </a>
+                  {(() => {
+                    const safeFileUrl = safePublicHref(item.fileUrl)
+                    return safeFileUrl ? (
+                      <a
+                        href={safeFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ background: 'var(--navy, #102f58)' }}
+                      >
+                        <Icon name="download" size={13} />
+                        Download PDF
+                      </a>
+                    ) : null
+                  })()}
                 </div>
               </div>
             </article>

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Icon } from '@/components/common/Icon'
 import type { NoticeData } from '@/lib/public-site'
+import { safePublicHref } from '@/lib/social-links'
 
 interface NoticesDirectoryProps {
   notices: NoticeData[]
@@ -153,16 +154,19 @@ export function NoticesDirectory({
                   Read full notice <Icon name="arrow" size={12} />
                 </Link>
 
-                {n.fileUrl && (
-                  <a
-                    href={n.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-md transition-colors"
-                  >
-                    <Icon name="download" size={13} /> Attached Document
-                  </a>
-                )}
+                {(() => {
+                  const safeFileUrl = safePublicHref(n.fileUrl)
+                  return safeFileUrl ? (
+                    <a
+                      href={safeFileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-md transition-colors"
+                    >
+                      <Icon name="download" size={13} /> Attached Document
+                    </a>
+                  ) : null
+                })()}
               </div>
             </article>
           ))}

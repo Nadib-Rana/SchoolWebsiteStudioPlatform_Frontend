@@ -26,9 +26,10 @@ export function useSettingsMembers(
   const [inviteRole, setInviteRole] = useState('EDITOR')
   const [isInviting, setIsInviting] = useState(false)
 
+  const schoolId = currentSchool?.id
   const loadMembers = useCallback(async () => {
     try {
-      const activeId = currentSchool?.id || api.getActiveSchoolId()
+      const activeId = schoolId || api.getActiveSchoolId()
       const res = await api.schools.getMembers(activeId)
       const data = (res as any)?.data || res
       if (Array.isArray(data)) {
@@ -65,7 +66,7 @@ export function useSettingsMembers(
     } catch (err: any) {
       console.warn('[Settings] Team members sync error:', err?.message)
     }
-  }, [currentSchool?.id])
+  }, [schoolId])
 
   useEffect(() => {
     void loadMembers()

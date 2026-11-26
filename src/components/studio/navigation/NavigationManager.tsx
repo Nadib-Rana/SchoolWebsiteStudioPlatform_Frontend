@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   type NavItem,
   type NavigationManagerProps,
@@ -39,16 +39,16 @@ export function NavigationManager({
   })
   const [formError, setFormError] = useState('')
 
-  useEffect(() => {
-    if (openAddModal) handleOpenAdd()
-  }, [openAddModal])
-
-  const handleOpenAdd = () => {
+  const handleOpenAdd = useCallback(() => {
     setEditingIndex(null)
     setItemForm({ label: '', url: '/', target: '_self', preset: '' })
     setFormError('')
     setIsModalOpen(true)
-  }
+  }, [])
+
+  useEffect(() => {
+    if (openAddModal) handleOpenAdd()
+  }, [openAddModal, handleOpenAdd])
 
   const handleOpenEdit = (index: number) => {
     const item = menuItems[index]

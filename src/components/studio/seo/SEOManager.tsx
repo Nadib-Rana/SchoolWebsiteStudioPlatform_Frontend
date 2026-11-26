@@ -32,8 +32,9 @@ export function SEOManager() {
   )
   const [isSaving, setIsSaving] = useState(false)
 
+  const schoolName = currentSchool?.name
   const loadSEO = useCallback(async () => {
-    const fallback = buildDefaultSeo(currentSchool?.name)
+    const fallback = buildDefaultSeo(schoolName)
     try {
       const res = await api.seo.get()
       const data = res?.data || res
@@ -50,7 +51,7 @@ export function SEOManager() {
           canonicalUrl: data.canonicalUrl || '',
           sitemapEnabled: typeof data.sitemapEnabled === 'boolean' ? data.sitemapEnabled : true,
           isIndexed: typeof data.isIndexed === 'boolean' ? data.isIndexed : true,
-          schoolName: data.schoolName || currentSchool?.name,
+          schoolName: data.schoolName || schoolName,
           schoolLogo: data.schoolLogo,
           schoolFavicon: data.schoolFavicon,
         })
@@ -61,7 +62,7 @@ export function SEOManager() {
       console.warn('Failed to load SEO configuration:', err)
       setSeo(fallback)
     }
-  }, [currentSchool?.name])
+  }, [schoolName])
 
   useEffect(() => {
     void loadSEO()

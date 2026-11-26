@@ -159,7 +159,9 @@ export function useBuilderState() {
   }, [previewTheme, currentSchool?.id, schoolSwitchKey])
 
   const latestStateRef = useRef({ stateFields, sectionStyles, customSectionsData, schoolId: currentSchool?.id })
-  latestStateRef.current = { stateFields, sectionStyles, customSectionsData, schoolId: currentSchool?.id }
+  useEffect(() => {
+    latestStateRef.current = { stateFields, sectionStyles, customSectionsData, schoolId: currentSchool?.id }
+  }, [stateFields, sectionStyles, customSectionsData, currentSchool?.id])
 
   useEffect(() => {
     registerBeforePublish(async () => {

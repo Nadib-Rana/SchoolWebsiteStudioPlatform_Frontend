@@ -13,7 +13,7 @@ export interface SchoolReceiptMeta {
   schoolSlug?: string
 }
 
-function escapeHtml(value: string | undefined | null): string {
+export function escapeHtml(value: string | undefined | null): string {
   if (!value) return '—'
   return String(value)
     .replace(/&/g, '&amp;')
@@ -23,16 +23,22 @@ function escapeHtml(value: string | undefined | null): string {
     .replace(/'/g, '&#39;')
 }
 
-function resolveAbsoluteUrl(url: string | undefined | null): string | undefined {
+export function resolveAbsoluteUrl(url: string | undefined | null): string | undefined {
   if (!url) return undefined
   const trimmed = url.trim()
   if (!trimmed) return undefined
+  if (/^(javascript|vbscript|file):/i.test(trimmed)) {
+    return undefined
+  }
   if (
-    trimmed.startsWith('data:') ||
+    trimmed.startsWith('data:image/') ||
     trimmed.startsWith('blob:') ||
     /^https?:\/\//i.test(trimmed)
   ) {
     return trimmed
+  }
+  if (trimmed.startsWith('data:')) {
+    return undefined
   }
   if (typeof window !== 'undefined') {
     try {
@@ -107,7 +113,7 @@ function getPaymentStatusMeta(
   }
 }
 
-function renderLogoBox(
+export function renderLogoBox(
   logoUrl: string | undefined,
   schoolName: string,
   initial: string,
@@ -116,7 +122,7 @@ function renderLogoBox(
   if (!resolved) {
     return `<div class="header-logo">${escapeHtml(initial)}</div>`
   }
-  return `<div class="header-logo"><img src="${escapeHtml(resolved)}" alt="${escapeHtml(schoolName)}" onerror="this.style.display='none';if(this.parentNode){this.parentNode.textContent='${escapeHtml(initial)}';}" /></div>`
+  return `<div class="header-logo"><img src="${escapeHtml(resolved)}" alt="${escapeHtml(schoolName)}" data-initial="${escapeHtml(initial)}" onerror="this.style.display='none';if(this.parentNode){this.parentNode.textContent=this.getAttribute('data-initial')||'S';}" /></div>`
 }
 
 function renderApplicantPhotoHtml(
