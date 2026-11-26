@@ -241,6 +241,7 @@ export function AdmissionTrackingTab({
                   applyingForGrade={trackResult.applyingForGrade}
                   feeAmount={Number(trackResult.feeAmount)}
                   currency={trackResult.currency || feeConfig.currency}
+                  photoUrl={trackResult.photoUrl}
                   feeConfig={feeConfig}
                   onPaymentComplete={onPaymentComplete}
                 />

@@ -16,6 +16,7 @@ interface AdmissionSuccessScreenProps {
   feeConfig?: ErpFeeConfig | null
   applicantIdentifier: string
   applyingForGrade?: string
+  photoUrl?: string | null
   copied: boolean
   paymentBanner?: { type: 'success' | 'error' | 'info'; text: string } | null
   onPaymentComplete: (update: {
@@ -37,6 +38,7 @@ export function AdmissionSuccessScreen({
   feeConfig,
   applicantIdentifier,
   applyingForGrade,
+  photoUrl,
   copied,
   paymentBanner,
   onPaymentComplete,
@@ -162,6 +164,7 @@ export function AdmissionSuccessScreen({
             applyingForGrade={applyingForGrade}
             feeAmount={feeAmount}
             currency={submissionResult.currency || feeConfig.currency}
+            photoUrl={photoUrl || submissionResult.photoUrl}
             feeConfig={feeConfig}
             onPaymentComplete={onPaymentComplete}
           />

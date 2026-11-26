@@ -228,6 +228,7 @@ export function createAcademicEndpoints(session: ApiSession) {
           feeAmount?: number
           paymentStatus?: string
           currency?: string
+          photoUrl?: string | null
           message: string
         }>('/public/admissions/apply', {
           method: 'POST',
@@ -262,6 +263,7 @@ export function createAcademicEndpoints(session: ApiSession) {
           paymentNote?: string | null
           paidAt?: string | null
           currency?: string
+          photoUrl?: string | null
           submittedAt: string
           lastUpdatedAt: string
         }>(`/public/admissions/track?${params.toString()}`)

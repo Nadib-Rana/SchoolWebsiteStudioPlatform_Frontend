@@ -68,6 +68,7 @@ export interface PendingPaymentSession {
   applyingForGrade?: string
   feeAmount?: number
   currency?: string
+  photoUrl?: string | null
 }
 
 export interface AdmissionFormData {
@@ -107,6 +108,7 @@ export interface SubmissionResult {
   feeAmount?: number
   paymentStatus?: string
   currency?: string
+  photoUrl?: string | null
   paymentMethod?: string | null
   transactionId?: string | null
   paymentNote?: string | null
@@ -129,6 +131,7 @@ export interface TrackResult {
   paymentNote?: string | null
   paidAt?: string | null
   currency?: string
+  photoUrl?: string | null
   submittedAt: string
   lastUpdatedAt: string
 }

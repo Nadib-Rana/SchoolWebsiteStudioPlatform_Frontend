@@ -210,13 +210,15 @@ export function PublicAdmissionForm({
       feeAmount: savedSession?.feeAmount ?? 0,
       paymentStatus: 'PENDING',
       currency: savedSession?.currency || 'BDT',
+      photoUrl: savedSession?.photoUrl || undefined,
     })
 
-    if (savedSession?.identifier) {
+    if (savedSession?.identifier || savedSession?.photoUrl) {
       setFormData((prev) => ({
         ...prev,
-        phone: prev.phone || savedSession.identifier,
-        applyingForGrade: savedSession.applyingForGrade || prev.applyingForGrade,
+        phone: prev.phone || savedSession?.identifier || '',
+        applyingForGrade: savedSession?.applyingForGrade || prev.applyingForGrade,
+        photoUrl: prev.photoUrl || savedSession?.photoUrl || '',
       }))
     }
 
@@ -588,6 +590,7 @@ export function PublicAdmissionForm({
                 feeConfig={feeConfig}
                 applicantIdentifier={formData.phone || formData.guardianPhone || fallbackVerifyIdentifier}
                 applyingForGrade={formData.applyingForGrade}
+                photoUrl={formData.photoUrl || submissionResult.photoUrl}
                 copied={copied}
                 paymentBanner={paymentBanner}
                 onPaymentComplete={(update) => {

@@ -118,3 +118,4 @@ export async function POST(
 
   return buildRedirectResponse(request, schoolSlug, extra)
 }
+

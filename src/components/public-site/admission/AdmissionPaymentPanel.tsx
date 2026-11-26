@@ -64,6 +64,7 @@ interface AdmissionPaymentPanelProps {
   applyingForGrade?: string
   feeAmount: number
   currency?: string
+  photoUrl?: string | null
   feeConfig: ErpFeeConfig
   onPaymentComplete: (update: {
     paymentStatus: string
@@ -82,6 +83,7 @@ export function AdmissionPaymentPanel({
   applyingForGrade,
   feeAmount,
   currency = 'BDT',
+  photoUrl,
   feeConfig,
   onPaymentComplete,
 }: AdmissionPaymentPanelProps) {
@@ -139,6 +141,7 @@ export function AdmissionPaymentPanel({
         applyingForGrade,
         feeAmount: data.feeAmount ?? feeAmount,
         currency: data.currency || currency,
+        photoUrl: photoUrl || undefined,
       }
 
       try {
@@ -147,7 +150,16 @@ export function AdmissionPaymentPanel({
           JSON.stringify(pendingSession),
         )
       } catch {
-        // Ignore storage errors; callback URL carries fallback parameters
+        // Retry without embedded Data URI photo if sessionStorage quota is exceeded
+        try {
+          const compactSession = { ...pendingSession, photoUrl: undefined }
+          window.sessionStorage.setItem(
+            PENDING_PAYMENT_STORAGE_KEY,
+            JSON.stringify(compactSession),
+          )
+        } catch {
+          // Ignore storage errors; callback URL carries fallback parameters
+        }
       }
 
       window.location.assign(data.redirectUrl)
@@ -368,3 +380,4 @@ export function AdmissionPaymentPanel({
     </div>
   )
 }
+

@@ -24,6 +24,43 @@ function escapeHtml(value: string | undefined | null): string {
     .replace(/'/g, '&#39;')
 }
 
+function resolveAbsoluteUrl(url: string | undefined | null): string | undefined {
+  if (!url) return undefined
+  const trimmed = url.trim()
+  if (!trimmed) return undefined
+  if (
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:') ||
+    /^https?:\/\//i.test(trimmed)
+  ) {
+    return trimmed
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      return new URL(trimmed, window.location.origin).toString()
+    } catch {
+      return trimmed
+    }
+  }
+  return trimmed
+}
+
+function renderLogoHtml(logoUrl: string | undefined, schoolName: string, initial: string): string {
+  const resolved = resolveAbsoluteUrl(logoUrl)
+  if (!resolved) {
+    return escapeHtml(initial)
+  }
+  return `<img src="${escapeHtml(resolved)}" alt="${escapeHtml(schoolName)}" onerror="this.style.display='none';if(this.parentNode){this.parentNode.textContent='${escapeHtml(initial)}';}" />`
+}
+
+function renderApplicantPhotoHtml(photoUrl: string | undefined | null, studentName: string): string {
+  const resolved = resolveAbsoluteUrl(photoUrl)
+  if (!resolved) {
+    return ''
+  }
+  return `<div class="applicant-photo-box"><img src="${escapeHtml(resolved)}" alt="${escapeHtml(studentName || 'Applicant Photo')}" onerror="this.parentNode.style.display='none';" /><span>Applicant Photo</span></div>`
+}
+
 function openPrintDocument(title: string, bodyHtml: string) {
   if (typeof window === 'undefined') return
   const printWin = window.open('', '_blank', 'width=860,height=980')
@@ -32,10 +69,16 @@ function openPrintDocument(title: string, bodyHtml: string) {
     return
   }
 
+  const baseHref = escapeHtml(window.location.origin + '/')
+  const rootStyles = window.getComputedStyle(document.documentElement)
+  const navyColor = rootStyles.getPropertyValue('--navy').trim() || '#102f58'
+  const goldColor = rootStyles.getPropertyValue('--gold').trim() || '#e3ad3f'
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <base href="${baseHref}" />
   <title>${escapeHtml(title)}</title>
   <style>
     @page { size: A4; margin: 16mm; }
@@ -57,7 +100,7 @@ function openPrintDocument(title: string, bodyHtml: string) {
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
     .header {
-      background: #102f58;
+      background: ${navyColor};
       color: #ffffff;
       padding: 24px 28px;
       display: flex;
@@ -71,12 +114,13 @@ function openPrintDocument(title: string, bodyHtml: string) {
       background: rgba(255,255,255,0.14);
       display: flex; align-items: center; justify-content: center;
       font-size: 22px; font-weight: 800; color: #fff; overflow: hidden;
+      flex-shrink: 0;
     }
-    .logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 3px; }
+    .logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 3px; border-radius: 10px; }
     .school-title { font-size: 20px; font-weight: 800; margin: 0; }
     .school-meta { font-size: 12px; color: #cbd5e1; margin-top: 4px; }
     .badge {
-      background: #e3ad3f;
+      background: ${goldColor};
       color: #0f172a;
       font-size: 11px;
       font-weight: 800;
@@ -85,6 +129,38 @@ function openPrintDocument(title: string, bodyHtml: string) {
       padding: 6px 12px;
       border-radius: 999px;
       white-space: nowrap;
+    }
+    .student-grid {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .student-grid > table { flex: 1; }
+    .applicant-photo-box {
+      width: 106px;
+      flex-shrink: 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 4px;
+      background: #fff;
+      text-align: center;
+    }
+    .applicant-photo-box img {
+      width: 96px;
+      height: 116px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+      margin: 0 auto;
+    }
+    .applicant-photo-box span {
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-top: 4px;
     }
     .content { padding: 26px 28px; }
     .ref-bar {
@@ -189,9 +265,47 @@ function openPrintDocument(title: string, bodyHtml: string) {
   </div>
   ${bodyHtml}
   <script>
-    window.addEventListener('load', function() {
-      setTimeout(function() { window.print(); }, 250);
-    });
+    (function() {
+      var printed = false;
+      function triggerPrint() {
+        if (printed) return;
+        printed = true;
+        window.print();
+      }
+      function waitForImagesAndPrint() {
+        var imgs = Array.prototype.slice.call(document.images || []);
+        if (imgs.length === 0) {
+          setTimeout(triggerPrint, 120);
+          return;
+        }
+        var pending = imgs.length;
+        var doneOne = function() {
+          pending -= 1;
+          if (pending <= 0) {
+            setTimeout(triggerPrint, 120);
+          }
+        };
+        imgs.forEach(function(img) {
+          if (img.complete) {
+            if (typeof img.decode === 'function') {
+              img.decode().then(doneOne, doneOne);
+            } else {
+              doneOne();
+            }
+          } else {
+            img.addEventListener('load', doneOne, { once: true });
+            img.addEventListener('error', doneOne, { once: true });
+          }
+        });
+        // Hard safety timeout so slow remote CDN logos never block print dialog indefinitely
+        setTimeout(triggerPrint, 3000);
+      }
+      if (document.readyState === 'complete') {
+        waitForImagesAndPrint();
+      } else {
+        window.addEventListener('load', waitForImagesAndPrint, { once: true });
+      }
+    })();
   </script>
 </body>
 </html>`
@@ -223,12 +337,17 @@ export function printAdmissionReceipt(
     .map(escapeHtml)
     .join(' · ')
 
+  const applicantPhotoHtml = renderApplicantPhotoHtml(
+    formData.photoUrl || submission.photoUrl,
+    fullStudentName,
+  )
+
   const body = `
   <div class="sheet">
     <div class="header">
       <div class="brand">
         <div class="logo">
-          ${school.logoUrl ? `<img src="${escapeHtml(school.logoUrl)}" alt="${escapeHtml(school.schoolName)}" />` : escapeHtml(initial)}
+          ${renderLogoHtml(school.logoUrl, school.schoolName, initial)}
         </div>
         <div>
           <h1 class="school-title">${escapeHtml(school.schoolName)}</h1>
@@ -251,17 +370,20 @@ export function printAdmissionReceipt(
       </div>
 
       <h3>Student Information</h3>
-      <table>
-        <tr><td class="label">Full Name</td><td class="val">${escapeHtml(fullStudentName)}</td></tr>
-        <tr><td class="label">Applying For Class / Grade</td><td class="val">${escapeHtml(formData.applyingForGrade)}</td></tr>
-        <tr><td class="label">Date of Birth</td><td class="val">${escapeHtml(formData.dateOfBirth)}</td></tr>
-        <tr><td class="label">Gender</td><td class="val">${escapeHtml(formData.gender)}</td></tr>
-        <tr><td class="label">Student Phone</td><td class="val">${escapeHtml(formData.phone)}</td></tr>
-        ${formData.email ? `<tr><td class="label">Student Email</td><td class="val">${escapeHtml(formData.email)}</td></tr>` : ''}
-        ${formData.bloodGroup ? `<tr><td class="label">Blood Group</td><td class="val">${escapeHtml(formData.bloodGroup)}</td></tr>` : ''}
-        ${formData.birthRegistrationNo ? `<tr><td class="label">Birth Registration No</td><td class="val">${escapeHtml(formData.birthRegistrationNo)}</td></tr>` : ''}
-        ${formData.previousSchool ? `<tr><td class="label">Previous School</td><td class="val">${escapeHtml(formData.previousSchool)}</td></tr>` : ''}
-      </table>
+      <div class="student-grid">
+        <table>
+          <tr><td class="label">Full Name</td><td class="val">${escapeHtml(fullStudentName)}</td></tr>
+          <tr><td class="label">Applying For Class / Grade</td><td class="val">${escapeHtml(formData.applyingForGrade)}</td></tr>
+          <tr><td class="label">Date of Birth</td><td class="val">${escapeHtml(formData.dateOfBirth)}</td></tr>
+          <tr><td class="label">Gender</td><td class="val">${escapeHtml(formData.gender)}</td></tr>
+          <tr><td class="label">Student Phone</td><td class="val">${escapeHtml(formData.phone)}</td></tr>
+          ${formData.email ? `<tr><td class="label">Student Email</td><td class="val">${escapeHtml(formData.email)}</td></tr>` : ''}
+          ${formData.bloodGroup ? `<tr><td class="label">Blood Group</td><td class="val">${escapeHtml(formData.bloodGroup)}</td></tr>` : ''}
+          ${formData.birthRegistrationNo ? `<tr><td class="label">Birth Registration No</td><td class="val">${escapeHtml(formData.birthRegistrationNo)}</td></tr>` : ''}
+          ${formData.previousSchool ? `<tr><td class="label">Previous School</td><td class="val">${escapeHtml(formData.previousSchool)}</td></tr>` : ''}
+        </table>
+        ${applicantPhotoHtml}
+      </div>
 
       <h3>Parent / Guardian Information</h3>
       <table>
@@ -345,15 +467,18 @@ export function printTrackStatusSlip(
     .map(escapeHtml)
     .join(' · ')
 
+  const applicantPhotoHtml = renderApplicantPhotoHtml(track.photoUrl, track.studentName)
+  const resolvedSchoolName = track.schoolName || school.schoolName
+
   const body = `
   <div class="sheet">
     <div class="header">
       <div class="brand">
         <div class="logo">
-          ${school.logoUrl ? `<img src="${escapeHtml(school.logoUrl)}" alt="${escapeHtml(school.schoolName)}" />` : escapeHtml(initial)}
+          ${renderLogoHtml(school.logoUrl, resolvedSchoolName, initial)}
         </div>
         <div>
-          <h1 class="school-title">${escapeHtml(track.schoolName || school.schoolName)}</h1>
+          <h1 class="school-title">${escapeHtml(resolvedSchoolName)}</h1>
           <div class="school-meta">${contactLine || 'Official Admissions Status Slip'}</div>
         </div>
       </div>
@@ -373,12 +498,15 @@ export function printTrackStatusSlip(
       </div>
 
       <h3>Application Summary</h3>
-      <table>
-        <tr><td class="label">Applicant Name</td><td class="val">${escapeHtml(track.studentName)}</td></tr>
-        <tr><td class="label">Class / Grade</td><td class="val">${escapeHtml(track.applyingForGrade)}</td></tr>
-        <tr><td class="label">Submitted On</td><td class="val">${escapeHtml(submittedDate)}</td></tr>
-        ${interviewDate ? `<tr><td class="label">Interview Schedule</td><td class="val">${escapeHtml(interviewDate)}</td></tr>` : ''}
-      </table>
+      <div class="student-grid">
+        <table>
+          <tr><td class="label">Applicant Name</td><td class="val">${escapeHtml(track.studentName)}</td></tr>
+          <tr><td class="label">Class / Grade</td><td class="val">${escapeHtml(track.applyingForGrade)}</td></tr>
+          <tr><td class="label">Submitted On</td><td class="val">${escapeHtml(submittedDate)}</td></tr>
+          ${interviewDate ? `<tr><td class="label">Interview Schedule</td><td class="val">${escapeHtml(interviewDate)}</td></tr>` : ''}
+        </table>
+        ${applicantPhotoHtml}
+      </div>
 
       ${
         track.paymentStatus || Number(track.feeAmount ?? 0) > 0
