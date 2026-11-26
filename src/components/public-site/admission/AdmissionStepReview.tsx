@@ -1,10 +1,12 @@
 'use client'
 
 import { Icon } from '@/components/common/Icon'
-import type { AdmissionFormData } from './admission-form.types'
+import { formatFeeCurrency, type AdmissionFormData, type ErpFeeConfig } from './admission-form.types'
 
 interface AdmissionStepReviewProps {
   formData: AdmissionFormData
+  feeConfig?: ErpFeeConfig | null
+  selectedClassFee?: number
   handleInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void
@@ -15,12 +17,18 @@ interface AdmissionStepReviewProps {
 
 export function AdmissionStepReview({
   formData,
+  feeConfig,
+  selectedClassFee,
   handleInputChange,
   onBack,
   onSubmit,
   isSubmitting,
 }: AdmissionStepReviewProps) {
   const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.studentName
+  const resolvedPresent = formData.presentAddress || formData.address
+  const resolvedPermanent = formData.sameAsPresentAddress
+    ? resolvedPresent
+    : formData.permanentAddress
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -62,6 +70,11 @@ export function AdmissionStepReview({
                 <span className="font-semibold text-slate-800">Blood Group:</span> {formData.bloodGroup}
               </div>
             )}
+            {formData.birthRegistrationNo && (
+              <div>
+                <span className="font-semibold text-slate-800">Birth Reg. No:</span> {formData.birthRegistrationNo}
+              </div>
+            )}
             {formData.email && (
               <div className="col-span-2">
                 <span className="font-semibold text-slate-800">Email:</span> {formData.email}
@@ -80,6 +93,16 @@ export function AdmissionStepReview({
             Guardian Summary
           </h4>
           <div className="grid grid-cols-2 gap-2 text-slate-600">
+            {formData.fatherName && (
+              <div>
+                <span className="font-semibold text-slate-800">Father:</span> {formData.fatherName}
+              </div>
+            )}
+            {formData.motherName && (
+              <div>
+                <span className="font-semibold text-slate-800">Mother:</span> {formData.motherName}
+              </div>
+            )}
             <div>
               <span className="font-semibold text-slate-800">Guardian:</span> {formData.guardianName} ({formData.guardianRelationship})
             </div>
@@ -90,10 +113,33 @@ export function AdmissionStepReview({
               <span className="font-semibold text-slate-800">Email:</span> {formData.guardianEmail}
             </div>
             <div className="col-span-2">
-              <span className="font-semibold text-slate-800">Address:</span> {formData.address}
+              <span className="font-semibold text-slate-800">Present Address:</span> {resolvedPresent}
             </div>
+            {resolvedPermanent && (
+              <div className="col-span-2">
+                <span className="font-semibold text-slate-800">Permanent Address:</span> {resolvedPermanent}
+              </div>
+            )}
           </div>
         </div>
+
+        {Number(selectedClassFee ?? 0) > 0 && (
+          <div className="pt-4 pb-4">
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-900 block">
+                  Admission Form Fee
+                </span>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  Online &amp; manual payment options will appear immediately after you submit this application.
+                </p>
+              </div>
+              <strong className="text-base font-extrabold text-amber-950">
+                {formatFeeCurrency(selectedClassFee, feeConfig?.currency)}
+              </strong>
+            </div>
+          </div>
+        )}
 
         <div className="pt-4">
           <label className="flex items-start gap-3 cursor-pointer">

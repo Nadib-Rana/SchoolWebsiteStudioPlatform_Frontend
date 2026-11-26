@@ -37,6 +37,34 @@ export function AdmissionStepGuardian({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Father&apos;s Name <span className="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              name="fatherName"
+              placeholder="e.g. Kamal Rahman"
+              value={formData.fatherName}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Mother&apos;s Name <span className="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              name="motherName"
+              placeholder="e.g. Fatema Begum"
+              value={formData.motherName}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Guardian Full Name <span className="text-rose-500">*</span>
             </label>
             <input
@@ -62,6 +90,7 @@ export function AdmissionStepGuardian({
             >
               <option value="Father">Father</option>
               <option value="Mother">Mother</option>
+              <option value="Parents">Parents</option>
               <option value="Legal Guardian">Legal Guardian</option>
               <option value="Relative">Relative</option>
             </select>
@@ -99,16 +128,47 @@ export function AdmissionStepGuardian({
 
           <div className="sm:col-span-2">
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Residential Address <span className="text-rose-500">*</span>
+              Present Address <span className="text-rose-500">*</span>
             </label>
             <textarea
-              name="address"
-              rows={3}
+              name="presentAddress"
+              rows={2}
               required
               placeholder="House/Street, Area, City, Postal Code"
-              value={formData.address}
+              value={formData.presentAddress || formData.address}
               onChange={handleInputChange}
               className={INPUT_CLASS}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700">
+                Permanent Address <span className="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="sameAsPresentAddress"
+                  checked={formData.sameAsPresentAddress}
+                  onChange={handleInputChange}
+                  className="h-3.5 w-3.5 rounded border-slate-300"
+                />
+                <span>Same as Present Address</span>
+              </label>
+            </div>
+            <textarea
+              name="permanentAddress"
+              rows={2}
+              disabled={formData.sameAsPresentAddress}
+              placeholder="Village/Street, Upazila, District"
+              value={
+                formData.sameAsPresentAddress
+                  ? formData.presentAddress || formData.address
+                  : formData.permanentAddress
+              }
+              onChange={handleInputChange}
+              className={`${INPUT_CLASS} disabled:bg-slate-100 disabled:text-slate-500`}
             />
           </div>
         </div>

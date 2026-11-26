@@ -69,3 +69,4 @@ export async function compressStudentPhoto(file: File): Promise<string> {
     URL.revokeObjectURL(objectUrl)
   }
 }
+

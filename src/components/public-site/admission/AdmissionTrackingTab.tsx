@@ -1,9 +1,18 @@
 'use client'
 
 import { Icon } from '@/components/common/Icon'
-import { getStatusBadge, type TrackResult } from './admission-form.types'
+import {
+  formatFeeCurrency,
+  getPaymentStatusBadge,
+  getStatusBadge,
+  type ErpFeeConfig,
+  type TrackResult,
+} from './admission-form.types'
+import { AdmissionPaymentPanel } from './AdmissionPaymentPanel'
 
 interface AdmissionTrackingTabProps {
+  schoolSlug: string
+  feeConfig?: ErpFeeConfig | null
   trackAppNumber: string
   setTrackAppNumber: (val: string) => void
   trackPhone: string
@@ -12,10 +21,19 @@ interface AdmissionTrackingTabProps {
   trackError: string | null
   trackResult: TrackResult | null
   onTrackSubmit: (e: React.FormEvent) => void
+  onPaymentComplete?: (update: {
+    paymentStatus: string
+    paymentMethod?: string
+    transactionId?: string
+    feeAmount?: number
+    paidAt?: string
+  }) => void
   onPrintStatus?: (result: TrackResult) => void
 }
 
 export function AdmissionTrackingTab({
+  schoolSlug,
+  feeConfig,
   trackAppNumber,
   setTrackAppNumber,
   trackPhone,
@@ -24,6 +42,7 @@ export function AdmissionTrackingTab({
   trackError,
   trackResult,
   onTrackSubmit,
+  onPaymentComplete,
   onPrintStatus,
 }: AdmissionTrackingTabProps) {
   return (
@@ -157,7 +176,75 @@ export function AdmissionTrackingTab({
                   })}
                 </span>
               </div>
+
+              {(trackResult.paymentStatus || Number(trackResult.feeAmount ?? 0) > 0) && (
+                <>
+                  <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
+                    <span className="text-slate-500">Admission Fee:</span>
+                    <span className="font-semibold text-slate-900">
+                      {formatFeeCurrency(trackResult.feeAmount, trackResult.currency)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Payment Status:</span>
+                    {(() => {
+                      const pBadge = getPaymentStatusBadge(trackResult.paymentStatus)
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${pBadge.bg}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${pBadge.dot}`} />
+                          {pBadge.label}
+                        </span>
+                      )
+                    })()}
+                  </div>
+                  {trackResult.paymentMethod && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Payment Method:</span>
+                      <span className="font-semibold text-slate-900">{trackResult.paymentMethod}</span>
+                    </div>
+                  )}
+                  {trackResult.transactionId && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Transaction ID:</span>
+                      <span className="font-mono font-semibold text-slate-900">{trackResult.transactionId}</span>
+                    </div>
+                  )}
+                  {trackResult.paidAt && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Paid On:</span>
+                      <span className="text-slate-700">
+                        {new Date(trackResult.paidAt).toLocaleString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+
+            {trackResult.paymentStatus?.toUpperCase() === 'PENDING' &&
+              Number(trackResult.feeAmount ?? 0) > 0 &&
+              feeConfig &&
+              onPaymentComplete && (
+                <AdmissionPaymentPanel
+                  schoolSlug={schoolSlug}
+                  applicationNumber={trackResult.applicationNumber}
+                  identifier={trackPhone}
+                  studentName={trackResult.studentName}
+                  applyingForGrade={trackResult.applyingForGrade}
+                  feeAmount={Number(trackResult.feeAmount)}
+                  currency={trackResult.currency || feeConfig.currency}
+                  feeConfig={feeConfig}
+                  onPaymentComplete={onPaymentComplete}
+                />
+              )}
 
             {trackResult.notes && (
               <div className="mt-4 p-4 bg-amber-50/80 border border-amber-200 rounded-xl">

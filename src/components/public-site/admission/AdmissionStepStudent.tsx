@@ -2,7 +2,12 @@
 
 import { useRef, useState } from 'react'
 import { Icon } from '@/components/common/Icon'
-import type { AdmissionFormData, ErpClassOption } from './admission-form.types'
+import {
+  formatFeeCurrency,
+  type AdmissionFormData,
+  type ErpClassOption,
+  type ErpFeeConfig,
+} from './admission-form.types'
 import { compressStudentPhoto } from './photo-compress'
 
 interface AdmissionStepStudentProps {
@@ -10,6 +15,7 @@ interface AdmissionStepStudentProps {
   classes: ErpClassOption[]
   isLoadingClasses: boolean
   isErpConnected: boolean
+  feeConfig?: ErpFeeConfig | null
   handleInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void
@@ -26,11 +32,24 @@ export function AdmissionStepStudent({
   classes,
   isLoadingClasses,
   isErpConnected,
+  feeConfig,
   handleInputChange,
   onClassSelect,
   onPhotoChange,
   onNext,
 }: AdmissionStepStudentProps) {
+  const selectedClassObj = classes.find((c) => c.id === formData.appliedClassId)
+  const rawClassFee =
+    selectedClassObj?.admissionFee !== undefined
+      ? selectedClassObj.admissionFee
+      : feeConfig?.classFees && formData.appliedClassId in feeConfig.classFees
+        ? feeConfig.classFees[formData.appliedClassId]
+        : feeConfig?.enabled
+          ? feeConfig.defaultFee
+          : undefined
+  const showFeeBadge =
+    isErpConnected &&
+    (selectedClassObj?.admissionFee !== undefined || Boolean(feeConfig?.enabled))
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCompressingPhoto, setIsCompressingPhoto] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
@@ -274,10 +293,27 @@ export function AdmissionStepStudent({
                   <option key={cls.id} value={cls.id}>
                     {cls.name}
                     {cls.section ? ` (${cls.section})` : ''}
+                    {cls.admissionFee !== undefined
+                      ? ` — ${formatFeeCurrency(cls.admissionFee, feeConfig?.currency)}`
+                      : ''}
                   </option>
                 ))
               )}
             </select>
+            {showFeeBadge && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+                <span>Admission Form Fee:</span>
+                <strong
+                  className={
+                    Number(rawClassFee ?? 0) > 0
+                      ? 'text-slate-900'
+                      : 'text-emerald-700'
+                  }
+                >
+                  {formatFeeCurrency(rawClassFee, feeConfig?.currency)}
+                </strong>
+              </div>
+            )}
           </div>
 
           <div>
@@ -299,7 +335,21 @@ export function AdmissionStepStudent({
             </select>
           </div>
 
-          <div className="sm:col-span-2">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Birth Registration No <span className="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              name="birthRegistrationNo"
+              placeholder="e.g. 20122691234567890"
+              value={formData.birthRegistrationNo}
+              onChange={handleInputChange}
+              className={INPUT_CLASS}
+            />
+          </div>
+
+          <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Previous School Attended <span className="text-slate-400 font-normal">(Optional)</span>
             </label>

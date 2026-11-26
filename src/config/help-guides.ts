@@ -568,10 +568,10 @@ export const HELP_GUIDES: HelpGuide[] = [
     },
     steps: [
       {
-        title: { en: 'Public admission portal, Student Photo & Printable PDF Receipt', bn: 'পাবলিক অ্যাডমিশন, স্টুডেন্ট ফটো ও PDF রিসিট' },
+        title: { en: 'Public admission portal, Class-Wise Fees, Online Payment & PDF Receipt', bn: 'পাবলিক অ্যাডমিশন, ক্লাস-ভিত্তিক ফি, অনলাইন পেমেন্ট ও PDF রিসিট' },
         detail: {
-          en: 'Parents apply at /{schoolSlug}/admissions, can optionally upload a passport-size student photo (automatically resized to 512px WebP <= 1.5 MB for the ERP Student Profile & Smart ID Card), receive a unique reference number (ADM-YYYY-XXXX), and can print/download an A4 Admission Receipt or Status Slip anytime.',
-          bn: 'অভিভাবকরা /{schoolSlug}/admissions থেকে আবেদন করার সময় ঐচ্ছিকভাবে শিক্ষার্থীর পাসপোর্ট সাইজ ছবি আপলোড করতে পারবেন (যা ব্রাউজারে অটো রিসাইজ হয়ে সরাসরি ERP Student Profile ও Smart ID Card-এ যুক্ত হবে), সাথে সাথে ADM-YYYY-XXXX নম্বর ও প্রিন্টযোগ্য A4 Admission Receipt (PDF) পাবেন।',
+          en: 'Parents apply at /{schoolSlug}/admissions with class-wise admission fees shown automatically, optional student passport photo (512px WebP), Birth Registration & parent details, and instant Online Payment (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe) or Manual TrxID submission. Live tracking also displays payment status and printable A4 PDF receipts.',
+          bn: 'অভিভাবকরা /{schoolSlug}/admissions থেকে ক্লাস-ভিত্তিক ফি দেখে, শিক্ষার্থীর ছবি (512px WebP), জন্ম নিবন্ধন ও মা-বাবার তথ্যসহ আবেদন করে সরাসরি অনলাইন পেমেন্ট (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe) বা ম্যানুয়াল TrxID দিতে পারবেন। ট্র্যাকিং পেজ ও PDF রিসিটেও পেমেন্ট স্ট্যাটাস দেখা যাবে।',
         },
       },
       {
@@ -659,10 +659,10 @@ export const HELP_GUIDES: HelpGuide[] = [
         },
       },
       {
-        title: { en: 'Live Admissions Photo, Alumni Verify & Draft Sync', bn: '৪. অ্যাডমিশন ফটো, Alumni Verify ও সিঙ্ক সুবিধা' },
+        title: { en: 'Live Admissions Payment, Photo, Alumni Verify & Draft Sync', bn: 'অ্যাডমিশন পেমেন্ট, ফটো, Alumni Verify ও সিঙ্ক সুবিধা' },
         detail: {
-          en: 'Student passport photos uploaded on the admission form auto-sync as photoUrl for ERP Enrollment & Smart ID Cards. Alumni Verification at /{schoolSlug}/alumni-verify works directly with your Website API Key, and "Sync ERP now" imports faculty profiles, flushes queued admissions, and brings ERP notices in safely as private DRAFTs.',
-          bn: 'অ্যাডমিশন ফর্মে আপলোড করা শিক্ষার্থীর ছবি photoUrl হিসেবে সরাসরি ERP-তে যায়। কানেকশন সক্রিয় থাকলেই /{schoolSlug}/alumni-verify পেজ কাজ করবে, এবং "Sync ERP now" চাপলে টিচার, কিউড আবেদন ও প্রাইভেট নোটিশ (DRAFT) সিঙ্ক হবে।',
+          en: 'Class-wise admission fees, enabled online gateways (bKash, Nagad, SSLCommerz, ShurjoPay, SonaliPay, Stripe), manual instructions, and passport photos sync directly with ERP via x-website-key. For production online payments, add your live school website domain in ERP Settings → Website Integration → Allowed Domains.',
+          bn: 'ক্লাস-ভিত্তিক অ্যাডমিশন ফি, চালু পেমেন্ট গেটওয়ে, ম্যানুয়াল নির্দেশনা ও স্টুডেন্ট ফটো x-website-key দিয়ে সরাসরি ERP-তে সিঙ্ক হয়। প্রোডাকশনে অনলাইন পেমেন্টের জন্য ERP-র Settings → Website Integration → Allowed Domains-এ আপনার লাইভ স্কুল ডোমেইন যুক্ত রাখুন।',
         },
       },
     ],

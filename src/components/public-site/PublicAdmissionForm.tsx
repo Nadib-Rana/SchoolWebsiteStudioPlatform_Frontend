@@ -8,9 +8,12 @@ import {
   type Step,
   type AdmissionFormData,
   type ErpClassOption,
+  type ErpFeeConfig,
+  type PendingPaymentSession,
   type SubmissionResult,
   type TrackResult,
 } from './admission/admission-form.types'
+import { PENDING_PAYMENT_STORAGE_KEY } from './admission/AdmissionPaymentPanel'
 import { AdmissionNavTabs } from './admission/AdmissionNavTabs'
 import { AdmissionStepStudent } from './admission/AdmissionStepStudent'
 import { AdmissionStepGuardian } from './admission/AdmissionStepGuardian'
@@ -63,6 +66,20 @@ export function PublicAdmissionForm({
   const [classes, setClasses] = useState<ErpClassOption[]>(FALLBACK_CLASSES)
   const [isLoadingClasses, setIsLoadingClasses] = useState(true)
   const [isErpConnected, setIsErpConnected] = useState(false)
+  const [feeConfig, setFeeConfig] = useState<ErpFeeConfig | null>(null)
+  const [paymentBanner, setPaymentBanner] = useState<{
+    type: 'success' | 'error' | 'info'
+    text: string
+  } | null>(null)
+  const [pendingCallbackVerify, setPendingCallbackVerify] = useState<{
+    applicationNumber: string
+    gateway: string
+    transactionId?: string
+    valId?: string
+    paymentID?: string
+  } | null>(null)
+  const [fallbackVerifyIdentifier, setFallbackVerifyIdentifier] = useState('')
+  const [isVerifyingCallback, setIsVerifyingCallback] = useState(false)
 
   const [formData, setFormData] = useState<AdmissionFormData>({
     firstName: '',
@@ -73,14 +90,20 @@ export function PublicAdmissionForm({
     phone: '',
     email: '',
     bloodGroup: '',
+    birthRegistrationNo: '',
     applyingForGrade: 'Grade 1',
     appliedClassId: 'Grade 1',
     previousSchool: '',
+    fatherName: '',
+    motherName: '',
     guardianName: '',
     guardianRelationship: 'Father',
     guardianPhone: '',
     guardianEmail: '',
     address: '',
+    presentAddress: '',
+    permanentAddress: '',
+    sameAsPresentAddress: false,
     documentsUrl: '',
     photoUrl: '',
     declaration: false,
@@ -99,39 +122,263 @@ export function PublicAdmissionForm({
 
   useEffect(() => {
     let active = true
-    const loadClasses = async () => {
+    const loadAdmissionConfig = async () => {
       setIsLoadingClasses(true)
       try {
-        const res = await api.admissions.getClasses(schoolSlug)
-        const payload = res?.data
-        if (active && payload && Array.isArray(payload.classes) && payload.classes.length > 0) {
-          setClasses(payload.classes)
-          setIsErpConnected(Boolean(payload.erpConnected))
-          const first = payload.classes[0]
-          setFormData((prev) => ({
-            ...prev,
-            appliedClassId: first.id,
-            applyingForGrade: first.name,
-          }))
+        const [classesSettled, feeSettled] = await Promise.allSettled([
+          api.admissions.getClasses(schoolSlug),
+          api.admissions.getFeeConfig(schoolSlug),
+        ])
+        if (!active) return
+
+        if (classesSettled.status === 'fulfilled') {
+          const payload = classesSettled.value?.data
+          if (payload && Array.isArray(payload.classes) && payload.classes.length > 0) {
+            setClasses(payload.classes)
+            setIsErpConnected(Boolean(payload.erpConnected))
+            const first = payload.classes[0]
+            setFormData((prev) => ({
+              ...prev,
+              appliedClassId: first.id,
+              applyingForGrade: first.name,
+            }))
+          }
         }
-      } catch {
-        // Fallback grades already populated
+
+        if (feeSettled.status === 'fulfilled' && feeSettled.value?.data) {
+          setFeeConfig(feeSettled.value.data)
+        }
       } finally {
         if (active) setIsLoadingClasses(false)
       }
     }
-    loadClasses()
+    loadAdmissionConfig()
     return () => {
       active = false
     }
   }, [schoolSlug])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('payCallback') !== '1') return
+
+    const appParam = (params.get('app') || '').trim()
+    const gatewayParam = (params.get('gateway') || '').trim().toUpperCase()
+    const payStatus = (
+      params.get('paymentStatus') ||
+      params.get('status') ||
+      params.get('Status') ||
+      ''
+    )
+      .trim()
+      .toLowerCase()
+    const tranId = (params.get('tran_id') || params.get('transactionId') || '').trim()
+    const valId = (params.get('val_id') || params.get('valId') || '').trim()
+    const sessionId = (params.get('session_id') || '').trim()
+    const orderId = (params.get('order_id') || '').trim()
+    const paymentID = (params.get('paymentID') || '').trim()
+    const token = (params.get('Token') || params.get('token') || '').trim()
+    const nagadRef = (params.get('payment_ref_id') || '').trim()
+
+    let savedSession: PendingPaymentSession | null = null
+    try {
+      const raw = window.sessionStorage.getItem(PENDING_PAYMENT_STORAGE_KEY)
+      if (raw) {
+        savedSession = JSON.parse(raw) as PendingPaymentSession
+      }
+    } catch {
+      savedSession = null
+    }
+
+    try {
+      window.history.replaceState({}, '', window.location.pathname)
+    } catch {
+      // Ignore history errors
+    }
+
+    const resolvedAppNumber = appParam || savedSession?.applicationNumber || ''
+    const resolvedGateway = gatewayParam || savedSession?.gateway || ''
+    if (!resolvedAppNumber) return
+
+    setActiveTab('apply')
+    setSubmissionResult({
+      source: 'ERP',
+      applicationNumber: resolvedAppNumber,
+      studentName: savedSession?.studentName || 'Applicant',
+      status: 'SUBMITTED',
+      feeAmount: savedSession?.feeAmount ?? 0,
+      paymentStatus: 'PENDING',
+      currency: savedSession?.currency || 'BDT',
+    })
+
+    if (savedSession?.identifier) {
+      setFormData((prev) => ({
+        ...prev,
+        phone: prev.phone || savedSession.identifier,
+        applyingForGrade: savedSession.applyingForGrade || prev.applyingForGrade,
+      }))
+    }
+
+    const isCancelled = payStatus === 'cancelled' || payStatus === 'cancel'
+    const isFailed = payStatus === 'failed' || payStatus === 'failure' || isCancelled
+    if (isFailed) {
+      setPaymentBanner({
+        type: 'error',
+        text: isCancelled
+          ? 'Online payment was cancelled. You can choose another gateway or submit a manual transaction ID below.'
+          : 'Online payment could not be completed. Please retry below or use manual payment.',
+      })
+      return
+    }
+
+    let verifyTransactionId = tranId || savedSession?.transactionId || ''
+    if (resolvedGateway === 'STRIPE' && sessionId) {
+      verifyTransactionId = sessionId
+    } else if (resolvedGateway === 'SHURJOPAY' && orderId) {
+      verifyTransactionId = orderId
+    } else if (resolvedGateway === 'SONALIPAY' && token) {
+      verifyTransactionId = token
+    } else if (resolvedGateway === 'BKASH' && !verifyTransactionId && paymentID) {
+      verifyTransactionId = paymentID
+    } else if (resolvedGateway === 'NAGAD' && nagadRef) {
+      verifyTransactionId = nagadRef
+    }
+
+    const verifyPayload = {
+      applicationNumber: resolvedAppNumber,
+      gateway: resolvedGateway || 'SSLCOMMERZ',
+      transactionId: verifyTransactionId || undefined,
+      valId: valId || undefined,
+      paymentID: paymentID || undefined,
+    }
+
+    if (!savedSession?.identifier) {
+      setPendingCallbackVerify(verifyPayload)
+      setPaymentBanner({
+        type: 'info',
+        text: 'Payment returned from gateway. Enter your registered phone number below to finalize verification.',
+      })
+      return
+    }
+
+    let cancelled = false
+    const verify = async () => {
+      setIsVerifyingCallback(true)
+      setPaymentBanner({
+        type: 'info',
+        text: 'Verifying your online payment with the school ERP...',
+      })
+      try {
+        const res = await api.admissions.verifyOnlinePayment(schoolSlug, {
+          ...verifyPayload,
+          identifier: savedSession!.identifier,
+        })
+        if (cancelled) return
+        const data = res?.data
+        try {
+          window.sessionStorage.removeItem(PENDING_PAYMENT_STORAGE_KEY)
+        } catch {}
+        setSubmissionResult((prev) =>
+          prev
+            ? {
+                ...prev,
+                paymentStatus: data?.paymentStatus || 'PAID',
+                paymentMethod: data?.paymentMethod || verifyPayload.gateway,
+                transactionId: data?.transactionId || verifyPayload.transactionId || null,
+                feeAmount: data?.feeAmount ?? prev.feeAmount,
+                paidAt: data?.paidAt || new Date().toISOString(),
+              }
+            : prev,
+        )
+        setPaymentBanner({
+          type: 'success',
+          text: 'Payment verified and confirmed! Your admission fee receipt is ready.',
+        })
+      } catch (err: unknown) {
+        if (cancelled) return
+        setPaymentBanner({
+          type: 'error',
+          text:
+            err instanceof Error
+              ? err.message
+              : 'Automatic payment verification failed. Please retry or use Track Application to check status.',
+        })
+      } finally {
+        if (!cancelled) setIsVerifyingCallback(false)
+      }
+    }
+    void verify()
+    return () => {
+      cancelled = true
+    }
+  }, [schoolSlug])
+
+  const handleFallbackCallbackVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pendingCallbackVerify || !fallbackVerifyIdentifier.trim()) return
+    setIsVerifyingCallback(true)
+    setPaymentBanner(null)
+    try {
+      const res = await api.admissions.verifyOnlinePayment(schoolSlug, {
+        ...pendingCallbackVerify,
+        identifier: fallbackVerifyIdentifier.trim(),
+      })
+      const data = res?.data
+      setPendingCallbackVerify(null)
+      setSubmissionResult((prev) =>
+        prev
+          ? {
+              ...prev,
+              paymentStatus: data?.paymentStatus || 'PAID',
+              paymentMethod: data?.paymentMethod || pendingCallbackVerify.gateway,
+              transactionId:
+                data?.transactionId || pendingCallbackVerify.transactionId || null,
+              feeAmount: data?.feeAmount ?? prev.feeAmount,
+              paidAt: data?.paidAt || new Date().toISOString(),
+            }
+          : prev,
+      )
+      setFormData((prev) => ({ ...prev, phone: prev.phone || fallbackVerifyIdentifier.trim() }))
+      setPaymentBanner({
+        type: 'success',
+        text: 'Payment verified and confirmed! Your admission fee receipt is ready.',
+      })
+    } catch (err: unknown) {
+      setPaymentBanner({
+        type: 'error',
+        text:
+          err instanceof Error ? err.message : 'Unable to verify payment right now.',
+      })
+    } finally {
+      setIsVerifyingCallback(false)
+    }
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value, type } = e.target
     if (type === 'checkbox') {
-      setFormData((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }))
+      const checked = (e.target as HTMLInputElement).checked
+      if (name === 'sameAsPresentAddress') {
+        setFormData((prev) => ({
+          ...prev,
+          sameAsPresentAddress: checked,
+          permanentAddress: checked
+            ? prev.presentAddress || prev.address
+            : prev.permanentAddress,
+        }))
+        return
+      }
+      setFormData((prev) => ({ ...prev, [name]: checked }))
+    } else if (name === 'presentAddress') {
+      setFormData((prev) => ({
+        ...prev,
+        presentAddress: value,
+        address: value,
+        ...(prev.sameAsPresentAddress ? { permanentAddress: value } : {}),
+      }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
@@ -162,11 +409,12 @@ export function PublicAdmissionForm({
       }
       setStep(2)
     } else if (step === 2) {
+      const resolvedPresent = (formData.presentAddress || formData.address).trim()
       if (
         !formData.guardianName.trim() ||
         !formData.guardianPhone.trim() ||
         !formData.guardianEmail.trim() ||
-        !formData.address.trim()
+        !resolvedPresent
       ) {
         setApplyError('Please fill in all required guardian contact details before proceeding.')
         return
@@ -183,8 +431,13 @@ export function PublicAdmissionForm({
     }
     setIsSubmitting(true)
     setApplyError(null)
+    setPaymentBanner(null)
     try {
       const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim()
+      const resolvedPresent = (formData.presentAddress || formData.address).trim()
+      const resolvedPermanent = formData.sameAsPresentAddress
+        ? resolvedPresent
+        : formData.permanentAddress.trim()
       const res = await api.admissions.apply({
         schoolSlug,
         firstName: formData.firstName.trim(),
@@ -195,6 +448,9 @@ export function PublicAdmissionForm({
         phone: formData.phone.trim(),
         email: formData.email.trim() || undefined,
         bloodGroup: formData.bloodGroup || undefined,
+        birthRegistrationNo: formData.birthRegistrationNo.trim() || undefined,
+        fatherName: formData.fatherName.trim() || undefined,
+        motherName: formData.motherName.trim() || undefined,
         applyingForGrade: formData.applyingForGrade,
         appliedClassId: formData.appliedClassId || undefined,
         previousSchool: formData.previousSchool.trim() || undefined,
@@ -202,7 +458,9 @@ export function PublicAdmissionForm({
         guardianRelationship: formData.guardianRelationship,
         guardianPhone: formData.guardianPhone.trim(),
         guardianEmail: formData.guardianEmail.trim() || undefined,
-        address: formData.address.trim(),
+        address: resolvedPresent,
+        presentAddress: resolvedPresent,
+        permanentAddress: resolvedPermanent || undefined,
         documentsUrl: formData.documentsUrl.trim() || undefined,
         photoUrl: formData.photoUrl || undefined,
       })
@@ -295,24 +553,70 @@ export function PublicAdmissionForm({
               </p>
             </div>
           ) : submissionResult ? (
-            <AdmissionSuccessScreen
-              schoolName={schoolName}
-              submissionResult={submissionResult}
-              copied={copied}
-              onCopy={handleCopyApplicationNumber}
-              onPrintReceipt={() =>
-                printAdmissionReceipt(
-                  { schoolName, logoUrl, address, phone, email, schoolSlug },
-                  submissionResult,
-                  formData,
-                )
-              }
-              onTrack={(num) => {
-                setTrackAppNumber(num)
-                setTrackPhone(formData.phone || formData.guardianPhone)
-                setActiveTab('track')
-              }}
-            />
+            <>
+              {pendingCallbackVerify && (
+                <form
+                  onSubmit={handleFallbackCallbackVerify}
+                  className="mb-6 max-w-xl mx-auto p-4 bg-sky-50 border border-sky-200 rounded-2xl text-left space-y-3"
+                >
+                  <p className="text-xs font-semibold text-sky-900">
+                    Confirm Payment Verification for #{pendingCallbackVerify.applicationNumber}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Registered Phone or Email"
+                      value={fallbackVerifyIdentifier}
+                      onChange={(e) => setFallbackVerifyIdentifier(e.target.value)}
+                      className="flex-1 px-3.5 py-2 rounded-xl border border-sky-300 bg-white text-sm text-slate-900"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isVerifyingCallback}
+                      className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold disabled:opacity-50"
+                    >
+                      {isVerifyingCallback ? 'Verifying...' : 'Verify Payment'}
+                    </button>
+                  </div>
+                </form>
+              )}
+              <AdmissionSuccessScreen
+                schoolSlug={schoolSlug}
+                schoolName={schoolName}
+                submissionResult={submissionResult}
+                feeConfig={feeConfig}
+                applicantIdentifier={formData.phone || formData.guardianPhone || fallbackVerifyIdentifier}
+                applyingForGrade={formData.applyingForGrade}
+                copied={copied}
+                paymentBanner={paymentBanner}
+                onPaymentComplete={(update) => {
+                  setSubmissionResult((prev) =>
+                    prev ? { ...prev, ...update } : prev,
+                  )
+                  setPaymentBanner({
+                    type: 'success',
+                    text:
+                      update.paymentStatus === 'UNDER_VERIFICATION'
+                        ? 'Your transaction reference has been submitted and is now under verification by the school.'
+                        : 'Admission fee payment confirmed!',
+                  })
+                }}
+                onCopy={handleCopyApplicationNumber}
+                onPrintReceipt={() =>
+                  printAdmissionReceipt(
+                    { schoolName, logoUrl, address, phone, email, schoolSlug },
+                    submissionResult,
+                    formData,
+                  )
+                }
+                onTrack={(num) => {
+                  setTrackAppNumber(num)
+                  setTrackPhone(formData.phone || formData.guardianPhone || fallbackVerifyIdentifier)
+                  setActiveTab('track')
+                }}
+              />
+            </>
           ) : (
             <div>
               <AdmissionStepperHeader step={step} />
@@ -328,6 +632,7 @@ export function PublicAdmissionForm({
                   classes={classes}
                   isLoadingClasses={isLoadingClasses}
                   isErpConnected={isErpConnected}
+                  feeConfig={feeConfig}
                   handleInputChange={handleInputChange}
                   onClassSelect={handleClassSelect}
                   onPhotoChange={(photoUrl) =>
@@ -344,15 +649,28 @@ export function PublicAdmissionForm({
                   onBack={() => setStep(1)}
                 />
               )}
-              {step === 3 && (
-                <AdmissionStepReview
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  onBack={() => setStep(2)}
-                  onSubmit={handleFinalSubmit}
-                  isSubmitting={isSubmitting}
-                />
-              )}
+              {step === 3 && (() => {
+                const selCls = classes.find((c) => c.id === formData.appliedClassId)
+                const selFee =
+                  selCls?.admissionFee !== undefined
+                    ? selCls.admissionFee
+                    : feeConfig?.classFees && formData.appliedClassId in feeConfig.classFees
+                      ? feeConfig.classFees[formData.appliedClassId]
+                      : feeConfig?.enabled
+                        ? feeConfig.defaultFee
+                        : 0
+                return (
+                  <AdmissionStepReview
+                    formData={formData}
+                    feeConfig={feeConfig}
+                    selectedClassFee={selFee}
+                    handleInputChange={handleInputChange}
+                    onBack={() => setStep(2)}
+                    onSubmit={handleFinalSubmit}
+                    isSubmitting={isSubmitting}
+                  />
+                )
+              })()}
             </div>
           )}
         </div>
@@ -360,6 +678,8 @@ export function PublicAdmissionForm({
 
       {activeTab === 'track' && (
         <AdmissionTrackingTab
+          schoolSlug={schoolSlug}
+          feeConfig={feeConfig}
           trackAppNumber={trackAppNumber}
           setTrackAppNumber={setTrackAppNumber}
           trackPhone={trackPhone}
@@ -368,6 +688,9 @@ export function PublicAdmissionForm({
           trackError={trackError}
           trackResult={trackResult}
           onTrackSubmit={handleTrackSubmit}
+          onPaymentComplete={(update) =>
+            setTrackResult((prev) => (prev ? { ...prev, ...update } : prev))
+          }
           onPrintStatus={(result) =>
             printTrackStatusSlip(
               { schoolName, logoUrl, address, phone, email, schoolSlug },

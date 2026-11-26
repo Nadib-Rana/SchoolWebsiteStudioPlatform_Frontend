@@ -1,7 +1,8 @@
-import type {
-  AdmissionFormData,
-  SubmissionResult,
-  TrackResult,
+import {
+  formatFeeCurrency,
+  type AdmissionFormData,
+  type SubmissionResult,
+  type TrackResult,
 } from './admission-form.types'
 
 export interface SchoolReceiptMeta {
@@ -258,17 +259,34 @@ export function printAdmissionReceipt(
         <tr><td class="label">Student Phone</td><td class="val">${escapeHtml(formData.phone)}</td></tr>
         ${formData.email ? `<tr><td class="label">Student Email</td><td class="val">${escapeHtml(formData.email)}</td></tr>` : ''}
         ${formData.bloodGroup ? `<tr><td class="label">Blood Group</td><td class="val">${escapeHtml(formData.bloodGroup)}</td></tr>` : ''}
+        ${formData.birthRegistrationNo ? `<tr><td class="label">Birth Registration No</td><td class="val">${escapeHtml(formData.birthRegistrationNo)}</td></tr>` : ''}
         ${formData.previousSchool ? `<tr><td class="label">Previous School</td><td class="val">${escapeHtml(formData.previousSchool)}</td></tr>` : ''}
       </table>
 
       <h3>Parent / Guardian Information</h3>
       <table>
+        ${formData.fatherName ? `<tr><td class="label">Father's Name</td><td class="val">${escapeHtml(formData.fatherName)}</td></tr>` : ''}
+        ${formData.motherName ? `<tr><td class="label">Mother's Name</td><td class="val">${escapeHtml(formData.motherName)}</td></tr>` : ''}
         <tr><td class="label">Guardian Name</td><td class="val">${escapeHtml(formData.guardianName)}</td></tr>
         <tr><td class="label">Relationship</td><td class="val">${escapeHtml(formData.guardianRelationship)}</td></tr>
         <tr><td class="label">Guardian Phone</td><td class="val">${escapeHtml(formData.guardianPhone)}</td></tr>
         ${formData.guardianEmail ? `<tr><td class="label">Guardian Email</td><td class="val">${escapeHtml(formData.guardianEmail)}</td></tr>` : ''}
-        <tr><td class="label">Residential Address</td><td class="val">${escapeHtml(formData.address)}</td></tr>
+        <tr><td class="label">Present Address</td><td class="val">${escapeHtml(formData.presentAddress || formData.address)}</td></tr>
+        ${(formData.sameAsPresentAddress ? formData.presentAddress || formData.address : formData.permanentAddress) ? `<tr><td class="label">Permanent Address</td><td class="val">${escapeHtml(formData.sameAsPresentAddress ? formData.presentAddress || formData.address : formData.permanentAddress)}</td></tr>` : ''}
       </table>
+
+      ${
+        submission.paymentStatus || Number(submission.feeAmount ?? 0) > 0
+          ? `<h3>Fee &amp; Payment Information</h3>
+      <table>
+        <tr><td class="label">Admission Form Fee</td><td class="val">${escapeHtml(formatFeeCurrency(submission.feeAmount, submission.currency))}</td></tr>
+        <tr><td class="label">Payment Status</td><td class="val">${escapeHtml(submission.paymentStatus || 'NOT_REQUIRED')}</td></tr>
+        ${submission.paymentMethod ? `<tr><td class="label">Payment Method</td><td class="val">${escapeHtml(submission.paymentMethod)}</td></tr>` : ''}
+        ${submission.transactionId ? `<tr><td class="label">Transaction ID</td><td class="val">${escapeHtml(submission.transactionId)}</td></tr>` : ''}
+        ${submission.paidAt ? `<tr><td class="label">Paid On</td><td class="val">${escapeHtml(new Date(submission.paidAt).toLocaleString())}</td></tr>` : ''}
+      </table>`
+          : ''
+      }
 
       <div class="notes">
         <strong>Important Instructions:</strong> Please keep this receipt safe and bring a printed or digital copy during the campus interaction / interview along with original academic records, birth certificate, and applicant photographs. You can track live status anytime using your Application Reference Number on the school website.
@@ -361,6 +379,19 @@ export function printTrackStatusSlip(
         <tr><td class="label">Submitted On</td><td class="val">${escapeHtml(submittedDate)}</td></tr>
         ${interviewDate ? `<tr><td class="label">Interview Schedule</td><td class="val">${escapeHtml(interviewDate)}</td></tr>` : ''}
       </table>
+
+      ${
+        track.paymentStatus || Number(track.feeAmount ?? 0) > 0
+          ? `<h3>Fee &amp; Payment Information</h3>
+      <table>
+        <tr><td class="label">Admission Form Fee</td><td class="val">${escapeHtml(formatFeeCurrency(track.feeAmount, track.currency))}</td></tr>
+        <tr><td class="label">Payment Status</td><td class="val">${escapeHtml(track.paymentStatus || 'NOT_REQUIRED')}</td></tr>
+        ${track.paymentMethod ? `<tr><td class="label">Payment Method</td><td class="val">${escapeHtml(track.paymentMethod)}</td></tr>` : ''}
+        ${track.transactionId ? `<tr><td class="label">Transaction ID</td><td class="val">${escapeHtml(track.transactionId)}</td></tr>` : ''}
+        ${track.paidAt ? `<tr><td class="label">Paid On</td><td class="val">${escapeHtml(new Date(track.paidAt).toLocaleString())}</td></tr>` : ''}
+      </table>`
+          : ''
+      }
 
       ${
         track.notes
