@@ -1,8 +1,7 @@
-import {
-  formatFeeCurrency,
-  type AdmissionFormData,
-  type SubmissionResult,
-  type TrackResult,
+import type {
+  AdmissionFormData,
+  SubmissionResult,
+  TrackResult,
 } from './admission-form.types'
 
 export interface SchoolReceiptMeta {
@@ -45,20 +44,206 @@ function resolveAbsoluteUrl(url: string | undefined | null): string | undefined 
   return trimmed
 }
 
-function renderLogoHtml(logoUrl: string | undefined, schoolName: string, initial: string): string {
-  const resolved = resolveAbsoluteUrl(logoUrl)
-  if (!resolved) {
-    return escapeHtml(initial)
+function formatShortDate(value: string | Date | undefined | null): string {
+  if (!value) return '—'
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return typeof value === 'string' && value.trim() ? value : '—'
   }
-  return `<img src="${escapeHtml(resolved)}" alt="${escapeHtml(schoolName)}" onerror="this.style.display='none';if(this.parentNode){this.parentNode.textContent='${escapeHtml(initial)}';}" />`
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
-function renderApplicantPhotoHtml(photoUrl: string | undefined | null, studentName: string): string {
-  const resolved = resolveAbsoluteUrl(photoUrl)
-  if (!resolved) {
-    return ''
+function formatFeeValue(amount?: number | string | null, currency = 'BDT'): string {
+  const num = Number(amount ?? 0)
+  if (!num || Number.isNaN(num) || num <= 0) return 'Free'
+  return `${num} ${(currency || 'BDT').toUpperCase()}`
+}
+
+function getPaymentStatusMeta(
+  paymentStatus?: string | null,
+  feeAmount?: number | string | null,
+  isStatusSlip = false,
+): { stampLabel: string; stampClass: string; subtitle: string } {
+  const status = (paymentStatus || '').toUpperCase()
+  const fee = Number(feeAmount ?? 0)
+
+  if (status === 'PAID') {
+    return {
+      stampLabel: 'PAID',
+      stampClass: 'stamp-paid',
+      subtitle: isStatusSlip
+        ? 'Official Admission Status Slip (Paid)'
+        : 'Official Admission Application Slip (Paid)',
+    }
   }
-  return `<div class="applicant-photo-box"><img src="${escapeHtml(resolved)}" alt="${escapeHtml(studentName || 'Applicant Photo')}" onerror="this.parentNode.style.display='none';" /><span>Applicant Photo</span></div>`
+  if (status === 'UNDER_VERIFICATION') {
+    return {
+      stampLabel: 'VERIFYING',
+      stampClass: 'stamp-verifying',
+      subtitle: isStatusSlip
+        ? 'Provisional Admission Status Slip (Under Verification)'
+        : 'Provisional Admission Application Slip (Under Verification)',
+    }
+  }
+  if (status === 'PENDING' || status === 'FAILED' || (fee > 0 && status !== 'NOT_REQUIRED')) {
+    return {
+      stampLabel: 'UNPAID',
+      stampClass: 'stamp-unpaid',
+      subtitle: isStatusSlip
+        ? 'Provisional Admission Status Slip (Payment Pending)'
+        : 'Provisional Admission Application Slip (Payment Pending)',
+    }
+  }
+  return {
+    stampLabel: 'CONFIRMED',
+    stampClass: 'stamp-confirmed',
+    subtitle: isStatusSlip
+      ? 'Official Admission Status Slip'
+      : 'Official Admission Application Slip',
+  }
+}
+
+function renderLogoBox(
+  logoUrl: string | undefined,
+  schoolName: string,
+  initial: string,
+): string {
+  const resolved = resolveAbsoluteUrl(logoUrl)
+  if (!resolved) {
+    return `<div class="header-logo">${escapeHtml(initial)}</div>`
+  }
+  return `<div class="header-logo"><img src="${escapeHtml(resolved)}" alt="${escapeHtml(schoolName)}" onerror="this.style.display='none';if(this.parentNode){this.parentNode.textContent='${escapeHtml(initial)}';}" /></div>`
+}
+
+function renderApplicantPhotoHtml(
+  photoUrl: string | undefined | null,
+  studentName: string,
+): string {
+  const resolved = resolveAbsoluteUrl(photoUrl)
+  if (!resolved) return ''
+  return `<div class="summary-photo"><img src="${escapeHtml(resolved)}" alt="${escapeHtml(studentName || 'Applicant Photo')}" onerror="this.parentNode.style.display='none';" /></div>`
+}
+
+function renderField(
+  label: string,
+  value: string | undefined | null,
+  options?: { mono?: boolean; full?: boolean },
+): string {
+  const cls = [
+    'field',
+    options?.full ? 'field-full' : '',
+    options?.mono ? 'field-mono' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  return `<div class="${cls}">
+    <div class="field-label">${escapeHtml(label)}</div>
+    <div class="field-value">${escapeHtml(value)}</div>
+  </div>`
+}
+
+function renderHeaderAndSummary(params: {
+  schoolName: string
+  logoUrl?: string
+  initial: string
+  contactLine: string
+  subtitle: string
+  stampLabel: string
+  stampClass: string
+  applicationNumber: string
+  submissionDate: string
+  appliedClass: string
+  applicationStatus: string
+  photoUrl?: string | null
+  studentName: string
+}): string {
+  const photoHtml = renderApplicantPhotoHtml(params.photoUrl, params.studentName)
+  return `
+    <div class="doc-header">
+      <div class="header-left">
+        ${renderLogoBox(params.logoUrl, params.schoolName, params.initial)}
+        <div>
+          <h1 class="school-name">${escapeHtml(params.schoolName)}</h1>
+          <div class="doc-subtitle">${escapeHtml(params.subtitle)}</div>
+          ${params.contactLine ? `<div class="school-contact">${escapeHtml(params.contactLine)}</div>` : ''}
+        </div>
+      </div>
+      <div class="stamp ${params.stampClass}">${escapeHtml(params.stampLabel)}</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">Application Number</div>
+          <div class="summary-value summary-mono">${escapeHtml(params.applicationNumber)}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Submission Date</div>
+          <div class="summary-value">${escapeHtml(params.submissionDate)}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Applied Class</div>
+          <div class="summary-value">${escapeHtml(params.appliedClass)}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Application Status</div>
+          <div class="summary-value">${escapeHtml((params.applicationStatus || 'SUBMITTED').toUpperCase())}</div>
+        </div>
+      </div>
+      ${photoHtml}
+    </div>`
+}
+
+function renderPaymentCard(
+  sectionNumber: number,
+  payment: {
+    feeAmount?: number | null
+    currency?: string
+    paymentStatus?: string | null
+    paymentMethod?: string | null
+    transactionId?: string | null
+  },
+): string {
+  const statusUpper = (payment.paymentStatus || 'NOT_REQUIRED').toUpperCase()
+  const methodDisplay =
+    payment.paymentMethod ||
+    (statusUpper === 'PAID'
+      ? 'Online'
+      : statusUpper === 'NOT_REQUIRED'
+        ? 'N/A'
+        : 'Pending')
+
+  return `
+    <div class="section-card">
+      <div class="section-bar">${sectionNumber}. Admission Form Fee &amp; Payment Receipt</div>
+      <div class="section-body grid-4">
+        ${renderField('Fee Amount', formatFeeValue(payment.feeAmount, payment.currency))}
+        ${renderField('Payment Status', statusUpper)}
+        ${renderField('Method', methodDisplay)}
+        ${renderField('TrxID / Reference', payment.transactionId || '—', { mono: true })}
+      </div>
+    </div>`
+}
+
+function renderSignaturesAndFooter(): string {
+  return `
+    <div class="signatures">
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">Applicant / Guardian Signature</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">Admissions Office / Authorized Signature</div>
+      </div>
+    </div>
+    <div class="doc-footer">
+      Computer-generated admission document · Generated on ${escapeHtml(new Date().toLocaleString())}
+    </div>`
 }
 
 function openPrintDocument(title: string, bodyHtml: string) {
@@ -70,9 +255,6 @@ function openPrintDocument(title: string, bodyHtml: string) {
   }
 
   const baseHref = escapeHtml(window.location.origin + '/')
-  const rootStyles = window.getComputedStyle(document.documentElement)
-  const navyColor = rootStyles.getPropertyValue('--navy').trim() || '#102f58'
-  const goldColor = rootStyles.getPropertyValue('--gold').trim() || '#e3ad3f'
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -81,180 +263,260 @@ function openPrintDocument(title: string, bodyHtml: string) {
   <base href="${baseHref}" />
   <title>${escapeHtml(title)}</title>
   <style>
-    @page { size: A4; margin: 16mm; }
+    @page { size: A4; margin: 12mm 14mm; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       color: #0f172a;
-      background: #f8fafc;
-      padding: 24px;
-    }
-    .sheet {
-      max-width: 760px;
-      margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-    }
-    .header {
-      background: ${navyColor};
-      color: #ffffff;
-      padding: 24px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .brand { display: flex; align-items: center; gap: 14px; }
-    .logo {
-      width: 54px; height: 54px; border-radius: 10px;
-      background: rgba(255,255,255,0.14);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 800; color: #fff; overflow: hidden;
-      flex-shrink: 0;
-    }
-    .logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 3px; border-radius: 10px; }
-    .school-title { font-size: 20px; font-weight: 800; margin: 0; }
-    .school-meta { font-size: 12px; color: #cbd5e1; margin-top: 4px; }
-    .badge {
-      background: ${goldColor};
-      color: #0f172a;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 6px 12px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-    .student-grid {
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-    }
-    .student-grid > table { flex: 1; }
-    .applicant-photo-box {
-      width: 106px;
-      flex-shrink: 0;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 4px;
-      background: #fff;
-      text-align: center;
-    }
-    .applicant-photo-box img {
-      width: 96px;
-      height: 116px;
-      object-fit: cover;
-      border-radius: 6px;
-      display: block;
-      margin: 0 auto;
-    }
-    .applicant-photo-box span {
-      display: block;
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #64748b;
-      margin-top: 4px;
-    }
-    .content { padding: 26px 28px; }
-    .ref-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
       background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 22px;
-    }
-    .ref-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; font-weight: 700; }
-    .ref-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 22px; font-weight: 800; color: #0f172a; margin-top: 2px; }
-    .status-pill {
-      display: inline-block;
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #86efac;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #475569;
-      margin: 20px 0 10px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
-    td.label { width: 34%; color: #64748b; font-weight: 600; }
-    td.val { color: #0f172a; font-weight: 600; }
-    .notes {
-      margin-top: 20px;
-      padding: 14px 16px;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 10px;
-      font-size: 12px;
-      color: #78350f;
-      line-height: 1.55;
-    }
-    .signatures {
-      display: flex;
-      justify-content: space-between;
-      gap: 32px;
-      margin-top: 42px;
-      padding-top: 12px;
-    }
-    .sig-box { flex: 1; text-align: center; }
-    .sig-line { border-top: 1px dashed #94a3b8; margin-bottom: 6px; }
-    .sig-label { font-size: 11px; color: #64748b; font-weight: 600; }
-    .footer-bar {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      padding: 12px 28px;
-      font-size: 11px;
-      color: #64748b;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
+      padding: 20px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .actions {
-      max-width: 760px;
-      margin: 0 auto 16px;
+      max-width: 780px;
+      margin: 0 auto 14px;
       display: flex;
       justify-content: flex-end;
       gap: 10px;
     }
     .btn {
-      padding: 10px 18px;
-      border-radius: 10px;
+      padding: 9px 16px;
+      border-radius: 8px;
       border: 1px solid #cbd5e1;
-      background: #fff;
+      background: #ffffff;
       color: #0f172a;
       font-weight: 700;
       font-size: 13px;
       cursor: pointer;
     }
-    .btn-primary { background: #102f58; color: #fff; border-color: #102f58; }
+    .btn-primary {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .sheet {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 26px 30px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .doc-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 2px solid #0f172a;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .header-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 2px;
+      background: #ffffff;
+    }
+    .school-name {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+    .doc-subtitle {
+      font-size: 12px;
+      color: #475569;
+      margin-top: 3px;
+      font-weight: 500;
+    }
+    .school-contact {
+      font-size: 10.5px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .stamp {
+      padding: 6px 15px;
+      border-radius: 7px;
+      border: 2px solid #be123c;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .stamp-unpaid { border-color: #be123c; color: #be123c; background: #fff1f2; }
+    .stamp-paid { border-color: #15803d; color: #15803d; background: #f0fdf4; }
+    .stamp-verifying { border-color: #b45309; color: #b45309; background: #fffbeb; }
+    .stamp-confirmed { border-color: #0f766e; color: #0f766e; background: #f0fdfa; }
+
+    .summary-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 13px 18px;
+      margin-bottom: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      break-inside: avoid;
+    }
+    .summary-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px 24px;
+    }
+    .summary-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+    .summary-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+      word-break: break-word;
+    }
+    .summary-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 14.5px;
+    }
+    .summary-photo {
+      width: 78px;
+      height: 92px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #f8fafc;
+    }
+    .summary-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .section-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      background: #ffffff;
+      break-inside: avoid;
+    }
+    .section-bar {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 7px 14px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .section-body {
+      padding: 11px 14px;
+      display: grid;
+      gap: 9px 22px;
+    }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .field-full { grid-column: 1 / -1; }
+    .field-label {
+      font-size: 10.5px;
+      color: #64748b;
+      font-weight: 500;
+      margin-bottom: 1px;
+    }
+    .field-value {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .field-mono .field-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .note-box {
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      gap: 44px;
+      margin-top: 34px;
+      padding: 0 18px;
+      break-inside: avoid;
+    }
+    .sig-box { flex: 1; text-align: center; }
+    .sig-line {
+      border-top: 1.5px solid #334155;
+      margin-bottom: 6px;
+    }
+    .sig-label {
+      font-size: 11px;
+      color: #475569;
+      font-weight: 600;
+    }
+    .doc-footer {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      font-size: 10.5px;
+      color: #94a3b8;
+    }
+
     @media print {
-      body { background: #fff; padding: 0; }
+      body { background: #ffffff; padding: 0; }
       .actions { display: none !important; }
-      .sheet { box-shadow: none; border: none; border-radius: 0; max-width: 100%; }
-      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .badge, .status-pill, .ref-bar, .notes { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .sheet {
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -263,7 +525,9 @@ function openPrintDocument(title: string, bodyHtml: string) {
     <button class="btn" onclick="window.close()">Close</button>
     <button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
   </div>
-  ${bodyHtml}
+  <div class="sheet">
+    ${bodyHtml}
+  </div>
   <script>
     (function() {
       var printed = false;
@@ -297,7 +561,6 @@ function openPrintDocument(title: string, bodyHtml: string) {
             img.addEventListener('error', doneOne, { once: true });
           }
         });
-        // Hard safety timeout so slow remote CDN logos never block print dialog indefinitely
         setTimeout(triggerPrint, 3000);
       }
       if (document.readyState === 'complete') {
@@ -321,119 +584,88 @@ export function printAdmissionReceipt(
   formData: AdmissionFormData,
 ) {
   const initial = (school.schoolName || 'S').charAt(0).toUpperCase()
-  const session = `${new Date().getFullYear()}–${new Date().getFullYear() + 1}`
-  const submittedDate = new Date().toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const submissionDate = formatShortDate(new Date())
   const fullStudentName =
     submission.studentName ||
     [formData.firstName, formData.lastName].filter(Boolean).join(' ') ||
     formData.studentName
-
   const contactLine = [school.address, school.phone, school.email]
     .filter(Boolean)
-    .map(escapeHtml)
     .join(' · ')
 
-  const applicantPhotoHtml = renderApplicantPhotoHtml(
-    formData.photoUrl || submission.photoUrl,
-    fullStudentName,
+  const { stampLabel, stampClass, subtitle } = getPaymentStatusMeta(
+    submission.paymentStatus,
+    submission.feeAmount,
+    false,
   )
 
+  const permanentAddr = formData.sameAsPresentAddress
+    ? formData.presentAddress || formData.address
+    : formData.permanentAddress
+
   const body = `
-  <div class="sheet">
-    <div class="header">
-      <div class="brand">
-        <div class="logo">
-          ${renderLogoHtml(school.logoUrl, school.schoolName, initial)}
-        </div>
-        <div>
-          <h1 class="school-title">${escapeHtml(school.schoolName)}</h1>
-          <div class="school-meta">${contactLine || 'Official Admissions Registry'}</div>
-        </div>
-      </div>
-      <span class="badge">Admission Receipt</span>
-    </div>
+    ${renderHeaderAndSummary({
+      schoolName: school.schoolName,
+      logoUrl: school.logoUrl,
+      initial,
+      contactLine,
+      subtitle,
+      stampLabel,
+      stampClass,
+      applicationNumber: submission.applicationNumber,
+      submissionDate,
+      appliedClass: formData.applyingForGrade,
+      applicationStatus: submission.status || 'SUBMITTED',
+      photoUrl: formData.photoUrl || submission.photoUrl,
+      studentName: fullStudentName,
+    })}
 
-    <div class="content">
-      <div class="ref-bar">
-        <div>
-          <div class="ref-label">Application Reference Number</div>
-          <div class="ref-code">${escapeHtml(submission.applicationNumber)}</div>
-        </div>
-        <div style="text-align:right">
-          <span class="status-pill">${escapeHtml(submission.status || 'SUBMITTED')}</span>
-          <div class="ref-label" style="margin-top:6px">Session ${escapeHtml(session)} · ${escapeHtml(submittedDate)}</div>
-        </div>
-      </div>
-
-      <h3>Student Information</h3>
-      <div class="student-grid">
-        <table>
-          <tr><td class="label">Full Name</td><td class="val">${escapeHtml(fullStudentName)}</td></tr>
-          <tr><td class="label">Applying For Class / Grade</td><td class="val">${escapeHtml(formData.applyingForGrade)}</td></tr>
-          <tr><td class="label">Date of Birth</td><td class="val">${escapeHtml(formData.dateOfBirth)}</td></tr>
-          <tr><td class="label">Gender</td><td class="val">${escapeHtml(formData.gender)}</td></tr>
-          <tr><td class="label">Student Phone</td><td class="val">${escapeHtml(formData.phone)}</td></tr>
-          ${formData.email ? `<tr><td class="label">Student Email</td><td class="val">${escapeHtml(formData.email)}</td></tr>` : ''}
-          ${formData.bloodGroup ? `<tr><td class="label">Blood Group</td><td class="val">${escapeHtml(formData.bloodGroup)}</td></tr>` : ''}
-          ${formData.birthRegistrationNo ? `<tr><td class="label">Birth Registration No</td><td class="val">${escapeHtml(formData.birthRegistrationNo)}</td></tr>` : ''}
-          ${formData.previousSchool ? `<tr><td class="label">Previous School</td><td class="val">${escapeHtml(formData.previousSchool)}</td></tr>` : ''}
-        </table>
-        ${applicantPhotoHtml}
-      </div>
-
-      <h3>Parent / Guardian Information</h3>
-      <table>
-        ${formData.fatherName ? `<tr><td class="label">Father's Name</td><td class="val">${escapeHtml(formData.fatherName)}</td></tr>` : ''}
-        ${formData.motherName ? `<tr><td class="label">Mother's Name</td><td class="val">${escapeHtml(formData.motherName)}</td></tr>` : ''}
-        <tr><td class="label">Guardian Name</td><td class="val">${escapeHtml(formData.guardianName)}</td></tr>
-        <tr><td class="label">Relationship</td><td class="val">${escapeHtml(formData.guardianRelationship)}</td></tr>
-        <tr><td class="label">Guardian Phone</td><td class="val">${escapeHtml(formData.guardianPhone)}</td></tr>
-        ${formData.guardianEmail ? `<tr><td class="label">Guardian Email</td><td class="val">${escapeHtml(formData.guardianEmail)}</td></tr>` : ''}
-        <tr><td class="label">Present Address</td><td class="val">${escapeHtml(formData.presentAddress || formData.address)}</td></tr>
-        ${(formData.sameAsPresentAddress ? formData.presentAddress || formData.address : formData.permanentAddress) ? `<tr><td class="label">Permanent Address</td><td class="val">${escapeHtml(formData.sameAsPresentAddress ? formData.presentAddress || formData.address : formData.permanentAddress)}</td></tr>` : ''}
-      </table>
-
-      ${
-        submission.paymentStatus || Number(submission.feeAmount ?? 0) > 0
-          ? `<h3>Fee &amp; Payment Information</h3>
-      <table>
-        <tr><td class="label">Admission Form Fee</td><td class="val">${escapeHtml(formatFeeCurrency(submission.feeAmount, submission.currency))}</td></tr>
-        <tr><td class="label">Payment Status</td><td class="val">${escapeHtml(submission.paymentStatus || 'NOT_REQUIRED')}</td></tr>
-        ${submission.paymentMethod ? `<tr><td class="label">Payment Method</td><td class="val">${escapeHtml(submission.paymentMethod)}</td></tr>` : ''}
-        ${submission.transactionId ? `<tr><td class="label">Transaction ID</td><td class="val">${escapeHtml(submission.transactionId)}</td></tr>` : ''}
-        ${submission.paidAt ? `<tr><td class="label">Paid On</td><td class="val">${escapeHtml(new Date(submission.paidAt).toLocaleString())}</td></tr>` : ''}
-      </table>`
-          : ''
-      }
-
-      <div class="notes">
-        <strong>Important Instructions:</strong> Please keep this receipt safe and bring a printed or digital copy during the campus interaction / interview along with original academic records, birth certificate, and applicant photographs. You can track live status anytime using your Application Reference Number on the school website.
-      </div>
-
-      <div class="signatures">
-        <div class="sig-box">
-          <div class="sig-line"></div>
-          <div class="sig-label">Applicant / Guardian Signature</div>
-        </div>
-        <div class="sig-box">
-          <div class="sig-line"></div>
-          <div class="sig-label">Admissions Office Verification</div>
-        </div>
+    <div class="section-card">
+      <div class="section-bar">1. Student Information</div>
+      <div class="section-body grid-2">
+        ${renderField('Full Name', fullStudentName)}
+        ${renderField('Date of Birth', formatShortDate(formData.dateOfBirth))}
+        ${renderField('Gender', formData.gender)}
+        ${renderField('Blood Group', formData.bloodGroup)}
+        ${renderField('Birth Registration Number', formData.birthRegistrationNo, { mono: true })}
+        ${renderField('Applicant Mobile Phone', formData.phone)}
+        ${renderField('Applicant Email', formData.email, { full: true })}
       </div>
     </div>
 
-    <div class="footer-bar">
-      <span>Generated from ${escapeHtml(school.schoolName)} Online Admissions Portal</span>
-      <span>Ref: ${escapeHtml(submission.applicationNumber)}</span>
+    <div class="section-card">
+      <div class="section-bar">2. Parent &amp; Guardian Information</div>
+      <div class="section-body grid-2">
+        ${renderField("Father's Name", formData.fatherName)}
+        ${renderField("Mother's Name", formData.motherName)}
+        ${renderField('Guardian Name', formData.guardianName)}
+        ${renderField('Relationship', formData.guardianRelationship)}
+        ${renderField('Guardian Phone', formData.guardianPhone)}
+        ${renderField('Guardian Email', formData.guardianEmail)}
+      </div>
     </div>
-  </div>`
+
+    <div class="section-card">
+      <div class="section-bar">3. Address &amp; Previous Schooling</div>
+      <div class="section-body grid-2">
+        ${renderField('Present Address', formData.presentAddress || formData.address)}
+        ${renderField('Permanent Address', permanentAddr)}
+        ${renderField('Previous School', formData.previousSchool, { full: true })}
+      </div>
+    </div>
+
+    ${renderPaymentCard(4, {
+      feeAmount: submission.feeAmount,
+      currency: submission.currency,
+      paymentStatus: submission.paymentStatus,
+      paymentMethod: submission.paymentMethod,
+      transactionId: submission.transactionId,
+    })}
+
+    ${renderSignaturesAndFooter()}`
 
   openPrintDocument(
-    `Admission Receipt - ${submission.applicationNumber}`,
+    `Admission Confirmation - ${submission.applicationNumber}`,
     body,
   )
 }
@@ -442,98 +674,76 @@ export function printTrackStatusSlip(
   school: SchoolReceiptMeta,
   track: TrackResult,
 ) {
-  const initial = (school.schoolName || track.schoolName || 'S')
-    .charAt(0)
-    .toUpperCase()
-  const submittedDate = track.submittedAt
-    ? new Date(track.submittedAt).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : '—'
+  const resolvedSchoolName = track.schoolName || school.schoolName
+  const initial = (resolvedSchoolName || 'S').charAt(0).toUpperCase()
+  const submissionDate = formatShortDate(track.submittedAt)
   const interviewDate = track.interviewDate
-    ? new Date(track.interviewDate).toLocaleString(undefined, {
-        year: 'numeric',
+    ? new Date(track.interviewDate).toLocaleString('en-GB', {
+        day: '2-digit',
         month: 'short',
-        day: 'numeric',
+        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       })
-    : null
-
+    : '—'
   const contactLine = [school.address, school.phone, school.email]
     .filter(Boolean)
-    .map(escapeHtml)
     .join(' · ')
 
-  const applicantPhotoHtml = renderApplicantPhotoHtml(track.photoUrl, track.studentName)
-  const resolvedSchoolName = track.schoolName || school.schoolName
+  const { stampLabel, stampClass, subtitle } = getPaymentStatusMeta(
+    track.paymentStatus,
+    track.feeAmount,
+    true,
+  )
 
   const body = `
-  <div class="sheet">
-    <div class="header">
-      <div class="brand">
-        <div class="logo">
-          ${renderLogoHtml(school.logoUrl, resolvedSchoolName, initial)}
-        </div>
-        <div>
-          <h1 class="school-title">${escapeHtml(resolvedSchoolName)}</h1>
-          <div class="school-meta">${contactLine || 'Official Admissions Status Slip'}</div>
-        </div>
+    ${renderHeaderAndSummary({
+      schoolName: resolvedSchoolName,
+      logoUrl: school.logoUrl,
+      initial,
+      contactLine,
+      subtitle,
+      stampLabel,
+      stampClass,
+      applicationNumber: track.applicationNumber,
+      submissionDate,
+      appliedClass: track.applyingForGrade,
+      applicationStatus: track.status || 'SUBMITTED',
+      photoUrl: track.photoUrl,
+      studentName: track.studentName,
+    })}
+
+    <div class="section-card">
+      <div class="section-bar">1. Application Summary</div>
+      <div class="section-body grid-2">
+        ${renderField('Applicant Name', track.studentName)}
+        ${renderField('Applied Class / Grade', track.applyingForGrade)}
+        ${renderField('Submitted On', submissionDate)}
+        ${renderField('Interview Schedule', interviewDate)}
       </div>
-      <span class="badge">Status Slip</span>
     </div>
 
-    <div class="content">
-      <div class="ref-bar">
-        <div>
-          <div class="ref-label">Application Reference Number</div>
-          <div class="ref-code">${escapeHtml(track.applicationNumber)}</div>
-        </div>
-        <div style="text-align:right">
-          <span class="status-pill">${escapeHtml(track.status)}</span>
-          <div class="ref-label" style="margin-top:6px">Printed on ${escapeHtml(new Date().toLocaleDateString())}</div>
-        </div>
-      </div>
+    ${renderPaymentCard(2, {
+      feeAmount: track.feeAmount,
+      currency: track.currency,
+      paymentStatus: track.paymentStatus,
+      paymentMethod: track.paymentMethod,
+      transactionId: track.transactionId,
+    })}
 
-      <h3>Application Summary</h3>
-      <div class="student-grid">
-        <table>
-          <tr><td class="label">Applicant Name</td><td class="val">${escapeHtml(track.studentName)}</td></tr>
-          <tr><td class="label">Class / Grade</td><td class="val">${escapeHtml(track.applyingForGrade)}</td></tr>
-          <tr><td class="label">Submitted On</td><td class="val">${escapeHtml(submittedDate)}</td></tr>
-          ${interviewDate ? `<tr><td class="label">Interview Schedule</td><td class="val">${escapeHtml(interviewDate)}</td></tr>` : ''}
-        </table>
-        ${applicantPhotoHtml}
-      </div>
+    ${
+      track.notes
+        ? `<div class="section-card">
+            <div class="section-bar">3. Admissions Committee Note</div>
+            <div class="note-box">${escapeHtml(track.notes)}</div>
+          </div>`
+        : ''
+    }
 
-      ${
-        track.paymentStatus || Number(track.feeAmount ?? 0) > 0
-          ? `<h3>Fee &amp; Payment Information</h3>
-      <table>
-        <tr><td class="label">Admission Form Fee</td><td class="val">${escapeHtml(formatFeeCurrency(track.feeAmount, track.currency))}</td></tr>
-        <tr><td class="label">Payment Status</td><td class="val">${escapeHtml(track.paymentStatus || 'NOT_REQUIRED')}</td></tr>
-        ${track.paymentMethod ? `<tr><td class="label">Payment Method</td><td class="val">${escapeHtml(track.paymentMethod)}</td></tr>` : ''}
-        ${track.transactionId ? `<tr><td class="label">Transaction ID</td><td class="val">${escapeHtml(track.transactionId)}</td></tr>` : ''}
-        ${track.paidAt ? `<tr><td class="label">Paid On</td><td class="val">${escapeHtml(new Date(track.paidAt).toLocaleString())}</td></tr>` : ''}
-      </table>`
-          : ''
-      }
+    ${renderSignaturesAndFooter()}`
 
-      ${
-        track.notes
-          ? `<div class="notes"><strong>Admissions Committee Note:</strong> ${escapeHtml(track.notes)}</div>`
-          : ''
-      }
-    </div>
-
-    <div class="footer-bar">
-      <span>Official Status Verification · ${escapeHtml(track.schoolName || school.schoolName)}</span>
-      <span>Ref: ${escapeHtml(track.applicationNumber)}</span>
-    </div>
-  </div>`
-
-  openPrintDocument(`Admission Status - ${track.applicationNumber}`, body)
+  openPrintDocument(
+    `Admission Status - ${track.applicationNumber}`,
+    body,
+  )
 }
-
