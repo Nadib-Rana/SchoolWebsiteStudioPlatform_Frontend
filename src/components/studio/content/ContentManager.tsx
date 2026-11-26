@@ -5,6 +5,7 @@ import { StateBadge } from '@/components/common/StateBadge'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import { revalidatePublicSite } from '@/lib/revalidate-client'
+import { sanitizeSocialLinks } from '@/lib/social-links'
 import { useEffect, useState } from 'react'
 import {
   type ContentFormData,
@@ -31,6 +32,7 @@ export function ContentManager() {
 
   const [formData, setFormData] = useState<ContentFormData>(INITIAL_CONTENT_FORM_DATA)
   const [rawAcademics, setRawAcademics] = useState<Record<string, any>>({})
+  const [rawSocialLinks, setRawSocialLinks] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState('Just now')
 
@@ -49,7 +51,9 @@ export function ContentManager() {
           if (data.profile) {
             const p = data.profile
             const ac = p.academics || {}
+            const sl = (p.socialLinks || {}) as Record<string, string>
             setRawAcademics(ac)
+            setRawSocialLinks(sl)
             setFormData((prev) => ({
               ...prev,
               schoolName: data.school?.name || prev.schoolName,
@@ -62,6 +66,14 @@ export function ContentManager() {
               establishedYear: p.established ? String(p.established) : prev.establishedYear,
               schoolCode: p.schoolCode || prev.schoolCode,
               officeHours: p.officeHours || prev.officeHours,
+              erpLoginUrl: sl.erpLoginUrl || '',
+              erpLoginLabel: sl.erpLoginLabel || '',
+              facebookUrl: sl.facebook || '',
+              youtubeUrl: sl.youtube || '',
+              instagramUrl: sl.instagram || '',
+              linkedinUrl: sl.linkedin || '',
+              twitterUrl: sl.twitter || '',
+              websiteUrl: sl.website || '',
               motto: p.motto || prev.motto,
               shortBio: p.shortBio || prev.shortBio,
               missionStatement: p.missionStatement || prev.missionStatement,
@@ -107,6 +119,17 @@ export function ContentManager() {
         achievements: formData.achievementsText,
         achievementsText: formData.achievementsText,
       }
+      const nextSocialLinks = sanitizeSocialLinks({
+        ...rawSocialLinks,
+        erpLoginUrl: formData.erpLoginUrl,
+        erpLoginLabel: formData.erpLoginLabel,
+        facebook: formData.facebookUrl,
+        youtube: formData.youtubeUrl,
+        instagram: formData.instagramUrl,
+        linkedin: formData.linkedinUrl,
+        twitter: formData.twitterUrl,
+        website: formData.websiteUrl,
+      })
       await api.content.update({
         schoolName: formData.schoolName,
         schoolType: formData.schoolType,
@@ -128,8 +151,10 @@ export function ContentManager() {
         principalTitle: formData.principalTitle,
         principalBio: formData.principalBio,
         principalPhotoUrl: formData.principalPhotoUrl || undefined,
+        socialLinks: nextSocialLinks,
         academics: nextAcademics,
       })
+      setRawSocialLinks(nextSocialLinks)
       setRawAcademics(nextAcademics)
       await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       setLastSaved(

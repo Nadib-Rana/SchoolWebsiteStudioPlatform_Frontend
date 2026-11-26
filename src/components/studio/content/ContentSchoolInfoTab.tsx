@@ -136,6 +136,111 @@ export function ContentSchoolInfoTab({
           />
         </label>
       </div>
+
+      <div
+        style={{
+          marginTop: '24px',
+          paddingTop: '20px',
+          borderTop: '1px solid #e2e8f0',
+        }}
+      >
+        <strong style={{ display: 'block', fontSize: '14px', color: '#0f172a' }}>
+          ERP Login &amp; Public Social Profile Links
+        </strong>
+        <span style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '14px' }}>
+          Links saved here appear in your public website Footer and Header (ERP Login button). Leave any field blank to hide it.
+        </span>
+
+        <div className="form-grid">
+          <label>
+            ERP Login Portal URL
+            <input
+              type="url"
+              placeholder="https://erp.yourschool.com/login"
+              value={formData.erpLoginUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, erpLoginUrl: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            ERP Button Label
+            <input
+              placeholder="ERP Login"
+              value={formData.erpLoginLabel}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, erpLoginLabel: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            Facebook Page URL
+            <input
+              type="url"
+              placeholder="https://facebook.com/yourschool"
+              value={formData.facebookUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, facebookUrl: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            YouTube Channel URL
+            <input
+              type="url"
+              placeholder="https://youtube.com/@yourschool"
+              value={formData.youtubeUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, youtubeUrl: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            Instagram URL
+            <input
+              type="url"
+              placeholder="https://instagram.com/yourschool"
+              value={formData.instagramUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, instagramUrl: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            LinkedIn Page URL
+            <input
+              type="url"
+              placeholder="https://linkedin.com/school/yourschool"
+              value={formData.linkedinUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, linkedinUrl: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            X (Twitter) URL
+            <input
+              type="url"
+              placeholder="https://x.com/yourschool"
+              value={formData.twitterUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, twitterUrl: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            Official Website / Portal URL
+            <input
+              type="url"
+              placeholder="https://www.yourschool.edu.bd"
+              value={formData.websiteUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, websiteUrl: e.target.value }))
+              }
+            />
+          </label>
+        </div>
+      </div>
     </>
   )
 }

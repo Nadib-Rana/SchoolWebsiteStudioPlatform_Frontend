@@ -171,6 +171,9 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
           logoUrl={siteData?.school?.logoUrl || currentSchool?.logoUrl || undefined}
           logoLetter={builderData?.logoLetter || effectiveSchoolName.charAt(0)}
           applyButtonText={builderData?.applyButtonText || 'Apply now'}
+          showAdmissions={siteData?.settings?.allowPublicAdmission ?? true}
+          erpLoginUrl={siteData?.profile?.socialLinks?.erpLoginUrl}
+          erpLoginLabel={siteData?.profile?.socialLinks?.erpLoginLabel}
           navigation={siteData?.navigation}
           headerStyle={{
             ...(builderData?.sectionStyles?.['Header'] || {}),
@@ -193,11 +196,18 @@ export function PublicSite({ initialTheme }: PublicSiteProps) {
         setPage={setPage}
         schoolSlug={siteData?.school?.slug || 'northfield-high'}
         schoolName={effectiveSchoolName}
+        logoUrl={siteData?.school?.logoUrl || currentSchool?.logoUrl || undefined}
         motto={effectiveMotto}
         address={builderData?.footerAddress || siteData?.profile?.address}
         phone={builderData?.footerPhone || siteData?.profile?.phone}
         email={builderData?.footerEmail || siteData?.profile?.email}
         copyright={builderData?.footerCopyright}
+        showAdmissions={siteData?.settings?.allowPublicAdmission ?? true}
+        showGoverningBody={
+          siteData?.settings?.notificationPreferences?._governingBody?.enabled !== false &&
+          (siteData?.governingMembers?.length ?? 0) > 0
+        }
+        socialLinks={siteData?.profile?.socialLinks}
         footerStyle={{
           ...(builderData?.sectionStyles?.['Footer'] || {}),
           bg:

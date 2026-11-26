@@ -13,6 +13,8 @@ interface PublicHeaderMobileMenuProps {
   schoolSlug?: string
   isDark: boolean
   headerBg?: string
+  erpLoginUrl?: string
+  erpLoginLabel?: string
   setPage?: (p: string) => void
   onClose: () => void
 }
@@ -22,6 +24,8 @@ export function PublicHeaderMobileMenu({
   schoolSlug,
   isDark,
   headerBg,
+  erpLoginUrl,
+  erpLoginLabel,
   setPage,
   onClose,
 }: PublicHeaderMobileMenuProps) {
@@ -88,6 +92,28 @@ export function PublicHeaderMobileMenu({
             {n.label}
           </Link>
         )
+      )}
+
+      {erpLoginUrl && (
+        <a
+          href={erpLoginUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          style={{
+            marginTop: '4px',
+            padding: '10px 14px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 700,
+            textAlign: 'center',
+            textDecoration: 'none',
+            background: 'var(--accent, #e3ad3f)',
+            color: '#0f172a',
+          }}
+        >
+          {erpLoginLabel?.trim() || 'ERP Login'} →
+        </a>
       )}
     </div>
   )

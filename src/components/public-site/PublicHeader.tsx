@@ -9,6 +9,7 @@ import {
   DEFAULT_HEADER_NAV,
   getHeaderInlineStyle,
 } from './header-helpers'
+import { normalizeExternalUrl } from '@/lib/social-links'
 import { PublicHeaderLogo } from './PublicHeaderLogo'
 import { PublicHeaderMobileMenu } from './PublicHeaderMobileMenu'
 import { PublicApplyButton } from './PublicApplyButton'
@@ -25,9 +26,13 @@ export function PublicHeader({
   setPage,
   applyButtonText,
   showAdmissions = true,
+  erpLoginUrl,
+  erpLoginLabel,
   headerStyle,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const safeErpUrl = normalizeExternalUrl(erpLoginUrl)
+  const erpButtonText = erpLoginLabel?.trim() || 'ERP Login'
 
   const rawNavItems =
     navigation && navigation.length > 0
@@ -126,6 +131,32 @@ export function PublicHeader({
         />
       )}
 
+      {safeErpUrl && (
+        <a
+          href={safeErpUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:inline-flex items-center gap-1.5 shrink-0 transition-opacity hover:opacity-85"
+          style={{
+            marginLeft: showAdmissions ? '10px' : '2vw',
+            height: '36px',
+            padding: '0 14px',
+            borderRadius: '6px',
+            fontSize: '13px',
+            fontWeight: 700,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            border: isDark
+              ? '1px solid rgba(255,255,255,0.35)'
+              : '1px solid var(--navy, #102f58)',
+            background: isDark ? 'rgba(255,255,255,0.08)' : 'transparent',
+            color: isDark ? '#ffffff' : 'var(--navy, #102f58)',
+          }}
+        >
+          {erpButtonText} <Icon name="external" size={13} />
+        </a>
+      )}
+
       <button
         type="button"
         className="public-menu"
@@ -142,6 +173,8 @@ export function PublicHeader({
           schoolSlug={schoolSlug}
           isDark={isDark}
           headerBg={headerStyle?.bg}
+          erpLoginUrl={safeErpUrl}
+          erpLoginLabel={erpButtonText}
           setPage={setPage}
           onClose={() => setMobileMenuOpen(false)}
         />

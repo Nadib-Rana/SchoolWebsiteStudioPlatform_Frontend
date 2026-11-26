@@ -58,6 +58,8 @@ export function Settings() {
             onReplaceLogoClick={() => s.logoInputRef.current?.click()}
             schoolFavicon={s.schoolFavicon}
             onReplaceFaviconClick={() => s.faviconInputRef.current?.click()}
+            socialLinks={s.socialLinks}
+            setSocialLinks={s.setSocialLinks}
             onSaveProfile={s.handleSaveProfile}
             isSavingProfile={s.isSavingProfile}
           />

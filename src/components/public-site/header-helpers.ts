@@ -8,6 +8,8 @@ export interface PublicHeaderProps {
   setPage?: (p: string) => void
   applyButtonText?: string
   showAdmissions?: boolean
+  erpLoginUrl?: string
+  erpLoginLabel?: string
   headerStyle?: {
     bg?: string
     textColor?: string

@@ -261,6 +261,8 @@ export default async function SchoolPublicLayout({
           logoLetter={dbSections.logoLetter}
           applyButtonText={dbSections.applyButtonText || 'Apply now'}
           showAdmissions={allowPublicAdmission}
+          erpLoginUrl={siteData.profile?.socialLinks?.erpLoginUrl}
+          erpLoginLabel={siteData.profile?.socialLinks?.erpLoginLabel}
           navigation={siteData.navigation}
           headerStyle={{
             ...(dbSections.sectionStyles?.['Header'] || {}),
@@ -288,12 +290,18 @@ export default async function SchoolPublicLayout({
         <PublicFooter
           schoolSlug={schoolSlug}
           schoolName={siteData.school.name}
+          logoUrl={siteData.school.logoUrl || siteData.school.faviconUrl || undefined}
           motto={siteData.profile?.motto || themeCfg.eyebrow}
           address={dbSections.footerAddress || siteData.profile?.address}
           phone={dbSections.footerPhone || siteData.profile?.phone}
           email={dbSections.footerEmail || siteData.profile?.email}
           copyright={dbSections.footerCopyright}
           showAdmissions={allowPublicAdmission}
+          showGoverningBody={
+            siteData.settings?.notificationPreferences?._governingBody?.enabled !== false &&
+            (siteData.governingMembers?.length ?? 0) > 0
+          }
+          socialLinks={siteData.profile?.socialLinks}
           footerStyle={{
             ...(dbSections.sectionStyles?.['Footer'] || {}),
             bg: footerBg,

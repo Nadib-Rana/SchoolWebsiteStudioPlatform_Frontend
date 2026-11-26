@@ -1,5 +1,6 @@
 'use client'
 
+import type { SchoolSocialLinks } from '@/lib/social-links'
 import { SettingsTitle, SettingsSave } from './SettingsHeaderSave'
 
 interface SchoolProfileTabProps {
@@ -19,6 +20,8 @@ interface SchoolProfileTabProps {
   setAcademicYearStart: (val: string) => void
   onReplaceLogoClick: () => void
   onReplaceFaviconClick?: () => void
+  socialLinks: SchoolSocialLinks
+  setSocialLinks: React.Dispatch<React.SetStateAction<SchoolSocialLinks>>
   onSaveProfile: () => Promise<void> | void
   isSavingProfile: boolean
 }
@@ -40,6 +43,8 @@ export function SchoolProfileTab({
   setAcademicYearStart,
   onReplaceLogoClick,
   onReplaceFaviconClick,
+  socialLinks,
+  setSocialLinks,
   onSaveProfile,
   isSavingProfile,
 }: SchoolProfileTabProps) {
@@ -144,8 +149,114 @@ export function SchoolProfileTab({
           </select>
         </label>
       </div>
+
+      <div
+        style={{
+          marginTop: '22px',
+          paddingTop: '18px',
+          borderTop: '1px solid #e2e8f0',
+        }}
+      >
+        <strong style={{ display: 'block', fontSize: '14px', color: '#0f172a' }}>
+          ERP Login &amp; Public Social Profile Links
+        </strong>
+        <span style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '14px' }}>
+          Add your ERP portal link and official social links to display in the public website Footer and Header. Leave blank to hide.
+        </span>
+
+        <div className="form-grid">
+          <label>
+            ERP Login Portal URL
+            <input
+              type="url"
+              value={socialLinks.erpLoginUrl || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, erpLoginUrl: e.target.value }))
+              }
+              placeholder="https://erp.yourschool.com/login"
+            />
+          </label>
+          <label>
+            ERP Button Label
+            <input
+              value={socialLinks.erpLoginLabel || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, erpLoginLabel: e.target.value }))
+              }
+              placeholder="ERP Login"
+            />
+          </label>
+          <label>
+            Facebook Page URL
+            <input
+              type="url"
+              value={socialLinks.facebook || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, facebook: e.target.value }))
+              }
+              placeholder="https://facebook.com/yourschool"
+            />
+          </label>
+          <label>
+            YouTube Channel URL
+            <input
+              type="url"
+              value={socialLinks.youtube || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, youtube: e.target.value }))
+              }
+              placeholder="https://youtube.com/@yourschool"
+            />
+          </label>
+          <label>
+            Instagram URL
+            <input
+              type="url"
+              value={socialLinks.instagram || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, instagram: e.target.value }))
+              }
+              placeholder="https://instagram.com/yourschool"
+            />
+          </label>
+          <label>
+            LinkedIn URL
+            <input
+              type="url"
+              value={socialLinks.linkedin || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, linkedin: e.target.value }))
+              }
+              placeholder="https://linkedin.com/school/yourschool"
+            />
+          </label>
+          <label>
+            X (Twitter) URL
+            <input
+              type="url"
+              value={socialLinks.twitter || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, twitter: e.target.value }))
+              }
+              placeholder="https://x.com/yourschool"
+            />
+          </label>
+          <label>
+            Official Website / Portal URL
+            <input
+              type="url"
+              value={socialLinks.website || ''}
+              onChange={(e) =>
+                setSocialLinks((prev) => ({ ...prev, website: e.target.value }))
+              }
+              placeholder="https://www.yourschool.edu.bd"
+            />
+          </label>
+        </div>
+      </div>
+
       <SettingsSave
-        text="Changes apply across the workspace"
+        text="Changes apply across the workspace & public footer"
         onSave={onSaveProfile}
         isSaving={isSavingProfile}
       />

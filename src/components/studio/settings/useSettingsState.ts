@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useStudio } from '@/context/StudioContext'
 import { api } from '@/lib/api-client'
 import { revalidatePublicSite } from '@/lib/revalidate-client'
+import {
+  sanitizeSocialLinks,
+  type SchoolSocialLinks,
+} from '@/lib/social-links'
 import type { NotificationPref } from './NotificationsTab'
 import { useSettingsExports } from './useSettingsExports'
 import { useSettingsMembers } from './useSettingsMembers'
@@ -25,6 +29,7 @@ export function useSettingsState() {
   const [language, setLanguage] = useState('English')
   const [dateFormat, setDateFormat] = useState('DD MMM YYYY')
   const [academicYearStart, setAcademicYearStart] = useState('January')
+  const [socialLinks, setSocialLinks] = useState<SchoolSocialLinks>({})
   const [isSavingProfile, setIsSavingProfile] = useState(false)
 
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null)
@@ -112,6 +117,16 @@ export function useSettingsState() {
           if (school.name) setSchoolName(school.name)
           if (school.logoUrl) setSchoolLogo(school.logoUrl)
           if (school.faviconUrl) setSchoolFavicon(school.faviconUrl)
+          if (school.profile?.socialLinks && typeof school.profile.socialLinks === 'object') {
+            setSocialLinks(school.profile.socialLinks as SchoolSocialLinks)
+          } else {
+            api.content.get().then((contentRes: any) => {
+              const contentData = contentRes?.data || contentRes
+              if (mounted && contentData?.profile?.socialLinks) {
+                setSocialLinks(contentData.profile.socialLinks as SchoolSocialLinks)
+              }
+            }).catch(() => {})
+          }
           if (school.profile?.phone) {
             setCallNumber((prev) => prev || school.profile.phone)
             setWhatsappNumber(
@@ -196,10 +211,14 @@ export function useSettingsState() {
     try {
       const promises: Promise<any>[] = []
       const activeId = api.getActiveSchoolId()
+      const cleanedSocialLinks = sanitizeSocialLinks(socialLinks)
       if (schoolName) promises.push(api.schools.update(activeId, { name: schoolName }))
       promises.push(api.settings.update({ timezone, language, dateFormat }))
+      promises.push(api.content.update({ socialLinks: cleanedSocialLinks }))
       await Promise.all(promises)
-      notify('School profile saved successfully')
+      setSocialLinks(cleanedSocialLinks)
+      await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
+      notify('School profile & public links saved successfully')
     } catch (err: any) {
       notify(`Failed to save: ${err?.message || 'Check network connection'}`)
     } finally {
@@ -293,6 +312,7 @@ export function useSettingsState() {
     handleUpdateRole: members.handleUpdateRole, handleRemoveMember: members.handleRemoveMember,
     schoolName, setSchoolName, schoolType, setSchoolType, timezone, setTimezone,
     language, setLanguage, dateFormat, setDateFormat, academicYearStart, setAcademicYearStart,
+    socialLinks, setSocialLinks,
     isSavingProfile, schoolLogo, logoInputRef, handleLogoUpload,
     schoolFavicon, faviconInputRef, handleFaviconUpload,
     accountPhoto: account.accountPhoto, accountPhotoInputRef: account.accountPhotoInputRef,

@@ -11,6 +11,14 @@ export interface ContentFormData {
   logoUrl: string
   faviconUrl: string
   coverUrl: string
+  erpLoginUrl: string
+  erpLoginLabel: string
+  facebookUrl: string
+  youtubeUrl: string
+  instagramUrl: string
+  linkedinUrl: string
+  twitterUrl: string
+  websiteUrl: string
 
   // Tab 1: About School
   motto: string
@@ -54,6 +62,14 @@ export const INITIAL_CONTENT_FORM_DATA: ContentFormData = {
   logoUrl: '',
   faviconUrl: '',
   coverUrl: '',
+  erpLoginUrl: '',
+  erpLoginLabel: '',
+  facebookUrl: '',
+  youtubeUrl: '',
+  instagramUrl: '',
+  linkedinUrl: '',
+  twitterUrl: '',
+  websiteUrl: '',
 
   motto: 'Excellence in Education, Leadership in Character',
   shortBio:
