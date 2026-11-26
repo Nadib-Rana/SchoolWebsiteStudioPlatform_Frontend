@@ -19,6 +19,12 @@ export const screenMeta: ScreenMetaMap = {
     description: 'Manage approved information shown on your public website.',
     action: 'Add teacher',
   },
+  'governing-body': {
+    title: 'Governing Body & Committee',
+    eyebrow: 'LEADERSHIP & GOVERNANCE',
+    description: 'Manage Chairman, Managing Committee (SMC), and Governing Body members displayed on your website.',
+    action: 'Add member',
+  },
   academics: {
     title: 'Academics',
     eyebrow: 'ACADEMIC CONTENT',

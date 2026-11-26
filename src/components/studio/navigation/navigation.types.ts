@@ -15,6 +15,7 @@ export interface NavigationManagerProps {
 export const PRESET_PAGES = [
   { label: 'Home', url: '/' },
   { label: 'About School', url: '/about' },
+  { label: 'Governing Body', url: '/governing-body' },
   { label: 'Academic Programs', url: '/academics' },
   { label: 'Admissions Information', url: '/admissions' },
   { label: 'Faculty & Teachers', url: '/teachers' },

@@ -33,6 +33,22 @@ export interface TeacherData {
   status?: string
 }
 
+export interface GoverningMemberData {
+  id: string
+  name: string
+  designation: string
+  category: string
+  qualification?: string | null
+  termPeriod?: string | null
+  email?: string | null
+  phone?: string | null
+  photoUrl?: string | null
+  message?: string | null
+  isFeatured?: boolean
+  order?: number
+  status?: string
+}
+
 export interface NoticeData {
   id: string
   slug?: string | null
@@ -132,6 +148,7 @@ export interface PublicSiteData {
   navigation?: Array<{ label: string; url: string; order?: number }>
   pages?: Array<Record<string, unknown>>
   teachers?: TeacherData[]
+  governingMembers?: GoverningMemberData[]
   notices?: NoticeData[]
   events?: EventData[]
   albums?: AlbumData[]

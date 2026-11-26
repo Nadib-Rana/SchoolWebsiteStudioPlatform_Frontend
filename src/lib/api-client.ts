@@ -78,6 +78,7 @@ export class ApiClient {
   public auditLogs = this.siteConfigEndpoints.auditLogs
 
   public teachers = this.academicEndpoints.teachers
+  public governingBody = this.academicEndpoints.governingBody
   public notices = this.academicEndpoints.notices
   public events = this.academicEndpoints.events
   public admissions = this.academicEndpoints.admissions

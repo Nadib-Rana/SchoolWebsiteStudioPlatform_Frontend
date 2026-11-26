@@ -7,6 +7,7 @@ import { api } from '@/lib/api-client'
 import { revalidatePublicSite } from '@/lib/revalidate-client'
 import type { View } from '@/types/studio'
 import { TeacherEditorForm } from './forms/TeacherEditorForm'
+import { GoverningBodyEditorForm } from './forms/GoverningBodyEditorForm'
 import { NoticeEditorForm } from './forms/NoticeEditorForm'
 import { EventEditorForm } from './forms/EventEditorForm'
 import { AlbumEditorForm } from './forms/AlbumEditorForm'
@@ -25,6 +26,7 @@ const titles: Record<string, string> = {
   gallery: 'Create album',
   pages: 'Create page',
   teachers: 'Add teacher',
+  'governing-body': 'Add committee member',
   notices: 'Create notice',
   events: 'Create event',
 }
@@ -32,6 +34,7 @@ const titles: Record<string, string> = {
 const editTitles: Record<string, string> = {
   pages: 'Edit page',
   teachers: 'Edit teacher',
+  'governing-body': 'Edit committee member',
   notices: 'Edit notice',
   events: 'Edit event',
 }
@@ -59,6 +62,20 @@ export function EditorModal({ type, initialData, close, save }: EditorModalProps
     phone: initialData?.phone || '',
     bio: initialData?.bio || '',
     photoUrl: initialData?.photoUrl || '',
+    order: initialData?.order || 1,
+    status: initialData?.status || 'ACTIVE',
+  })
+  const [governingMember, setGoverningMember] = useState({
+    name: initialData?.name || '',
+    designation: initialData?.designation || '',
+    category: initialData?.category || 'GOVERNING_BODY',
+    qualification: initialData?.qualification || '',
+    termPeriod: initialData?.termPeriod || '',
+    email: initialData?.email || '',
+    phone: initialData?.phone || '',
+    message: initialData?.message || '',
+    photoUrl: initialData?.photoUrl || '',
+    isFeatured: Boolean(initialData?.isFeatured),
     order: initialData?.order || 1,
     status: initialData?.status || 'ACTIVE',
   })
@@ -115,6 +132,28 @@ export function EditorModal({ type, initialData, close, save }: EditorModalProps
           await api.teachers.update(initialData.id, payload)
         } else {
           await api.teachers.create(payload)
+        }
+      } else if (type === 'governing-body') {
+        if (!governingMember.name.trim()) throw new Error('Member name is required.')
+        if (!governingMember.designation.trim()) throw new Error('Designation is required.')
+        const payload = {
+          name: governingMember.name.trim(),
+          designation: governingMember.designation.trim(),
+          category: governingMember.category || 'GOVERNING_BODY',
+          qualification: governingMember.qualification.trim() || undefined,
+          termPeriod: governingMember.termPeriod.trim() || undefined,
+          email: governingMember.email.trim() || undefined,
+          phone: governingMember.phone.trim() || undefined,
+          message: governingMember.message.trim() || undefined,
+          photoUrl: governingMember.photoUrl.trim() || undefined,
+          isFeatured: Boolean(governingMember.isFeatured),
+          order: Number(governingMember.order) || 1,
+          status: publishNow ? 'ACTIVE' : 'INACTIVE',
+        }
+        if (isEditing) {
+          await api.governingBody.update(initialData.id, payload)
+        } else {
+          await api.governingBody.create(payload)
         }
       } else if (type === 'notices') {
         if (!notice.title.trim()) throw new Error('Notice title is required.')
@@ -207,6 +246,11 @@ export function EditorModal({ type, initialData, close, save }: EditorModalProps
           <MediaUploadForm selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
         ) : type === 'teachers' ? (
           <TeacherEditorForm teacher={teacher} setTeacher={setTeacher} />
+        ) : type === 'governing-body' ? (
+          <GoverningBodyEditorForm
+            member={governingMember}
+            setMember={setGoverningMember}
+          />
         ) : type === 'notices' ? (
           <NoticeEditorForm notice={notice} setNotice={setNotice} />
         ) : type === 'events' ? (

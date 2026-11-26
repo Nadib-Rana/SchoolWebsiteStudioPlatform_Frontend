@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getPublicSiteData } from '@/lib/public-site'
 import { parseHomepageSections } from '@/lib/homepage-sections-parser'
 import { Icon } from '@/components/common/Icon'
+import { GoverningBodySection } from '@/components/public-site/GoverningBodySection'
 import { campusImage } from '@/config/templates'
 
 interface PageProps {
@@ -106,6 +107,13 @@ export default async function SchoolAboutPage({ params }: PageProps) {
           </span>
         </aside>
       </section>
+
+      <GoverningBodySection
+        members={siteData.governingMembers || []}
+        schoolSlug={schoolSlug}
+        schoolName={schoolName}
+        mode="compact"
+      />
 
       <section className="facilities-strip">
         {[

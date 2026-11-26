@@ -8,6 +8,7 @@ export type View =
   | 'pages'
   | 'content'
   | 'teachers'
+  | 'governing-body'
   | 'academics'
   | 'admissions'
   | 'inquiries'

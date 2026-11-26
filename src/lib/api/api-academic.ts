@@ -33,6 +33,36 @@ export function createAcademicEndpoints(session: ApiSession) {
       },
     },
 
+    governingBody: {
+      list: async (query?: { category?: string; search?: string }, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        const params = new URLSearchParams()
+        if (query?.category) params.set('category', query.category)
+        if (query?.search) params.set('search', query.search)
+        return session.request<any>(`/schools/${id}/governing-body?${params.toString()}`)
+      },
+      create: async (data: any, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/governing-body`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        })
+      },
+      update: async (memberId: string, data: any, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/governing-body/${memberId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(data),
+        })
+      },
+      delete: async (memberId: string, schoolId?: string) => {
+        const id = schoolId || session.getActiveSchoolId()
+        return session.request<any>(`/schools/${id}/governing-body/${memberId}`, {
+          method: 'DELETE',
+        })
+      },
+    },
+
     notices: {
       list: async (query?: { category?: string; status?: string; search?: string }, schoolId?: string) => {
         const id = schoolId || session.getActiveSchoolId()

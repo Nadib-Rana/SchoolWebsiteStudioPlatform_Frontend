@@ -36,7 +36,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
   const doAction = () => {
     if (view === 'navigation') {
       setNavAddModal(true)
-    } else if (['pages', 'teachers', 'notices', 'events', 'gallery', 'media'].includes(view)) {
+    } else if (['pages', 'teachers', 'governing-body', 'notices', 'events', 'gallery', 'media'].includes(view)) {
       setModal(true)
     } else {
       notify(
@@ -61,7 +61,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
               Preview draft
             </Button>
           )}
-          {['navigation', 'pages', 'teachers', 'notices', 'events', 'gallery', 'media'].includes(view) && (
+          {['navigation', 'pages', 'teachers', 'governing-body', 'notices', 'events', 'gallery', 'media'].includes(view) && (
             <Button
               kind="primary"
               icon={meta.action?.includes('Save') ? 'check' : 'plus'}
@@ -73,7 +73,7 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
         </div>
       </div>
 
-      {['pages', 'teachers', 'notices', 'events'].includes(view) && (
+      {['pages', 'teachers', 'governing-body', 'notices', 'events'].includes(view) && (
         <DataManager type={view} refreshKey={refreshKey} />
       )}
       {view === 'content' && <ContentManager />}
@@ -104,7 +104,11 @@ export function ManagementScreen({ view }: ManagementScreenProps) {
             setModal(false)
             setRefreshKey((k) => k + 1)
             notify(
-              `New ${view === 'media' ? 'asset' : view.slice(0, -1)} saved successfully`
+              view === 'media'
+                ? 'New asset saved successfully'
+                : view === 'governing-body'
+                  ? 'New committee member saved successfully'
+                  : `New ${view.slice(0, -1)} saved successfully`
             )
           }}
         />

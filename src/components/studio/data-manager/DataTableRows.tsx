@@ -48,7 +48,7 @@ export function DataTableRows({
             {r.map((x, j) =>
               j === 0 ? (
                 <div className="primary-cell" key={`${item.id}-${j}`}>
-                  {type === 'teachers' && (
+                  {(type === 'teachers' || type === 'governing-body') && (
                     <span className={`person p${i}`}>
                       {r[0]
                         .split(' ')
@@ -59,6 +59,9 @@ export function DataTableRows({
                   )}
                   <strong>{x}</strong>
                   {type === 'pages' && item.raw?.isHome && <small>Homepage</small>}
+                  {type === 'governing-body' && item.raw?.isFeatured && (
+                    <small>Featured</small>
+                  )}
                 </div>
               ) : j === r.length - 1 ? (
                 <span className={`state-badge ${x.toLowerCase()}`} key={`${item.id}-${j}`}>

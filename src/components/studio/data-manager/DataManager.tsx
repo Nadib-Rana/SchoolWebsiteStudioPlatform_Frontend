@@ -21,6 +21,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
       ? ['Page', 'URL', 'Status', 'Last updated']
       : type === 'teachers'
       ? ['Name', 'Designation', 'Department', 'Visibility']
+      : type === 'governing-body'
+      ? ['Member', 'Designation', 'Committee / Term', 'Visibility']
       : type === 'notices'
       ? ['Notice', 'Category', 'Publication date', 'Status']
       : ['Event', 'Date', 'Location', 'Status']
@@ -78,6 +80,10 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
         await api.teachers.update(item.id, {
           status: nextPublished ? 'ACTIVE' : 'INACTIVE',
         })
+      } else if (type === 'governing-body') {
+        await api.governingBody.update(item.id, {
+          status: nextPublished ? 'ACTIVE' : 'INACTIVE',
+        })
       }
       await revalidatePublicSite(currentSchool?.slug || api.getActiveSchoolSlug())
       setLocalRefresh((k) => k + 1)
@@ -101,6 +107,8 @@ export function DataManager({ type, refreshKey = 0 }: DataManagerProps) {
     try {
       if (type === 'teachers') {
         await api.teachers.delete(id)
+      } else if (type === 'governing-body') {
+        await api.governingBody.delete(id)
       } else if (type === 'notices') {
         await api.notices.delete(id)
       } else if (type === 'events') {

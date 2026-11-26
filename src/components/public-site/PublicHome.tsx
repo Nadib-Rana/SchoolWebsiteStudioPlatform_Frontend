@@ -11,6 +11,7 @@ import { HomeHeroSection } from './home/HomeHeroSection'
 import { HomeStatsSection } from './home/HomeStatsSection'
 import { HomeIntroSection } from './home/HomeIntroSection'
 import { HomePrincipalSection } from './home/HomePrincipalSection'
+import { GoverningBodySection } from './GoverningBodySection'
 import { HomeNoticesSection } from './home/HomeNoticesSection'
 import { HomeEventsSection } from './home/HomeEventsSection'
 import { HomeGallerySection } from './home/HomeGallerySection'
@@ -223,6 +224,12 @@ export function PublicHome({
         principalName={principalName}
         principalTitle={principalTitle}
         principalPhoto={principalPhoto}
+      />
+      <GoverningBodySection
+        members={schoolData?.governingMembers || []}
+        schoolSlug={schoolSlug}
+        schoolName={schoolName}
+        mode="compact"
       />
       <HomeNoticesSection
         sectionStyle={sectionStyles['Latest notices']}
