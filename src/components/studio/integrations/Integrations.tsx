@@ -300,17 +300,17 @@ export function Integrations() {
       />
 
       {/* ERP Configuration Panel */}
-      <div className="card sync-history" style={{ gridColumn: '1 / -1' }}>
-        <div className="card-title">
-          <div>
+      <div className="card" style={{ gridColumn: '1 / -1', padding: '20px' }}>
+        <div className="card-title gap-3 flex-wrap">
+          <div className="min-w-0 flex-1">
             <h3>Connect School ERP (x-website-key)</h3>
-            <p>
+            <p className="mt-1">
               Paste the <code>sk_web_...</code> Website API Key generated from{' '}
               <strong>ERP → System → Website Integration</strong>. Keys are stored encrypted on the server.
             </p>
           </div>
           {creds?.apiKeyHint && (
-            <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">
+            <span className="shrink-0 whitespace-nowrap text-xs font-mono px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
               Saved Key: {creds.apiKeyHint}
             </span>
           )}
@@ -412,14 +412,14 @@ export function Integrations() {
 
       {/* Sync History */}
       <div className="card sync-history" style={{ gridColumn: '1 / -1' }}>
-        <div className="card-title">
+        <div className="card-title mb-2 gap-3">
           <div>
             <h3>Synchronization history</h3>
             <p>Recent activity from connected systems</p>
           </div>
           <button
             type="button"
-            className="text-button"
+            className="text-button shrink-0"
             onClick={async () => {
               await loadIntegrations()
               notify('Sync history refreshed from database')
@@ -431,18 +431,39 @@ export function Integrations() {
         {history.length === 0 ? (
           <p className="text-sm text-slate-500 py-4">No synchronization events logged yet.</p>
         ) : (
-          history.map((x, i) => (
-            <div className="sync-item" key={x[0] + i}>
-              <span className={x[3] === 'ERROR' ? 'rev' : 'ok'}>
-                <Icon name={x[3] === 'ERROR' ? 'close' : 'check'} size={14} />
-              </span>
-              <div>
-                <strong>{x[0]}</strong>
-                <small>{x[1]}</small>
+          history.map((x, i) => {
+            const statusUpper = x[3] || 'SUCCESS'
+            const isError = statusUpper === 'ERROR'
+            const isWarn = statusUpper === 'PENDING' || statusUpper === 'INACTIVE'
+            const timestampText = x[2].includes(' · ')
+              ? x[2].split(' · ').slice(1).join(' · ')
+              : x[2]
+            return (
+              <div className="sync-item" key={x[0] + i}>
+                <span className={`sync-icon ${isError ? 'rev' : isWarn ? 'warn' : 'ok'}`}>
+                  <Icon name={isError ? 'close' : 'check'} size={14} />
+                </span>
+                <div className="sync-body">
+                  <strong>{x[0]}</strong>
+                  <small>{x[1]}</small>
+                </div>
+                <div className="sync-meta">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      isError
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : isWarn
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}
+                  >
+                    {statusUpper}
+                  </span>
+                  <span>{timestampText}</span>
+                </div>
               </div>
-              <span>{x[2]}</span>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
     </div>
