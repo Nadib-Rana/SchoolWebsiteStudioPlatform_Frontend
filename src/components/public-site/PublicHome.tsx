@@ -43,6 +43,14 @@ export function PublicHome({
     }
     const cached = loadBuilderStateFromLocal(schoolData?.school?.id)
     if (cached) setLocalDraft(cached)
+
+    const handleStorage = (e: StorageEvent) => {
+      if (!e.key || !e.key.startsWith('studio_builder_homepage_data')) return
+      const next = loadBuilderStateFromLocal(schoolData?.school?.id)
+      if (next) setLocalDraft(next)
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
   }, [isPreview, schoolData?.school?.id])
 
   const dbSections = useMemo(

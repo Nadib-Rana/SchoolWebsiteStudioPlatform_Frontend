@@ -1,5 +1,7 @@
 'use client'
 
+import { isDarkColor } from '../header-helpers'
+
 interface StatItem {
   value: string
   label: string
@@ -34,14 +36,22 @@ export function HomeStatsSection({ sectionStyle, statsList }: HomeStatsSectionPr
       : '32px'
 
   const isHiddenMobile = Boolean(sectionStyle?.hideOnMobile)
+  const customBg = sectionStyle?.bg?.trim() || ''
+  const isHexBg = customBg.startsWith('#')
+  const valueColor =
+    sectionStyle?.textColor ||
+    (isHexBg ? (isDarkColor(customBg) ? '#ffffff' : '#0f172a') : undefined)
+  const labelColor =
+    sectionStyle?.textColor ||
+    (isHexBg ? (isDarkColor(customBg) ? '#cbd5e1' : '#475569') : undefined)
 
   return (
     <section
       id={sectionStyle?.customId || 'section-statistics'}
       className={`public-stats ${isHiddenMobile ? 'hidden sm:grid' : ''} ${sectionStyle?.customClass || ''}`}
       style={{
-        background: sectionStyle?.bg || undefined,
-        color: sectionStyle?.textColor || undefined,
+        background: customBg || undefined,
+        color: valueColor,
         textAlign: (sectionStyle?.align as any) || undefined,
         paddingTop: pad,
         paddingBottom: pad,
@@ -51,8 +61,8 @@ export function HomeStatsSection({ sectionStyle, statsList }: HomeStatsSectionPr
     >
       {statsList.slice(0, 4).map((stat, idx) => (
         <div key={idx}>
-          <strong style={{ color: sectionStyle?.textColor || undefined }}>{stat.value}</strong>
-          <span style={{ color: sectionStyle?.textColor || undefined }}>{stat.label}</span>
+          <strong style={{ color: valueColor }}>{stat.value}</strong>
+          <span style={{ color: labelColor }}>{stat.label}</span>
         </div>
       ))}
     </section>

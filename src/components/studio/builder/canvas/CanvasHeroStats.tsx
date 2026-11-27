@@ -6,6 +6,7 @@ import { heroImage } from '@/config/templates'
 import type { DeviceType } from '@/types/theme'
 import type { ThemeConfig } from '@/config/themes'
 import type { SectionStyle } from '../builder.types'
+import { isDarkColor } from '@/components/public-site/header-helpers'
 
 interface CanvasHeroStatsProps {
   sectionStyles: Record<string, SectionStyle>
@@ -85,6 +86,18 @@ export function CanvasHeroStats({
   }, [slides.length, sliderIntervalSec])
 
   const activeSlideUrl = slides[slideIdx] || heroBg || heroImage
+
+  const customStatsBg = statsStyle?.bg?.trim() || ''
+  const statsValueColor =
+    statsStyle?.textColor ||
+    (customStatsBg && customStatsBg.startsWith('#')
+      ? isDarkColor(customStatsBg) ? '#ffffff' : '#0f172a'
+      : undefined)
+  const statsLabelColor =
+    statsStyle?.textColor ||
+    (customStatsBg && customStatsBg.startsWith('#')
+      ? isDarkColor(customStatsBg) ? '#cbd5e1' : '#475569'
+      : undefined)
 
   const stats = [
     { v: stat1Val, l: stat1Label },
@@ -222,8 +235,8 @@ export function CanvasHeroStats({
         style={{
           cursor: 'pointer',
           position: 'relative',
-          background: statsStyle?.bg || activeCfg?.primaryColor || '#163d72',
-          color: statsStyle?.textColor || undefined,
+          background: customStatsBg || undefined,
+          color: statsValueColor,
           textAlign: (statsStyle?.align as any) || 'center',
           paddingTop: statsPad,
           paddingBottom: statsPad,
@@ -240,8 +253,8 @@ export function CanvasHeroStats({
         {selected === 'Statistics' && <div className="selection-label">Statistics</div>}
         {stats.map((s, idx) => (
           <div key={idx}>
-            <strong style={{ fontFamily: activeCfg?.fontHeading }}>{s.v}</strong>
-            <span>{s.l}</span>
+            <strong style={{ fontFamily: activeCfg?.fontHeading, color: statsValueColor }}>{s.v}</strong>
+            <span style={{ color: statsLabelColor }}>{s.l}</span>
           </div>
         ))}
       </div>
